@@ -1,0 +1,80 @@
+/*
+ *
+ */
+
+#ifndef RTPS_ENTITIES_READER_H_
+#define RTPS_ENTITIES_READER_H_
+
+#include <omnetpp.h>
+#include "./../messages/rtpsInetPacket_m.h"
+
+
+#include "sampleFragment.h"
+#include "writerProxy.h"
+#include "endpoint.h"
+
+using namespace omnetpp;
+
+class Reader : public cSimpleModule, Endpoint {
+public:
+    Reader() {}
+    virtual ~Reader();
+
+private:
+    // self-message
+    cMessage *selfEvent;
+    bool original_dds;
+
+    simtime_t responseDelay;
+
+    /* ---- The HistoryCache ---- */
+    WriterProxy writerProxy;
+
+protected:
+    /*
+     * Method that is triggered according to some schedule. At the end, sends a packaged sample fragment down towards the UDP/IP stack
+     *
+     * @return true on success, else false
+     */
+    void sendMessage(RtpsInetPacket* msg);
+
+    /*
+     * TODO
+     *
+     * @param TODO
+     */
+    void addNewSampleToProxy(RtpsInetPacket* rtpsInetPacket);
+
+    /*
+     * TODO
+     *
+     * @param TODO
+     */
+    RtpsInetPacket* generateNackFrag(WriterProxy* wp);
+
+    /*
+     * TODO
+     */
+    void checkCompletionOfLatestSample();
+
+
+    /*
+     * Overwritten method, initializes modules after its instantiation
+     */
+    virtual void initialize() override;
+
+    /*
+     * Overwritten method, trigger either on arrival of a new sample (from app) or by self-messages
+     *
+     * @param msg each incoming (external or self) message is interpreted as a stimulus
+     */
+    virtual void handleMessage(cMessage *msg) override;
+    /*
+     * Overwritten method, called at the end of the simulation
+     */
+
+    virtual void finish() override;
+};
+
+
+#endif /* RTPS_ENTITIES_READER_H_ */
