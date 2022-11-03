@@ -14,12 +14,12 @@ Reader::~Reader() {
 
 void Reader::initialize() {
     // assign entity IDs in .ini file
-    entityId = -1//TODO;
+//    entityId = -1//TODO;
     appID = par("appID");
 
     writerProxy = new WriterProxy();
 
-    response_delay = 0
+    responseDelay = 0;
 }
 
 

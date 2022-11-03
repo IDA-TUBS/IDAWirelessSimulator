@@ -8,29 +8,40 @@
 #include <omnetpp.h>
 #include "./../messages/rtpsInetPacket_m.h"
 
-
-#include "sampleFragment.h"
-#include "writerProxy.h"
 #include "endpoint.h"
+#include "changeForWriter.h"
+#include "writerProxy.h"
+#include "sampleFragment.h"
+
 
 using namespace omnetpp;
+using namespace inet;
 
 class Reader : public cSimpleModule, Endpoint {
-public:
+  public:
+    /*
+     * empty default constructor
+     */
     Reader() {}
+    /*
+     * empty default destructor
+     */
     virtual ~Reader();
 
-private:
+  private:
     // self-message
     cMessage *selfEvent;
-    bool original_dds;
 
+    /// TODO description, actually used?
     simtime_t responseDelay;
 
-    /* ---- The HistoryCache ---- */
+    /// HistoryCache
     WriterProxy writerProxy;
 
-protected:
+    /// application ID
+    unsigned int appID;
+
+  protected:
     /*
      * Method that is triggered according to some schedule. At the end, sends a packaged sample fragment down towards the UDP/IP stack
      *

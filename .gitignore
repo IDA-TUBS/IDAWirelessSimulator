@@ -1,3 +1,19 @@
+# OMNeT++
+out
+*Makefile
+.settings
+*.cmdenv-log
+*.qtenvrc
+src/idaWirelessSimulator
+src/idaWirelessSimulator_dbg
+./*/results
+simulations/idaWirelessSimulator
+simulations/idaWirelessSimulator_dbg
+*.sca
+*.vec
+*.vci
+
+
 # ---> C++
 # Prerequisites
 *.d

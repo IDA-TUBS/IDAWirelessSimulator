@@ -13,20 +13,19 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package src.rtps.entities;
+package src.rtps.contract;
 
-simple Reader
+
+moduleinterface iRtpsApp
 {
     parameters:
-
-        // History size defines for how many last samples the latency is evaluated         
-        int appID = default(-1);
-        
-        @display("i=block/rx");
+        @display("i=block/app");
     gates:
-        
-        output app_out;
-        input dispatcher_in;
-        output dispatcher_out;
-
+        input AppIn;
+        output AppOut;
 }
+
+
+
+
+

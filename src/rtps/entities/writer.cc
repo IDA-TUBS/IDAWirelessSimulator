@@ -9,10 +9,12 @@ using namespace omnetpp;
 
 Define_Module(Writer);
 
-Writer::~Writer() {
+Writer::~Writer()
+{
 }
 
-void Writer::initialize() {
+void Writer::initialize()
+{
     /// Create the internal event messages
     sendEvent = new cMessage("sendEvent");
     /// heartBeat message time
@@ -21,7 +23,7 @@ void Writer::initialize() {
     /// Initialize RTPS context
     Rtps* rtps_parent = dynamic_cast<Rtps*>(getParentModule());
     entityID = rtps_parent->getNextEntityId();
-    appID = par("appID")
+    appID = par("appID");
 
     /// writer parametrization
     deadline = par("deadline");
@@ -35,15 +37,8 @@ void Writer::initialize() {
     }
 }
 
-void Writer::finish() {
-}
-
-
-
-
-
-
-void Writer::handleMessage(cMessage *msg) {
+void Writer::finish()
+{
 
 }
 
@@ -52,12 +47,48 @@ void Writer::handleMessage(cMessage *msg) {
 
 
 
+void Writer::handleMessage(cMessage *msg)
+{
+    if (dynamic_cast<Sample*>(msg)!=NULL){
+		// Received new sample from application
+		Sample *sample = check_and_cast<Sample*>(msg);
 
-bool Writer::sendMessage() {
+		addSampleToCache(sample);
+
+		sendMessage();
+    }
+    else if(dynamic_cast<RtpsInetPacket*>(msg)!=NULL)
+    {
+
+    }
+    else if(msg == sendEvent)
+    {
+		sendMessage();
+	}
+    else if(msg == hbTimer)
+    {
+        sendHeartbeatMsg();
+	}
+
+	delete msg;
+}
+
+
+void Writer::addSampleToCache()
+{
+    // create cache change once, then copy to reader proxies
+}
+
+
+
+
+bool Writer::sendMessage()
+{
 
 }
 
-bool Writer::sendHeartbeatMsg() {
+bool Writer::sendHeartbeatMsg()
+{
 
 }
 
@@ -69,7 +100,8 @@ void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
     auto rp = matchedReaders[readerID];
 
     rp->processNackFrag(nackFrag);
-    bool complete = rp->checkLatestSampleCompletenessAtReader();
+    unsigned int sequenceNumber = nackFrag->getWriterSN();
+    bool complete = rp->checkSampleCompleteness(sequenceNumber);
     // TODO how to proceed from here?
 }
 

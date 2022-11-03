@@ -13,20 +13,30 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package src.rtps.entities;
+package src.rtps.apps;
 
-simple Reader
+//
+// TODO auto-generated type
+//
+import src.rtps.contract.iRtpsApp;
+//
+// TODO auto-generated type
+//
+simple RtpsPublisherApp like iRtpsApp
 {
     parameters:
-
-        // History size defines for how many last samples the latency is evaluated         
-        int appID = default(-1);
+        // Simulation Time Parameters
+        double startTime @unit(s) = default(0s);
+        // Application Parameters
+        double sampling_period @unit(ms) = default(100ms);
+        int sample_size @unit(B) = default(20*1000B);
         
-        @display("i=block/rx");
+        double offset @unit(s) = default(0us);
+        // Other
+        @display("i=block/departure");
+        @class(RtpsPublisherApp);
     gates:
-        
-        output app_out;
-        input dispatcher_in;
-        output dispatcher_out;
+        input AppIn;
+        output AppOut;
 
 }

@@ -13,20 +13,23 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package src.rtps.entities;
+package src.helper;
 
-simple Reader
+//
+// TODO auto-generated type
+//
+simple RtpsMessageDispatcher
 {
-    parameters:
-
-        // History size defines for how many last samples the latency is evaluated         
-        int appID = default(-1);
-        
-        @display("i=block/rx");
+    @display("i=block/routing");
     gates:
-        
-        output app_out;
-        input dispatcher_in;
-        output dispatcher_out;
+        input adapter_in;
+        output shaper_out;
+
+        //input and output for discovery
+        input writer_in[];
+        output writer_out[];
+        input reader_in[];
+        output reader_out[];
+
 
 }
