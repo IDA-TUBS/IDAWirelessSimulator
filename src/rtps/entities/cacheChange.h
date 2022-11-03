@@ -22,7 +22,8 @@ enum fragmentStates{
 
 class SampleFragment;
 
-class CacheChange{
+class CacheChange
+{
   public:
     /// sequence number of current sample
     unsigned int sequenceNumber;

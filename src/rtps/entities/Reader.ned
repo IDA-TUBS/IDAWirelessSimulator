@@ -17,14 +17,11 @@ package src.rtps.entities;
 
 simple Reader
 {
-    parameters:
-
-        // History size defines for how many last samples the latency is evaluated         
+    parameters:      
         int appID = default(-1);
         
         @display("i=block/rx");
-    gates:
-        
+    gates:        
         output app_out;
         input dispatcher_in;
         output dispatcher_out;

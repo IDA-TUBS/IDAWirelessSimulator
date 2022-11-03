@@ -24,7 +24,10 @@ simple Writer
         int numberReaders = default(0);
                 
         int appID = default(-1);
-        string readerIDs = default("");
+        
+        // Shaping Model
+        double shaping @unit(s) = default(10us);
+        
         string destAddresses = default("");
         
         // Display Parameters

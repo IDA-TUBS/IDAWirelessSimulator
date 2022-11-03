@@ -9,16 +9,16 @@
 #include <math.h>
 
 #include "cacheChange.h"
-#include "changeForWriter.h"
 
-#include "./../messages/rtpsInetPacket_m.h"
+#include "./../messages/RtpsInetPacket_m.h"
 
 using namespace omnetpp;
 
 
 class SampleFragment;
 
-class WriterProxy {
+class WriterProxy
+{
   private:
     /// entity of corresponding reader
     unsigned int readerID;

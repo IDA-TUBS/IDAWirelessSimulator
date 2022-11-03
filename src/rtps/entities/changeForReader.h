@@ -16,7 +16,8 @@ using namespace omnetpp;
 
 class SampleFragment;
 
-class ChangeForReader: CacheChange{
+class ChangeForReader: CacheChange
+{
   private:
     /// reader entity ID
     unsigned int readerID;

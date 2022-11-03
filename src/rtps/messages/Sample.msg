@@ -15,7 +15,9 @@
 
 
 packet Sample {
-
+	// TODO description 
+	int sequenceNumber;
+	
     // Protocol relevant data
     int size;
     

@@ -5,9 +5,8 @@
 #ifndef RTPS_ENTITIES_WRITER_H__
 #define RTPS_ENTITIES_WRITER_H__
 
-
 #include <omnetpp.h>
-#include "./../messages/rtpsInetPacket_m.h"
+#include "./../messages/RtpsInetPacket_m.h"
 
 #include "endpoint.h"
 #include "changeForReader.h"
@@ -17,7 +16,8 @@
 using namespace omnetpp;
 using namespace inet;
 
-class Writer : public cSimpleModule, Endpoint {
+class Writer : public cSimpleModule, Endpoint
+{
   public:
     /*
      * empty default constructor
@@ -49,6 +49,9 @@ class Writer : public cSimpleModule, Endpoint {
     /// application ID
     unsigned int appID;
 
+    /// shaping parameter - value given in us
+    simtime_t shaping;
+
     /// TODO destination address(es)
 
 
@@ -57,6 +60,7 @@ class Writer : public cSimpleModule, Endpoint {
     // ===========================
 
     std::vector<ReaderProxy*> *matchedReaders;
+    std::queue<CacheChange*> historyCache;
     std::list<SampleFragment*> sendQueue;
 
 
@@ -95,6 +99,13 @@ class Writer : public cSimpleModule, Endpoint {
      */
     void handleNackFrag(RtpsInetPacket* nackFrag);
 
+    /*
+     * Method for creating new cache change on arrival of new sample
+     *
+     * @param sample containing all information for building CacheChange
+     */
+    void addSampleToCache(Sample* sample);
+
 //        /*
 //         * Method for evaluating whether a reader has received all fragments of a sample
 //         *
@@ -112,7 +123,7 @@ class Writer : public cSimpleModule, Endpoint {
      * @param sampleFragment pointer to sample fragment that shall be packaged
      * @return sample fragment packaged in as an RtpsInetPacket
      */
-    RtpsInetPacket* create_rtps_msg_from_fragment(SampleFragment* sampleFragment);
+    RtpsInetPacket* createRtpsMsgFromFragment(SampleFragment* sampleFragment);
 
     /*
      * Method for selecting which fragment (missing at a specific reader) to transmit next
@@ -120,7 +131,7 @@ class Writer : public cSimpleModule, Endpoint {
      * @param rp pointer to reader proxy used for fragment selection
      * @return the sample fragment to be transmitted next
      */
-    virtual SampleFragment* select_next_fragment(ReaderProxy *rp);
+    virtual SampleFragment* selectNextFragment(ReaderProxy *rp);
 
 
     /*
@@ -133,6 +144,7 @@ class Writer : public cSimpleModule, Endpoint {
      *
      * @param msg each incoming (external or self) message is interpreted as a stimulus
      */
+
     virtual void handleMessage(cMessage *msg) override;
     /*
      * Overwritten method, called at the end of the simulation

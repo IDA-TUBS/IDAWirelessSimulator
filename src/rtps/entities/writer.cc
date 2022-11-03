@@ -30,8 +30,11 @@ void Writer::initialize()
     fragmentSize = par("fragmentSize");
     numReaders = par("numReaders");
 
+    shaping = par("shaping");
+
     /// reader proxy initialization
     for(int i = 0; i < numReader; i++) {
+        // TODO set up reader IDs here as well!
         auto rp = new ReaderProxy();
         matchedReader.push_back(rp);
     }
@@ -41,9 +44,6 @@ void Writer::finish()
 {
 
 }
-
-
-
 
 
 
@@ -59,7 +59,9 @@ void Writer::handleMessage(cMessage *msg)
     }
     else if(dynamic_cast<RtpsInetPacket*>(msg)!=NULL)
     {
-
+        // Received new NackFrag
+        RtpsInetMessage *rtps_msg = check_and_cast<RtpsInetMessage*>(msg);
+        handleNackFrag(msg);
     }
     else if(msg == sendEvent)
     {
@@ -74,35 +76,88 @@ void Writer::handleMessage(cMessage *msg)
 }
 
 
-void Writer::addSampleToCache()
+void Writer::addSampleToCache(Sample* sample)
 {
-    // create cache change once, then copy to reader proxies
+    // create cacheChange once
+    auto change = new CacheChange(sample->sequenceNumber, sample->size, this->fragmentSize, simTime());
+
+    // then generate ChangeForReaders based on CacheChange and add to reader proxies (done by ReaderProxy itself)
+    for (auto rp: matchedReaders)
+    {
+        rp.addChange(change);
+    }
 }
 
 
 
 
-bool Writer::sendMessage()
+bool Writer::sendMessage() // TODO implement completely
 {
+    // Check if the writer is currently allowed to send
+    if(sendEvent->isScheduled()){
+        return false;
+    }
 
+    // check liveliness of current sample, if deadline expired remove sample from cache and ReaderProxies
+
+    // then select a reader
+
+    // finally select a fragment from the previously chosen reader for transmission
+    // update fragment status (at all readers if multicast is used)
+
+    // actual send fragment using RtpsInetPacket
+
+    // Schedule the next event with ideal shaping
+    simtime_t timeToSend = simTime() + shaping;
+    scheduleAt(timeToSend, sendEvent);
 }
 
 bool Writer::sendHeartbeatMsg()
 {
+    // first get the relevant sample
+    // could choose any reader, as we assume multicast and not multiple unicast streams here
+    ChangeForReader* change = matchedReaders[0].getCurrentChange();
 
+    RtpsInetPacket* rtpsMsg = new RtpsInetPacket();
+    rtpsMsg->setInfoDestinationSet(false);
+
+    // get highest sent fragment number from the change
+    rtpsMsg->setLastFragmentNum(change->highestFNSend);
+
+    // set all other message attributes accordingly
+    rtpsMsg->setHeartBeatFragSet(true);
+    rtpsMsg->setUcId(-1); // for simulation only (otherwise sometimes data missing, would likely to be communicated via discovery protocol IRL)
+    rtpsMsg->setSampleSize(this->sampleSize);
+    rtpsMsg->setFragmentSize(this->fragmentSize);
+    rtpsMsg->setGeneralFragmentSize(this->fragmentSize);
+
+    // calc and set message size
+    calculateRtpsMsgSize(rtpsMsg);
+
+    // transmit HB message
+    cModule *target = getAnalysisModule(getParentModule());
+    if(target != nullptr){
+        send(rtpsMsg , gate("dispatcher_out"));
+    }
+    // schedule next heartbeat
+    scheduleAt(simTime() + hbPeriod, hbTimer);
 }
 
 
 
-void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
+void Writer::handleNackFrag(RtpsInetPacket* nackFrag) { // TODO implement completely
     /// First find the history cache corresponding to the reader, sending the NackFrag msg
-    unsigned int readerID = nackFrag->getReaderId(); // TODO does not work if there are multiple writers sending to different nodes!!!
+    // TODO how to implement entity IDs simulation wide and allow for easy assignment here?
+    unsigned int readerID = nackFrag->getReaderId();
     auto rp = matchedReaders[readerID];
 
     rp->processNackFrag(nackFrag);
     unsigned int sequenceNumber = nackFrag->getWriterSN();
     bool complete = rp->checkSampleCompleteness(sequenceNumber);
     // TODO how to proceed from here?
+
+    // TODO: default RTPS behavior: just retransmit all fragments marked as missing asap
+    // add missing fragments to sendQueue
 }
 
 
@@ -112,10 +167,10 @@ void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
 
 
 
-SampleFragment* Writer::select_next_fragment(ReaderProxy *rp) {
+SampleFragment* Writer::selectNextFragment(ReaderProxy *rp) { // TODO implement completely
 
 }
 
-RtpsInetPacket* Writer::create_rtps_msg_from_fragment(SampleFragment* sample_fragment) {
+RtpsInetPacket* Writer::createRtpsMsgFromFragment(SampleFragment* sample_fragment) { // TODO implement completely
 
 }

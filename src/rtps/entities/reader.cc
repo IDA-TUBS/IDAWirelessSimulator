@@ -3,18 +3,13 @@
  */
 
 #include "reader.h"
-#include "./../Rtps.h"
-
-using namespace omnetpp;
 
 Define_Module(Reader);
 
-Reader::~Reader() {
-}
 
-void Reader::initialize() {
-    // assign entity IDs in .ini file
-//    entityId = -1//TODO;
+void Reader::initialize()
+{
+    // TODO assigning of entity IDs
     appID = par("appID");
 
     writerProxy = new WriterProxy();
@@ -23,30 +18,36 @@ void Reader::initialize() {
 }
 
 
-void Reader::finish() {
+void Reader::finish()
+{
 
 }
 
-void Reader::handleMessage(cMessage *msg) {
+void Reader::handleMessage(cMessage *msg)
+{
 
 }
 
 void Reader::sendMessage(RtpsInetPacket* rtps_msg)
+{
 
 }
 
 
 
 
-void Reader::addNewSampleToProxy(RtpsInetPacket* rtpsInetPacket) {
+void Reader::addNewSampleToProxy(RtpsInetPacket* rtpsInetPacket)
+{
 
 }
 
-RtpsInetPacket* Reader::generateNackFrag(WriterProxy* wp) {
+RtpsInetPacket* Reader::generateNackFrag(WriterProxy* wp)
+{
 
 }
 
-void Reader::checkCompletionOfLatestSample() {
+void Reader::checkCompletionOfLatestSample()
+{
 
 }
 

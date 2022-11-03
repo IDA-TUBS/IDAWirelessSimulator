@@ -11,7 +11,8 @@ using namespace omnetpp;
 
 class CacheChange;
 
-class SampleFragment{
+class SampleFragment
+{
   private:
     /// fragment number
     unsigned int fragmentStartingNum;

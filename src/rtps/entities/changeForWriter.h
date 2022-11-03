@@ -16,7 +16,8 @@ using namespace omnetpp;
 
 class SampleFragment;
 
-class ChangeForWriter: CacheChange {
+class ChangeForWriter: CacheChange
+{
   private:
     /// flag for signaling that all fragments have been acknowledged
     bool complete;

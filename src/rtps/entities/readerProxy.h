@@ -10,14 +10,15 @@
 
 #include "cacheChange.h"
 
-#include "./../messages/rtpsInetPacket_m.h"
+#include "./../messages/RtpsInetPacket_m.h"
 
 using namespace omnetpp;
 
 
 class SampleFragment;
 
-class ReaderProxy {
+class ReaderProxy
+{
   private:
     /// entity of corresponding reader
     unsigned int readerID;
@@ -52,7 +53,19 @@ class ReaderProxy {
      */
     ~ReaderProxy();
 
+    /*
+     * method for adding a new Cache Change to the proxy's history cache
+     *
+     * @param change reference to cache change that will be replicated in the reader proxy
+     */
     void addChange(CacheChange &change);
+
+    /*
+     * method for removing a Cache Change from the proxie's history cache
+     *
+     * @param sequenceNumber sequence number of the change that has be be removed
+     */
+    void removeChange(unsigned int sequenceNumber);
 
     /*
      * method for altering a fragment's status (unsent, sent, acked, ...)
@@ -79,6 +92,14 @@ class ReaderProxy {
      * @return true if complete, else returns false
      */
     bool checkSampleCompleteness(unsigned int sequenceNumber);
+
+    /*
+     * method returning the current (oldest) cache change
+     */
+    ChangeForReader* getCurrentChange()
+    {
+        return history.front();
+    }
 
 };
 

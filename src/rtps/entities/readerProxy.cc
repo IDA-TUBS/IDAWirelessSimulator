@@ -12,6 +12,18 @@ void ReaderProxy::addChange(CacheChange &change)
     history.push(cfr);
 }
 
+void ReaderProxy::removeChange(unsigned int sequenceNumber)
+{
+    for (auto cfr: history)
+    {
+        if (cfr.sequenceNumber <= sequenceNumber)
+        {
+            history.pop();
+        }
+    }
+}
+
+
 bool ReaderProxy::updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber)
 {
     // first find change corresponding to the given sequence number

@@ -6,23 +6,24 @@
 #define RTPS_ENTITIES_READER_H_
 
 #include <omnetpp.h>
-#include "./../messages/rtpsInetPacket_m.h"
+#include "./../messages/RtpsInetPacket_m.h"
 
 #include "endpoint.h"
 #include "changeForWriter.h"
 #include "writerProxy.h"
 #include "sampleFragment.h"
 
-
 using namespace omnetpp;
 using namespace inet;
 
-class Reader : public cSimpleModule, Endpoint {
+class Reader : public cSimpleModule, Endpoint
+{
   public:
     /*
      * empty default constructor
      */
     Reader() {}
+
     /*
      * empty default destructor
      */

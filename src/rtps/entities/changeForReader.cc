@@ -59,6 +59,10 @@ bool ChangeForReader::setFragmentStatus(fragmentStates status, unsigned int frag
         case SENT:
             frag->sent = true;
             frag->acked = false;
+            if(fragmentNumber > highestFNSend)
+            {
+                highestFNSend = fragmentNumber;
+            }
             break;
         case ACKED:
             frag->sent = true;
