@@ -16,12 +16,13 @@ using namespace omnetpp;
 
 class SampleFragment;
 
-class ChangeForReader: CacheChange
+class ChangeForReader: public CacheChange
 {
   private:
     /// reader entity ID
     unsigned int readerID;
 
+  public:
     /// flag for signaling that all fragments have been acknowledged
     bool complete;
 
@@ -30,9 +31,6 @@ class ChangeForReader: CacheChange
     /// highest yet sent fragment number
     int highestFNSend;
 
-    // TODO add reference to cache change?
-
-  public:
     /// reference (pointer) to intial CacheChange
     CacheChange *baseChange;
 

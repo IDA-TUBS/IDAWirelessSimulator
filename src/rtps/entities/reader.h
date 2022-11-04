@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef RTPS_ENTITIES_READER_H_
-#define RTPS_ENTITIES_READER_H_
+#ifndef RTPS_ENTITIES_READER_H_1
+#define RTPS_ENTITIES_READER_H_1
 
 #include <omnetpp.h>
 #include "./../messages/RtpsInetPacket_m.h"
@@ -37,10 +37,13 @@ class Reader : public cSimpleModule, Endpoint
     simtime_t responseDelay;
 
     /// HistoryCache
-    WriterProxy writerProxy;
+    WriterProxy *writerProxy;
 
     /// application ID
     unsigned int appID;
+
+    /// max number of cache changes to be stored simultaneously
+    unsigned int sizeCache;
 
   protected:
     /*
@@ -89,4 +92,4 @@ class Reader : public cSimpleModule, Endpoint
 };
 
 
-#endif /* RTPS_ENTITIES_READER_H_ */
+#endif /* RTPS_ENTITIES_READER_H_1 */

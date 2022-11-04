@@ -4,15 +4,21 @@
 
 #include "reader.h"
 
+using namespace omnetpp;
 Define_Module(Reader);
 
+Reader::~Reader()
+{
+}
 
 void Reader::initialize()
 {
     // TODO assigning of entity IDs
     appID = par("appID");
 
-    writerProxy = new WriterProxy();
+    sizeCache = par("historySize");
+
+    writerProxy = new WriterProxy(this->sizeCache);
 
     responseDelay = 0;
 }

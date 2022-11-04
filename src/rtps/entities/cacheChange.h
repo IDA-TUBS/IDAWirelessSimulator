@@ -38,9 +38,8 @@ class CacheChange
     simtime_t arrivalTime;
 
     /// array storing the 'data'
-    SampleFragment ** sampleFragmentArray;
+    SampleFragment** sampleFragmentArray;
 
-  public:
     /*
      * empty default constructor
      */

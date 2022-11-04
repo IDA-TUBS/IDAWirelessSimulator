@@ -7,27 +7,22 @@
 
 #include <omnetpp.h>
 #include <math.h>
+#include <list>
 
-#include "cacheChange.h"
+#include "changeForWriter.h"
 
 #include "./../messages/RtpsInetPacket_m.h"
 
 using namespace omnetpp;
-
+using namespace inet;
 
 class SampleFragment;
 
 class WriterProxy
 {
   private:
-    /// entity of corresponding reader
-    unsigned int readerID;
-
-    /// the reader's priority
-    // unsigned int priority;
-
     /// history story all samples
-    std::queue<ChangeForWriter*> history;
+    std::list<ChangeForWriter*> history;
     /// max size of history
     unsigned int historySize;
 
@@ -35,12 +30,15 @@ class WriterProxy
     /*
      * default constructor
      */
-    WriterProxy() {};
+    WriterProxy(unsigned int historySize):
+        historySize(historySize)
+    {};
 
     /*
      * overloaded constructor, add first change to history
      */
-    WriterProxy(CacheChange &change)
+    WriterProxy(unsigned int historySize, CacheChange &change):
+        historySize(historySize)
     {
         this->addChange(change);
     };

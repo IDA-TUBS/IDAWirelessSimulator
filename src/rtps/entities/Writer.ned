@@ -22,11 +22,14 @@ simple Writer
         int fragmentSize = default(1000);
         double deadline @unit(s) = default(100ms);
         int numberReaders = default(0);
+        
+        int historySize = default(1);        
                 
         int appID = default(-1);
         
         // Shaping Model
         double shaping @unit(s) = default(10us);
+        double hbPeriod @unit(s) = default(2000us);
         
         string destAddresses = default("");
         

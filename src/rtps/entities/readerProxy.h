@@ -7,12 +7,14 @@
 
 #include <omnetpp.h>
 #include <math.h>
+#include <list>
 
-#include "cacheChange.h"
+#include "changeForReader.h"
 
 #include "./../messages/RtpsInetPacket_m.h"
 
 using namespace omnetpp;
+using namespace inet;
 
 
 class SampleFragment;
@@ -27,7 +29,7 @@ class ReaderProxy
     // unsigned int priority;
 
     /// history story all samples
-    std::queue<ChangeForReader*> history;
+    std::list<ChangeForReader*> history;
     /// max size of history
     unsigned int historySize;
 
@@ -35,15 +37,17 @@ class ReaderProxy
     /*
      * default constructor
      */
-    ReaderProxy(unsigned int id):
-        readerID(id)
+    ReaderProxy(unsigned int id, unsigned int historySize):
+        readerID(id),
+        historySize(historySize)
     {};
 
     /*
      * overloaded constructor, add first change to history
      */
-    ReaderProxy(unsigned int id, CacheChange &change):
-        readerID(id)
+    ReaderProxy(unsigned int id, unsigned int historySize, CacheChange &change):
+        readerID(id),
+        historySize(historySize)
     {
         this->addChange(change);
     };
@@ -83,7 +87,7 @@ class ReaderProxy
      * @param nackFrag message containing the nackFrag
      * @return true if successful, else returns false
      */
-    bool processNack(RtpsInetMessage* nackFrag);
+    bool processNack(RtpsInetPacket* nackFrag);
 
     /*
      * method for updating the fragment status based on NackFrag information

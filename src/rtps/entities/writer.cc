@@ -3,9 +3,11 @@
  */
 
 #include "writer.h"
+#include "./../Rtps.h"
 
 
 using namespace omnetpp;
+
 
 Define_Module(Writer);
 
@@ -15,28 +17,31 @@ Writer::~Writer()
 
 void Writer::initialize()
 {
-    /// Create the internal event messages
+    // Create the internal event messages
     sendEvent = new cMessage("sendEvent");
-    /// heartBeat message time
+    // heartBeat message time
     hbTimer = new cMessage("hbTimer");
 
     /// Initialize RTPS context
-    Rtps* rtps_parent = dynamic_cast<Rtps*>(getParentModule());
-    entityID = rtps_parent->getNextEntityId();
+    Rtps* rtpsParent = dynamic_cast<Rtps*>(getParentModule());
+    entityId = rtpsParent->getNextEntityId();
     appID = par("appID");
 
-    /// writer parametrization
+    // writer parametrization
     deadline = par("deadline");
     fragmentSize = par("fragmentSize");
     numReaders = par("numReaders");
+    sizeCache = par("historySize");
 
     shaping = par("shaping");
+    hbPeriod = par("hbPeriod");
 
-    /// reader proxy initialization
-    for(int i = 0; i < numReader; i++) {
+    // reader proxy initialization
+    for(int i = 0; i < numReaders; i++) {
         // TODO set up reader IDs here as well!
-        auto rp = new ReaderProxy();
-        matchedReader.push_back(rp);
+        unsigned int readerId = i;
+        auto rp = new ReaderProxy(readerId, this->sizeCache);
+        matchedReaders.push_back(rp);
     }
 }
 
@@ -60,8 +65,8 @@ void Writer::handleMessage(cMessage *msg)
     else if(dynamic_cast<RtpsInetPacket*>(msg)!=NULL)
     {
         // Received new NackFrag
-        RtpsInetMessage *rtps_msg = check_and_cast<RtpsInetMessage*>(msg);
-        handleNackFrag(msg);
+        RtpsInetPacket *rtpsMsg = check_and_cast<RtpsInetPacket*>(msg);
+        handleNackFrag(rtpsMsg);
     }
     else if(msg == sendEvent)
     {
@@ -79,12 +84,12 @@ void Writer::handleMessage(cMessage *msg)
 void Writer::addSampleToCache(Sample* sample)
 {
     // create cacheChange once
-    auto change = new CacheChange(sample->sequenceNumber, sample->size, this->fragmentSize, simTime());
+    auto change = new CacheChange(sample->getSequenceNumber(), sample->getSize(), this->fragmentSize, simTime());
 
     // then generate ChangeForReaders based on CacheChange and add to reader proxies (done by ReaderProxy itself)
     for (auto rp: matchedReaders)
     {
-        rp.addChange(change);
+        rp->addChange(*change);
     }
 }
 
@@ -116,7 +121,7 @@ bool Writer::sendHeartbeatMsg()
 {
     // first get the relevant sample
     // could choose any reader, as we assume multicast and not multiple unicast streams here
-    ChangeForReader* change = matchedReaders[0].getCurrentChange();
+    ChangeForReader* change = matchedReaders[0]->getCurrentChange();
 
     RtpsInetPacket* rtpsMsg = new RtpsInetPacket();
     rtpsMsg->setInfoDestinationSet(false);
@@ -126,8 +131,8 @@ bool Writer::sendHeartbeatMsg()
 
     // set all other message attributes accordingly
     rtpsMsg->setHeartBeatFragSet(true);
-    rtpsMsg->setUcId(-1); // for simulation only (otherwise sometimes data missing, would likely to be communicated via discovery protocol IRL)
-    rtpsMsg->setSampleSize(this->sampleSize);
+//    rtpsMsg->setUcId(-1); // TODO for simulation only (otherwise sometimes data missing, would likely to be communicated via discovery protocol IRL)
+    rtpsMsg->setSampleSize(change->sampleSize);
     rtpsMsg->setFragmentSize(this->fragmentSize);
     rtpsMsg->setGeneralFragmentSize(this->fragmentSize);
 
@@ -151,7 +156,7 @@ void Writer::handleNackFrag(RtpsInetPacket* nackFrag) { // TODO implement comple
     unsigned int readerID = nackFrag->getReaderId();
     auto rp = matchedReaders[readerID];
 
-    rp->processNackFrag(nackFrag);
+    rp->processNack(nackFrag);
     unsigned int sequenceNumber = nackFrag->getWriterSN();
     bool complete = rp->checkSampleCompleteness(sequenceNumber);
     // TODO how to proceed from here?

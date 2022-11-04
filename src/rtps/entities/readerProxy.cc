@@ -9,16 +9,16 @@ void ReaderProxy::addChange(CacheChange &change)
 {
     ChangeForReader* cfr = new ChangeForReader(this->readerID, change);
 
-    history.push(cfr);
+    history.push_back(cfr);
 }
 
 void ReaderProxy::removeChange(unsigned int sequenceNumber)
 {
     for (auto cfr: history)
     {
-        if (cfr.sequenceNumber <= sequenceNumber)
+        if (cfr->getSequenceNumber() <= sequenceNumber)
         {
-            history.pop();
+            history.pop_front();
         }
     }
 }
@@ -37,15 +37,29 @@ bool ReaderProxy::updateFragmentStatus (fragmentStates status, unsigned int sequ
         }
     }
 
-    return cfr.setFragmentStatus(status, fragmentNumber);
+    return tmp->setFragmentStatus(status, fragmentNumber);
 }
 
-bool ReaderProxy::processNack(RtpsInetMessage* nackFrag)
+bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)
 {
-    //first parse data
+    // first parse data
     fragmentStates status;
     unsigned int sequenceNumber = nackFrag->getWriterSN();
 
+    // access change with the given sequence number
+    ChangeForReader* change = nullptr;
+    for (auto cfr: history)
+    {
+        if (cfr->getSequenceNumber() == sequenceNumber)
+        {
+            change = cfr;
+            break;
+        }
+    }
+    if(!change)
+    {
+        return false;
+    }
 
     // Iterate through the addressed bitmap region and update the reader's history cache
     for(int i = nackFrag->getFragmentNumberStateBase(); i < nackFrag->getFragmentNumberStateBase() + nackFrag->getFragmentNumberStateNbrBits();i++)
@@ -53,7 +67,9 @@ bool ReaderProxy::processNack(RtpsInetMessage* nackFrag)
        unsigned int fragmentNumber = i;
        bool acked = nackFrag->getFragmentNumberBitmap(i-nackFrag->getFragmentNumberStateBase());
 
-        if(current_fragment->acked){ // TODO
+       SampleFragment* currentFragment = change->getFragmentArray()[fragmentNumber];
+
+        if(currentFragment->acked){ // TODO
             continue;
         }
 
@@ -63,7 +79,7 @@ bool ReaderProxy::processNack(RtpsInetMessage* nackFrag)
             continue;
         }
 
-        if(current_fragment->send){ // TODO
+        if(currentFragment->sent){ // TODO
             this->updateFragmentStatus(NACKED, sequenceNumber, i);
         }
     }

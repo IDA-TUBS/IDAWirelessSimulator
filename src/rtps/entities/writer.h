@@ -7,6 +7,7 @@
 
 #include <omnetpp.h>
 #include "./../messages/RtpsInetPacket_m.h"
+#include "./../messages/Sample_m.h"
 
 #include "endpoint.h"
 #include "changeForReader.h"
@@ -52,6 +53,9 @@ class Writer : public cSimpleModule, Endpoint
     /// shaping parameter - value given in us
     simtime_t shaping;
 
+    /// heartbeat period
+    simtime_t hbPeriod;
+
     /// TODO destination address(es)
 
 
@@ -59,8 +63,8 @@ class Writer : public cSimpleModule, Endpoint
     // ==== protocol entities ====
     // ===========================
 
-    std::vector<ReaderProxy*> *matchedReaders;
-    std::queue<CacheChange*> historyCache;
+    std::vector<ReaderProxy*> matchedReaders;
+    std::vector<CacheChange*> historyCache;
     std::list<SampleFragment*> sendQueue;
 
 
@@ -70,11 +74,9 @@ class Writer : public cSimpleModule, Endpoint
     /// TODO description
     cMessage *sendEvent;
     /// TODO description
-    cMessage *hbEvent;
+    cMessage *hbTimer;
     /// TODO description
     cMessage *nextTimeoutEvent;
-    /// TODO description
-    cMessage *scheduleEvent;
 
 
   protected:

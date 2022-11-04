@@ -7,9 +7,9 @@
 
 void WriterProxy::addChange(CacheChange &change)
 {
-    ChangeForWriter* cfr = new ChangeForWriter(this->readerID, change);
+    ChangeForWriter* cfr = new ChangeForWriter(change);
 
-    history.push(cfr);
+    history.push_back(cfr);
 }
 
 bool WriterProxy::updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber)
@@ -20,12 +20,12 @@ bool WriterProxy::updateFragmentStatus (fragmentStates status, unsigned int sequ
     {
         if (cfw->getSequenceNumber() == sequenceNumber)
         {
-            tmp = cfr;
+            tmp = cfw;
             break;
         }
     }
 
-    return cfw.setFragmentStatus(status, fragmentNumber);
+    return tmp->setFragmentStatus(status, fragmentNumber);
 }
 
 

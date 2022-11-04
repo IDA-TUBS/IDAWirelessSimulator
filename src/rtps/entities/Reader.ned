@@ -19,6 +19,7 @@ simple Reader
 {
     parameters:      
         int appID = default(-1);
+        int historySize = default(1);
         
         @display("i=block/rx");
     gates:        

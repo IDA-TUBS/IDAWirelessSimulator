@@ -16,7 +16,7 @@ using namespace omnetpp;
 
 class SampleFragment;
 
-class ChangeForWriter: CacheChange
+class ChangeForWriter: public CacheChange
 {
   private:
     /// flag for signaling that all fragments have been acknowledged
@@ -65,7 +65,31 @@ class ChangeForWriter: CacheChange
     };
 
     /*
+     * overloaded constructor
+     *
+     * @param CacheChange object
+     */
+    ChangeForWriter(CacheChange &change):
+        CacheChange(change.sequenceNumber, change.sampleSize, change.fragmentSize, change.arrivalTime),
+        complete(false),
+        lastSentFN(-1),
+        highestFNSend(-1)
+    {
+        sampleFragmentArray = new SampleFragment*[this->numberFragments];
+
+        // instantiate all fragments comprising the sample
+        for(unsigned int i = 0; i < this->numberFragments; i++){
+            sampleFragmentArray[i] = new SampleFragment(this,
+                                                        i,
+                                                        (fragmentSize < sampleSize - (i*fragmentSize)) ? fragmentSize : sampleSize - (i*fragmentSize),
+                                                        arrivalTime);
+        }
+    };
+
+    /*
      * copy constructor
+     * *
+     * @param ChangeForWriter object
      */
     ChangeForWriter(ChangeForWriter &change):
         CacheChange(change.sequenceNumber, change.sampleSize, change.fragmentSize, change.arrivalTime),
