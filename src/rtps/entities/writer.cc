@@ -57,6 +57,8 @@ void Writer::handleMessage(cMessage *msg)
 
 		addSampleToCache(sample);
 
+		// TODO if new sample is the only sample in the historyCache: priming send queue with all fragments of the new sample
+
 		sendMessage();
     }
     else if(dynamic_cast<RtpsInetPacket*>(msg)!=NULL)
@@ -90,7 +92,36 @@ void Writer::addSampleToCache(Sample* sample)
     }
 }
 
+void Writer::checkSampleLiveliness()
+{
+    // TODO implement
 
+    // check liveliness of samples in history cache, if deadline expired remove sample from cache and ReaderProxies
+
+    // also purge fragments from sendQueue if deadline expired
+}
+
+ReaderProxy* Writer::selectReader() {
+    // for retransmissions this does not matter anyway, as default RTPS just retransmits any
+    //negatively acknowledged fragment immediately, hence just select the first one
+    ReaderProxy* rp = matchedReaders[0];
+}
+
+SampleFragment* Writer::selectNextFragment(ReaderProxy* rp)
+{
+    SampleFragment *tmp = nullptr;
+    SampleFragment **fragments = rp->getCurrentChange()->getFragmentArray();
+    for (int i = 0; i < rp->getCurrentChange()->numberFragments; i++)
+    {
+        SampleFragment* sf = fragments[i];
+        if (sf->sent || sf->acked) {
+            continue;
+        }
+        // take the first unsent and unacknowledged fragment
+        tmp = sf;
+    }
+    return tmp;
+}
 
 
 bool Writer::sendMessage() // TODO implement completely
@@ -100,14 +131,48 @@ bool Writer::sendMessage() // TODO implement completely
         return false;
     }
 
-    // check liveliness of current sample, if deadline expired remove sample from cache and ReaderProxies
+    // check liveliness of sample in history cache
+    checkSampleLiveliness();
 
-    // then select a reader
+    // differentiate two scenarios:
+    // 1. send queue is empty, select a new fragment for tx
+    if(sendQueue.empty())
+    {
+        // add new fragment to queue
+        SampleFragment* sf = nullptr;
+        ReaderProxy *rp = nullptr;
+        // then select a reader
+        if(rp = selectReader())
+        {
+            // finally select a fragment from the previously chosen reader for transmission
 
-    // finally select a fragment from the previously chosen reader for transmission
-    // update fragment status (at all readers if multicast is used)
+            if(sf = selectNextFragment(rp))
+            {
+                // add sample fragment to send queue
+                // use actual 'data' sample fragment from history cache instead of sf from reader proxy
+                auto sfToSend = (sf->baseChange->getFragmentArray())[sf->fragmentStartingNum];
+                sendQueue.push_back(sfToSend);
+            }
+        }
+    }
 
-    // actual send fragment using RtpsInetPacket
+    if(!sendQueue.empty())
+    {
+        SampleFragment* sf = sendQueue.front();
+        sendQueue.pop_front();
+        // update fragment status (at all reader proxies if multicast is used)
+        for(auto rp: matchedReaders)
+        {
+            rp->updateFragmentStatus(SENT, sf->baseChange->sequenceNumber, sf->fragmentStartingNum);
+        }
+
+        // actually send fragment using RtpsInetPacket
+        createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize);
+    }
+
+
+    // check whether there are any unsent fragments or new sample left
+    // TODO
 
     // Schedule the next event with ideal shaping
     simtime_t timeToSend = simTime() + shaping;
@@ -147,6 +212,8 @@ bool Writer::sendHeartbeatMsg()
 
 
 
+
+
 void Writer::handleNackFrag(RtpsInetPacket* nackFrag) { // TODO implement completely
     /// First find the history cache corresponding to the reader, sending the NackFrag msg
     // TODO how to implement entity IDs simulation wide and allow for easy assignment here?
@@ -159,20 +226,6 @@ void Writer::handleNackFrag(RtpsInetPacket* nackFrag) { // TODO implement comple
     // TODO how to proceed from here?
 
     // TODO: default RTPS behavior: just retransmit all fragments marked as missing asap
-    // add missing fragments to sendQueue
+    // add missing fragments to sendQueue (if not already present)
 }
 
-
-
-
-
-
-
-
-SampleFragment* Writer::selectNextFragment(ReaderProxy *rp) { // TODO implement completely
-
-}
-
-RtpsInetPacket* Writer::createRtpsMsgFromFragment(SampleFragment* sample_fragment) { // TODO implement completely
-
-}

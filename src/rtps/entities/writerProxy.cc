@@ -18,7 +18,7 @@ bool WriterProxy::updateFragmentStatus (fragmentStates status, unsigned int sequ
     ChangeForWriter* tmp = nullptr;
     for (auto cfw: history)
     {
-        if (cfw->getSequenceNumber() == sequenceNumber)
+        if (cfw->sequenceNumber == sequenceNumber)
         {
             tmp = cfw;
             break;

@@ -13,9 +13,11 @@ class CacheChange;
 
 class SampleFragment
 {
-  private:
+  public:
     /// fragment number
     unsigned int fragmentStartingNum;
+    /// counting how often the given fragments has been transmitted
+    unsigned int sendCounter;
     /// actual fragment size (can be smaller than fragmentSize)
     unsigned int dataSize;
 
@@ -25,7 +27,6 @@ class SampleFragment
     /// timestamp the fragment has been sent (the latest timestamp if already sent multiple times) // TODO correct???!!!
     simtime_t sentTime;
 
-  public:
     /// flag fragment as sent - relevant for writer
     bool sent;
     /// flag fragment as acknowledged - relevant for writer

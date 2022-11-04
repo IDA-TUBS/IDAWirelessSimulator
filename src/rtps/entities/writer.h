@@ -127,24 +127,26 @@ class Writer : public cSimpleModule, Endpoint
      */
     void addSampleToCache(Sample* sample);
 
-//        /*
-//         * Method for evaluating whether a reader has received all fragments of a sample
-//         *
-//         * @param rp pointer to ReaderProxy corresponding to the reader whose status of the current sample shall be checked
-//         * @return true if complete, else false
-//         */
-//        bool checkSampleCompletenessAtReader(ReaderProxy* rp);
-
-
-
+    /*
+     * Method for evaluating whether a sample is still valid or whether its deadline elapsed.
+     * Handles removing of sample in case of elapsed deadline
+     */
+    void checkSampleLiveliness();
 
     /*
-     * Method building constructs a complete RTPS inet packet from any sample fragment
+     * Method for evaluating whether a reader has received all fragments of a sample
      *
-     * @param sampleFragment pointer to sample fragment that shall be packaged
-     * @return sample fragment packaged in as an RtpsInetPacket
+     * @param rp pointer to ReaderProxy corresponding to the reader whose status of the current sample shall be checked
+     * @return true if complete, else false
      */
-    RtpsInetPacket* createRtpsMsgFromFragment(SampleFragment* sampleFragment);
+    bool checkSampleCompletenessAtReader(ReaderProxy* rp);
+
+    /*
+     * Method for selecting a reader for the next transmission
+     *
+     * @return reader proxy
+     */
+    virtual ReaderProxy* selectReader();
 
     /*
      * Method for selecting which fragment (missing at a specific reader) to transmit next
@@ -172,7 +174,6 @@ class Writer : public cSimpleModule, Endpoint
      */
 
     virtual void finish() override;
-
 };
 
 #endif //RTPS_ENTITIES_WRITER_H__

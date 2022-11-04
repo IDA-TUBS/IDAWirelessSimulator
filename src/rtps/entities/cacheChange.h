@@ -105,15 +105,6 @@ class CacheChange
         return false;
     };
 
-    /*
-     * method returning the sample's sequence number
-     *
-     * @return sequence number
-     */
-    unsigned int getSequenceNumber()
-    {
-       return this->sequenceNumber;
-    }
 
     /*
      * return the fragment array

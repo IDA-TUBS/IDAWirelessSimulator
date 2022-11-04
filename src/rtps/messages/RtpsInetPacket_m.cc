@@ -205,7 +205,7 @@ void RtpsInetPacket::copy(const RtpsInetPacket& other)
     this->HeartBeatFragSet = other.HeartBeatFragSet;
     this->lastFragmentNum = other.lastFragmentNum;
     this->InfoDestinationSet = other.InfoDestinationSet;
-    this->destination_nodeId = other.destination_nodeId;
+    this->destinationNodeId = other.destinationNodeId;
     this->destinationParticipantId = other.destinationParticipantId;
     this->InfoTimestampSet = other.InfoTimestampSet;
     this->timestamp = other.timestamp;
@@ -250,7 +250,7 @@ void RtpsInetPacket::parsimPack(omnetpp::cCommBuffer *b) const
     doParsimPacking(b,this->HeartBeatFragSet);
     doParsimPacking(b,this->lastFragmentNum);
     doParsimPacking(b,this->InfoDestinationSet);
-    doParsimPacking(b,this->destination_nodeId);
+    doParsimPacking(b,this->destinationNodeId);
     doParsimPacking(b,this->destinationParticipantId);
     doParsimPacking(b,this->InfoTimestampSet);
     doParsimPacking(b,this->timestamp);
@@ -293,7 +293,7 @@ void RtpsInetPacket::parsimUnpack(omnetpp::cCommBuffer *b)
     doParsimUnpacking(b,this->HeartBeatFragSet);
     doParsimUnpacking(b,this->lastFragmentNum);
     doParsimUnpacking(b,this->InfoDestinationSet);
-    doParsimUnpacking(b,this->destination_nodeId);
+    doParsimUnpacking(b,this->destinationNodeId);
     doParsimUnpacking(b,this->destinationParticipantId);
     doParsimUnpacking(b,this->InfoTimestampSet);
     doParsimUnpacking(b,this->timestamp);
@@ -556,14 +556,14 @@ void RtpsInetPacket::setInfoDestinationSet(bool InfoDestinationSet)
     this->InfoDestinationSet = InfoDestinationSet;
 }
 
-int RtpsInetPacket::getDestination_nodeId() const
+int RtpsInetPacket::getDestinationNodeId() const
 {
-    return this->destination_nodeId;
+    return this->destinationNodeId;
 }
 
-void RtpsInetPacket::setDestination_nodeId(int destination_nodeId)
+void RtpsInetPacket::setDestinationNodeId(int destinationNodeId)
 {
-    this->destination_nodeId = destination_nodeId;
+    this->destinationNodeId = destinationNodeId;
 }
 
 int RtpsInetPacket::getDestinationParticipantId() const
@@ -732,7 +732,7 @@ class RtpsInetPacketDescriptor : public omnetpp::cClassDescriptor
         FIELD_HeartBeatFragSet,
         FIELD_lastFragmentNum,
         FIELD_InfoDestinationSet,
-        FIELD_destination_nodeId,
+        FIELD_destinationNodeId,
         FIELD_destinationParticipantId,
         FIELD_InfoTimestampSet,
         FIELD_timestamp,
@@ -848,7 +848,7 @@ unsigned int RtpsInetPacketDescriptor::getFieldTypeFlags(int field) const
         FD_ISEDITABLE,    // FIELD_HeartBeatFragSet
         FD_ISEDITABLE,    // FIELD_lastFragmentNum
         FD_ISEDITABLE,    // FIELD_InfoDestinationSet
-        FD_ISEDITABLE,    // FIELD_destination_nodeId
+        FD_ISEDITABLE,    // FIELD_destinationNodeId
         FD_ISEDITABLE,    // FIELD_destinationParticipantId
         FD_ISEDITABLE,    // FIELD_InfoTimestampSet
         FD_ISEDITABLE,    // FIELD_timestamp
@@ -899,7 +899,7 @@ const char *RtpsInetPacketDescriptor::getFieldName(int field) const
         "HeartBeatFragSet",
         "lastFragmentNum",
         "InfoDestinationSet",
-        "destination_nodeId",
+        "destinationNodeId",
         "destinationParticipantId",
         "InfoTimestampSet",
         "timestamp",
@@ -945,7 +945,7 @@ int RtpsInetPacketDescriptor::findField(const char *fieldName) const
     if (strcmp(fieldName, "HeartBeatFragSet") == 0) return baseIndex + 21;
     if (strcmp(fieldName, "lastFragmentNum") == 0) return baseIndex + 22;
     if (strcmp(fieldName, "InfoDestinationSet") == 0) return baseIndex + 23;
-    if (strcmp(fieldName, "destination_nodeId") == 0) return baseIndex + 24;
+    if (strcmp(fieldName, "destinationNodeId") == 0) return baseIndex + 24;
     if (strcmp(fieldName, "destinationParticipantId") == 0) return baseIndex + 25;
     if (strcmp(fieldName, "InfoTimestampSet") == 0) return baseIndex + 26;
     if (strcmp(fieldName, "timestamp") == 0) return baseIndex + 27;
@@ -995,7 +995,7 @@ const char *RtpsInetPacketDescriptor::getFieldTypeString(int field) const
         "bool",    // FIELD_HeartBeatFragSet
         "int",    // FIELD_lastFragmentNum
         "bool",    // FIELD_InfoDestinationSet
-        "int",    // FIELD_destination_nodeId
+        "int",    // FIELD_destinationNodeId
         "int",    // FIELD_destinationParticipantId
         "bool",    // FIELD_InfoTimestampSet
         "omnetpp::simtime_t",    // FIELD_timestamp
@@ -1119,7 +1119,7 @@ std::string RtpsInetPacketDescriptor::getFieldValueAsString(omnetpp::any_ptr obj
         case FIELD_HeartBeatFragSet: return bool2string(pp->getHeartBeatFragSet());
         case FIELD_lastFragmentNum: return long2string(pp->getLastFragmentNum());
         case FIELD_InfoDestinationSet: return bool2string(pp->getInfoDestinationSet());
-        case FIELD_destination_nodeId: return long2string(pp->getDestination_nodeId());
+        case FIELD_destinationNodeId: return long2string(pp->getDestinationNodeId());
         case FIELD_destinationParticipantId: return long2string(pp->getDestinationParticipantId());
         case FIELD_InfoTimestampSet: return bool2string(pp->getInfoTimestampSet());
         case FIELD_timestamp: return simtime2string(pp->getTimestamp());
@@ -1173,7 +1173,7 @@ void RtpsInetPacketDescriptor::setFieldValueAsString(omnetpp::any_ptr object, in
         case FIELD_HeartBeatFragSet: pp->setHeartBeatFragSet(string2bool(value)); break;
         case FIELD_lastFragmentNum: pp->setLastFragmentNum(string2long(value)); break;
         case FIELD_InfoDestinationSet: pp->setInfoDestinationSet(string2bool(value)); break;
-        case FIELD_destination_nodeId: pp->setDestination_nodeId(string2long(value)); break;
+        case FIELD_destinationNodeId: pp->setDestinationNodeId(string2long(value)); break;
         case FIELD_destinationParticipantId: pp->setDestinationParticipantId(string2long(value)); break;
         case FIELD_InfoTimestampSet: pp->setInfoTimestampSet(string2bool(value)); break;
         case FIELD_timestamp: pp->setTimestamp(string2simtime(value)); break;
@@ -1225,7 +1225,7 @@ omnetpp::cValue RtpsInetPacketDescriptor::getFieldValue(omnetpp::any_ptr object,
         case FIELD_HeartBeatFragSet: return pp->getHeartBeatFragSet();
         case FIELD_lastFragmentNum: return pp->getLastFragmentNum();
         case FIELD_InfoDestinationSet: return pp->getInfoDestinationSet();
-        case FIELD_destination_nodeId: return pp->getDestination_nodeId();
+        case FIELD_destinationNodeId: return pp->getDestinationNodeId();
         case FIELD_destinationParticipantId: return pp->getDestinationParticipantId();
         case FIELD_InfoTimestampSet: return pp->getInfoTimestampSet();
         case FIELD_timestamp: return pp->getTimestamp().dbl();
@@ -1279,7 +1279,7 @@ void RtpsInetPacketDescriptor::setFieldValue(omnetpp::any_ptr object, int field,
         case FIELD_HeartBeatFragSet: pp->setHeartBeatFragSet(value.boolValue()); break;
         case FIELD_lastFragmentNum: pp->setLastFragmentNum(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_InfoDestinationSet: pp->setInfoDestinationSet(value.boolValue()); break;
-        case FIELD_destination_nodeId: pp->setDestination_nodeId(omnetpp::checked_int_cast<int>(value.intValue())); break;
+        case FIELD_destinationNodeId: pp->setDestinationNodeId(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_destinationParticipantId: pp->setDestinationParticipantId(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_InfoTimestampSet: pp->setInfoTimestampSet(value.boolValue()); break;
         case FIELD_timestamp: pp->setTimestamp(value.doubleValue()); break;

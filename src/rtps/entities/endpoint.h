@@ -5,7 +5,8 @@
 #ifndef RTPS_ENTITIES_ENDPOINT_H_
 #define RTPS_ENTITIES_ENDPOINT_H_
 
-/* WirelessRTPSRetransmissions includes */
+#include "sampleFragment.h"
+#include "cacheChange.h"
 #include "./../messages/RtpsInetPacket_m.h"
 
 #include <omnetpp.h>
@@ -49,6 +50,25 @@ public:
      */
     void setGuid(RtpsInetPacket* rtpsMsg);
 
+
+    /*
+     * Method building constructs a complete RTPS inet packet from any sample fragment
+     *
+     * @param sampleFragment pointer to sample fragment that shall be packaged
+     * @return sample fragment packaged in as an RtpsInetPacket
+     */
+    RtpsInetPacket* createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize);
+
+    /*
+     * Method for adding HBFrag to RTPS message
+     *
+     * @param msg RTPS inet packet to which to add the heartbeat frag
+     * @return RtpsInetPacket with HBFrag
+     */
+    RtpsInetPacket* addHbFragToRtpsMsg(RtpsInetPacket *msg);
+
+
+
     /*
      * This method calculates the message size of an rtps message in order to model realistic message sizes.
      * Therefore it checks if certain messages are set.
@@ -56,6 +76,8 @@ public:
      * @param rtpsMsg message whose size shall be determined
      */
     void calculateRtpsMsgSize(RtpsInetPacket* rtpsMsg);
+
+
 
 protected:
 

@@ -76,7 +76,7 @@ packet RtpsInetPacket extends Packet {
     
     // InfoDestination
     bool InfoDestinationSet;
-    int destination_nodeId;
+    int destinationNodeId;
     int destinationParticipantId;
     
     // InfoTimestamp

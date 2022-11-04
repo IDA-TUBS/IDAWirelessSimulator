@@ -86,7 +86,7 @@ namespace inet {
  * 
  *     // InfoDestination
  *     bool InfoDestinationSet;
- *     int destination_nodeId;
+ *     int destinationNodeId;
  *     int destinationParticipantId;
  * 
  *     // InfoTimestamp
@@ -145,7 +145,7 @@ class RtpsInetPacket : public ::inet::Packet
     bool HeartBeatFragSet = false;
     int lastFragmentNum = 0;
     bool InfoDestinationSet = false;
-    int destination_nodeId = 0;
+    int destinationNodeId = 0;
     int destinationParticipantId = 0;
     bool InfoTimestampSet = false;
     ::omnetpp::simtime_t timestamp = SIMTIME_ZERO;
@@ -248,8 +248,8 @@ class RtpsInetPacket : public ::inet::Packet
     virtual bool getInfoDestinationSet() const;
     virtual void setInfoDestinationSet(bool InfoDestinationSet);
 
-    virtual int getDestination_nodeId() const;
-    virtual void setDestination_nodeId(int destination_nodeId);
+    virtual int getDestinationNodeId() const;
+    virtual void setDestinationNodeId(int destinationNodeId);
 
     virtual int getDestinationParticipantId() const;
     virtual void setDestinationParticipantId(int destinationParticipantId);

@@ -16,7 +16,7 @@ void ReaderProxy::removeChange(unsigned int sequenceNumber)
 {
     for (auto cfr: history)
     {
-        if (cfr->getSequenceNumber() <= sequenceNumber)
+        if (cfr->sequenceNumber <= sequenceNumber)
         {
             history.pop_front();
         }
@@ -30,7 +30,7 @@ bool ReaderProxy::updateFragmentStatus (fragmentStates status, unsigned int sequ
     ChangeForReader* tmp = nullptr;
     for (auto cfr: history)
     {
-        if (cfr->getSequenceNumber() == sequenceNumber)
+        if (cfr->sequenceNumber == sequenceNumber)
         {
             tmp = cfr;
             break;
@@ -49,7 +49,7 @@ bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)
     ChangeForReader* change = nullptr;
     for (auto cfr: history)
     {
-        if (cfr->getSequenceNumber() == sequenceNumber)
+        if (cfr->sequenceNumber == sequenceNumber)
         {
             change = cfr;
             break;
