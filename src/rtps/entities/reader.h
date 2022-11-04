@@ -25,9 +25,12 @@ class Reader : public cSimpleModule, Endpoint
     Reader() {}
 
     /*
-     * empty default destructor
+     * default destructor
      */
-    virtual ~Reader();
+    ~Reader()
+    {
+        delete[] writerProxy;
+    };
 
   private:
     // self-message

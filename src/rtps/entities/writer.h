@@ -26,9 +26,28 @@ class Writer : public cSimpleModule, Endpoint
     Writer() {};
 
     /*
-     * empty default destructor
+     * default destructor
      */
-    virtual ~Writer();
+    ~Writer()
+    {
+        for(auto &rp: matchedReaders)
+        {
+            delete[] rp;
+        }
+        matchedReaders.clear();
+
+        for(auto &cc: historyCache)
+        {
+            delete[] cc;
+        }
+        historyCache.clear();
+
+        for(auto &sf: sendQueue)
+        {
+            delete[] sf;
+        }
+        sendQueue.clear();
+    };
 
   private:
     // ==============================
@@ -71,11 +90,11 @@ class Writer : public cSimpleModule, Endpoint
     // =======================
     // ==== self messages ====
     // =======================
-    /// TODO description
+    /// self message used for repetitive scheduling of fragment transmission
     cMessage *sendEvent;
-    /// TODO description
+    /// self message used for periodic scheduling of heartbeat messages
     cMessage *hbTimer;
-    /// TODO description
+    /// self message used for triggering timeouts
     cMessage *nextTimeoutEvent;
 
 

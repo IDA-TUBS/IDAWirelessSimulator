@@ -44,9 +44,16 @@ class WriterProxy
     };
 
     /*
-     * empty default destructor
+     * default destructor
      */
-    ~WriterProxy();
+    ~WriterProxy()
+    {
+        for(auto &cfw: history)
+        {
+            delete[] cfw;
+        }
+        history.clear();
+    };
 
     void addChange(CacheChange &change);
 

@@ -11,9 +11,6 @@ using namespace omnetpp;
 
 Define_Module(Writer);
 
-Writer::~Writer()
-{
-}
 
 void Writer::initialize()
 {

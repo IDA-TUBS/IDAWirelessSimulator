@@ -111,7 +111,7 @@ class ChangeForWriter: public CacheChange
      */
     ~ChangeForWriter()
     {
-        delete sampleFragmentArray; // TODO necessary to delete all SampleFragments first?
+        delete[] sampleFragmentArray;
     };
 
     /*

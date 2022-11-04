@@ -7,9 +7,6 @@
 using namespace omnetpp;
 Define_Module(Reader);
 
-Reader::~Reader()
-{
-}
 
 void Reader::initialize()
 {

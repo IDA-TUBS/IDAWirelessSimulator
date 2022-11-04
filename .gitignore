@@ -4,6 +4,8 @@ out
 .settings
 *.cmdenv-log
 *.qtenvrc
+idaWirelessSimulator
+idaWirelessSimulator_dbg
 src/idaWirelessSimulator
 src/idaWirelessSimulator_dbg
 ./*/results

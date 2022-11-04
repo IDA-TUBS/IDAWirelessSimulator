@@ -1,8 +1,5 @@
 /*
- * endpoint.h
  *
- *  Created on: Jan 28, 2020
- *      Author: Jonas Peeck
  */
 
 #ifndef RTPS_ENTITIES_ENDPOINT_H_
@@ -23,12 +20,19 @@ using namespace inet;
 class Endpoint{
 
 public:
-
+    /// entity ID of instance
     unsigned int entityId;
+    /// entity kind of instance
     unsigned int entityKind;
 
-    Endpoint(){}
-    ~Endpoint(){}
+    /*
+     * empty default constructor
+     */
+    Endpoint(){};
+    /*
+     * empty default destructor
+     */
+    ~Endpoint(){};
 
     /*
      * This method returns the analysis module in order to send all received and send messages to it for performance analysis.

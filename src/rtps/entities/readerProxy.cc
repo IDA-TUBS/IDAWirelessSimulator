@@ -42,8 +42,7 @@ bool ReaderProxy::updateFragmentStatus (fragmentStates status, unsigned int sequ
 
 bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)
 {
-    // first parse data
-    fragmentStates status;
+    // first get relevant sequence number
     unsigned int sequenceNumber = nackFrag->getWriterSN();
 
     // access change with the given sequence number
@@ -69,7 +68,7 @@ bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)
 
        SampleFragment* currentFragment = change->getFragmentArray()[fragmentNumber];
 
-        if(currentFragment->acked){ // TODO
+        if(currentFragment->acked){
             continue;
         }
 
@@ -79,7 +78,7 @@ bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)
             continue;
         }
 
-        if(currentFragment->sent){ // TODO
+        if(currentFragment->sent){
             this->updateFragmentStatus(NACKED, sequenceNumber, i);
         }
     }

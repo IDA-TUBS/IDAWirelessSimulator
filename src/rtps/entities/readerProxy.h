@@ -26,12 +26,12 @@ class ReaderProxy
     unsigned int readerID;
 
     /// the reader's priority
-    // unsigned int priority;
+    unsigned int priority;
 
     /// history story all samples
     std::list<ChangeForReader*> history;
     /// max size of history
-    unsigned int historySize;
+    unsigned int historySize; // TODO: actually use historySize (handle exceeding of max size how?)
 
   public:
     /*
@@ -53,9 +53,16 @@ class ReaderProxy
     };
 
     /*
-     * empty default destructor
+     * default destructor
      */
-    ~ReaderProxy();
+    ~ReaderProxy()
+    {
+        for(auto &cfr: history)
+        {
+            delete[] cfr;
+        }
+        history.clear();
+    };
 
     /*
      * method for adding a new Cache Change to the proxy's history cache
@@ -63,6 +70,16 @@ class ReaderProxy
      * @param change reference to cache change that will be replicated in the reader proxy
      */
     void addChange(CacheChange &change);
+
+    /*
+     * set priority of corresponding reader
+     *
+     * @param prio the priority assigned to the corresponding reader
+     */
+    void setPriority(unsigned int prio)
+    {
+        this->priority = prio;
+    }
 
     /*
      * method for removing a Cache Change from the proxie's history cache

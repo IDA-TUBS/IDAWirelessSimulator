@@ -122,7 +122,7 @@ class ChangeForReader: public CacheChange
      */
     ~ChangeForReader()
     {
-        delete sampleFragmentArray; // TODO necessary to delete all SampleFragments first?
+        delete[] sampleFragmentArray;
     };
 
     /*

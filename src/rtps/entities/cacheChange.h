@@ -99,7 +99,11 @@ class CacheChange
      * @param fragmentNumber fn of fragment to be updated
      * @return true if successful, else false
      */
-    virtual bool setFragmentStatus (fragmentStates status, unsigned int fragmentNumber);
+    bool setFragmentStatus (fragmentStates status, unsigned int fragmentNumber)
+    {
+        // actual implementations found in ChangeForReader/Writer
+        return false;
+    };
 
     /*
      * method returning the sample's sequence number
