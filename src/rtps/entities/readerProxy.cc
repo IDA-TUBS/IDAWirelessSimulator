@@ -7,6 +7,8 @@
 
 void ReaderProxy::addChange(CacheChange &change)
 {
+    // TODO what to do if max size exceeded?
+
     ChangeForReader* cfr = new ChangeForReader(this->readerID, change);
 
     history.push_back(cfr);
@@ -14,11 +16,16 @@ void ReaderProxy::addChange(CacheChange &change)
 
 void ReaderProxy::removeChange(unsigned int sequenceNumber)
 {
-    for (auto cfr: history)
+    for (auto it = history.begin(); it != history.end();)
     {
-        if (cfr->sequenceNumber <= sequenceNumber)
+        if ((*it)->sequenceNumber <= sequenceNumber)
         {
-            history.pop_front();
+            history.erase(it);
+            return;
+        }
+        else
+        {
+            ++it;
         }
     }
 }

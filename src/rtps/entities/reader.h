@@ -50,7 +50,7 @@ class Reader : public cSimpleModule, Endpoint
 
   protected:
     /*
-     * Method that is triggered according to some schedule. At the end, sends a packaged sample fragment down towards the UDP/IP stack
+     * Method that is triggered from transmitting NackFrags. At the end, sends a packaged sample fragment down towards the UDP/IP stack
      *
      * @return true on success, else false
      */

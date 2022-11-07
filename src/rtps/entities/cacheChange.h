@@ -116,6 +116,18 @@ class CacheChange
         return this->sampleFragmentArray;
     }
 
+
+    /*
+     * determine whether age has been exceeded
+     *
+     * @param deadline sample deadline
+     * @return true if sample still valid, else returns false
+     */
+    bool isValid(simtime_t deadline)
+    {
+        return ((simTime() - this->arrivalTime) <= deadline);
+    }
+
 };
 
 

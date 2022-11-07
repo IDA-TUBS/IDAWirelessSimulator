@@ -5,12 +5,9 @@
 #include "writer.h"
 #include "./../Rtps.h"
 
-
 using namespace omnetpp;
 
-
 Define_Module(Writer);
-
 
 void Writer::initialize()
 {
@@ -51,6 +48,7 @@ void Writer::finish()
 
 void Writer::handleMessage(cMessage *msg)
 {
+    // Check message type
     if (dynamic_cast<Sample*>(msg)!=NULL){
 		// Received new sample from application
 		Sample *sample = check_and_cast<Sample*>(msg);
@@ -82,6 +80,8 @@ void Writer::handleMessage(cMessage *msg)
 
 void Writer::addSampleToCache(Sample* sample)
 {
+    // TODO what to do if max size exceeded?
+
     // create cacheChange once
     auto change = new CacheChange(sample->getSequenceNumber(), sample->getSize(), this->fragmentSize, simTime());
 
@@ -92,20 +92,47 @@ void Writer::addSampleToCache(Sample* sample)
     }
 }
 
+
 void Writer::checkSampleLiveliness()
 {
-    // TODO implement
+    if(historyCache.size() == 0){
+        return;
+    }
 
+    std::vector<unsigned int> deprecatedSNs;
     // check liveliness of samples in history cache, if deadline expired remove sample from cache and ReaderProxies
+    while(1){
+        auto* change = historyCache.front();
 
-    // also purge fragments from sendQueue if deadline expired
+        if(!change->isValid(this->deadline))
+        {
+            deprecatedSNs.push_back(change->sequenceNumber);
+            historyCache.pop_front();
+            delete change; // only viable as all objects storing references to that change will be removed in the following
+        }
+    }
+
+    for (unsigned int sequenceNumber: deprecatedSNs)
+    {
+        for (auto rp: matchedReaders)
+        {
+            rp->removeChange(sequenceNumber);
+        }
+    }
+
+    // TODO necessary??? also purge fragments from sendQueue if deadline expired?
+
 }
+
 
 ReaderProxy* Writer::selectReader() {
     // for retransmissions this does not matter anyway, as default RTPS just retransmits any
     //negatively acknowledged fragment immediately, hence just select the first one
     ReaderProxy* rp = matchedReaders[0];
+
+    return rp;
 }
+
 
 SampleFragment* Writer::selectNextFragment(ReaderProxy* rp)
 {
@@ -171,13 +198,15 @@ bool Writer::sendMessage() // TODO implement completely
     }
 
 
-    // check whether there are any unsent fragments or new sample left
+    // check whether there are any unsent fragments or new samples left
+    // only schedule new event if there is something to be send left
     // TODO
 
     // Schedule the next event with ideal shaping
     simtime_t timeToSend = simTime() + shaping;
     scheduleAt(timeToSend, sendEvent);
 }
+
 
 bool Writer::sendHeartbeatMsg()
 {
@@ -208,10 +237,8 @@ bool Writer::sendHeartbeatMsg()
     }
     // schedule next heartbeat
     scheduleAt(simTime() + hbPeriod, hbTimer);
+    return true;
 }
-
-
-
 
 
 void Writer::handleNackFrag(RtpsInetPacket* nackFrag) { // TODO implement completely

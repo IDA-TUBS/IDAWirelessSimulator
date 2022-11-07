@@ -83,7 +83,7 @@ class Writer : public cSimpleModule, Endpoint
     // ===========================
 
     std::vector<ReaderProxy*> matchedReaders;
-    std::vector<CacheChange*> historyCache;
+    std::list<CacheChange*> historyCache;
     std::list<SampleFragment*> sendQueue;
 
 
