@@ -68,7 +68,7 @@ class Reader : public cSimpleModule, Endpoint
      *
      * @param TODO
      */
-    RtpsInetPacket* generateNackFrag(WriterProxy* wp);
+    RtpsInetPacket* generateNackFrag(RtpsInetPacket* hb);
 
     /*
      * TODO

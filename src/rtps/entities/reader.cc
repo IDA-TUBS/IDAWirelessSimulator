@@ -76,7 +76,7 @@ void Reader::addNewSampleToProxy(RtpsInetPacket* rtpsInetPacket)
 
 }
 
-RtpsInetPacket* Reader::generateNackFrag(WriterProxy* wp)
+RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
 {
     //Create message instance
     RtpsInetPacket* nackFrag = new RtpsInetPacket();
@@ -87,6 +87,95 @@ RtpsInetPacket* Reader::generateNackFrag(WriterProxy* wp)
     // Create NackFrag submessage
     nackFrag->setNackFragSet(true);
     nackFrag->setReaderId(entityId);
+
+    int sequenceNumber = hb->getWriterSN();
+
+    int startFragNum = hb->getFragmentStartingNum();
+    int endFragNum = hb->getLastFragmentNum();
+
+    // Define the start and end points of the data field - Ack from the lowest
+    // non received fragment number ! Lower frag_Sns have been received!
+    // Start number. Minimum Bitmap size is 8 (if possible)
+
+
+    // relevant history cache entry in WriterProxy
+    ChangeForWriter* cfw = writerProxy->getChange(sequenceNumber);
+    // sample fragment array
+    auto frags = cfw->getFragmentArray();
+
+    // The start sequence number is the lowest fragment sequence number, which has not been received yet.
+    int lowestUnackedMsg = 0;
+    for(int i = 0; i < cfw->numberFragments; i++)
+    {
+        lowestUnackedMsg = i;
+
+        if(!frags[i]->received)
+        {
+            break;
+        }
+    }
+
+    // check if to decrease the start_frag_sn
+    if(startFragNum > lowestUnackedMsg)
+    {
+        startFragNum = lowestUnackedMsg;
+    }
+
+    // Get the highest unacknowledged fragment number within the currently send
+    int highestUnackedMsg = 0;
+    for(int i = 0; i < cfw->numberFragments; i++)
+    {
+        if(!frags[i]->received){
+            highestUnackedMsg = i;
+        }
+        if(i == endFragNum){
+            break;
+        }
+    }
+
+    if(highestUnackedMsg > endFragNum){
+        endFragNum = highestUnackedMsg;
+    }
+
+    // Last fill the bitmap up to the net 32 bit
+    int nbrPadBits = 32-((endFragNum - startFragNum + 1)%32);
+
+    // use space below
+    if(startFragNum >= nbrPadBits){
+        startFragNum = startFragNum - nbrPadBits;
+        nbrPadBits = 0;
+    } else {
+        nbrPadBits = nbrPadBits - startFragNum;
+        startFragNum = 0;
+    }
+
+    // use space up
+    if(hb->getLastFragmentNum()- endFragNum >= nbrPadBits){
+        startFragNum = startFragNum + nbrPadBits;
+        nbrPadBits = 0;
+    } else {
+        nbrPadBits = nbrPadBits - (hb->getLastFragmentNum()- startFragNum);
+        startFragNum = hb->getLastFragmentNum();
+    }
+
+    nackFrag->setFragmentNumberStateNbrBits(endFragNum - startFragNum + 1);
+    nackFrag->setFragmentNumberStateBase(startFragNum);
+
+    // Pass the values to the bitmap
+    for(int i = 0; i < nackFrag->getFragmentNumberStateNbrBits(); i++){
+        auto fragStatus = frags[i+startFragNum]->received;
+        nackFrag->setFragmentNumberBitmap(i, fragStatus);
+    }
+
+    nackFrag->setWriterSN(sequenceNumber);
+
+    //Finally, calculate the overall rtps message size
+    nackFrag->setInfoDestinationSet(false);
+    calculateRtpsMsgSize(nackFrag);
+
+    // TODO set destination address!
+
+    return nackFrag;
 }
 
 void Reader::checkCompletionOfLatestSample()

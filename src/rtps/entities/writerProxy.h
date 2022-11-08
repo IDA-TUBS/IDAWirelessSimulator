@@ -75,6 +75,33 @@ class WriterProxy
      */
     bool checkSampleCompleteness(unsigned int sequenceNumber);
 
+    /*
+     * method returning the current (oldest) cache change
+     */
+    ChangeForWriter* getCurrentChange()
+    {
+        return history.front();
+    }
+
+    /*
+     * method cache change with corresponding sequence number
+     */
+    ChangeForWriter* getChange(unsigned int sequenceNumber)
+    {
+        // first find change corresponding to the given sequence number
+        ChangeForWriter* tmp = nullptr;
+        for (auto cfw: history)
+        {
+            if (cfw->sequenceNumber == sequenceNumber)
+            {
+                tmp = cfw;
+                break;
+            }
+        }
+
+        return tmp;
+    }
+
 };
 
 #endif // RTPS_WRITERPROXY_H_
