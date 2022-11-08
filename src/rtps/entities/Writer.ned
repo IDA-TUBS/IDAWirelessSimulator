@@ -15,7 +15,9 @@
 
 package src.rtps.entities;
 
-simple Writer
+import src.rtps.contract.iWriter;
+
+simple Writer like iWriter
 {
     parameters:
         // Other configuration parameters
@@ -37,7 +39,7 @@ simple Writer
         @display("i=block/tx");
         
     gates:
-        input app_in;
-        input dispatcher_in;
-        output dispatcher_out;
+        input appIn;
+        input dispatcherIn;
+        output dispatcherOut;
 }

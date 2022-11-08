@@ -17,9 +17,9 @@ void Writer::initialize()
     hbTimer = new cMessage("hbTimer");
 
     /// Initialize RTPS context
-    Rtps* rtpsParent = dynamic_cast<Rtps*>(getParentModule());
-    entityId = rtpsParent->getNextEntityId();
     appID = par("appID");
+    Rtps* rtpsParent = dynamic_cast<Rtps*>(getParentModule());
+    entityId = rtpsParent->getNextEntityId(appID, true);
 
     // writer parametrization
     deadline = par("deadline");
@@ -193,10 +193,10 @@ bool Writer::sendMessage() // TODO implement completely
             rp->updateFragmentStatus(SENT, sf->baseChange->sequenceNumber, sf->fragmentStartingNum);
         }
 
-        // actually send fragment using RtpsInetPacket
-        createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize);
+        // construct RtpsInetPacket from fragment and send out to dispatcher
+        auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize);
+        send(msg , gate("dispatcherOut"));
     }
-
 
     // check whether there are any unsent fragments or new samples left
     // only schedule new event if there is something to be send left

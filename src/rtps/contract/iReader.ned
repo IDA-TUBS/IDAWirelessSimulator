@@ -13,20 +13,16 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package src.rtps.entities;
+package src.rtps.contract;
 
-import src.rtps.contract.iReader;
 
-simple Reader like iReader
+moduleinterface iReader
 {
-    parameters:      
-        int appID = default(-1);
-        int historySize = default(1);
-        
-        @display("i=block/rx");
+    // Display Parameters
+    @display("i=block/rx");
+    
     gates:        
         output appOut;
         input dispatcherIn;
         output dispatcherOut;
-
 }

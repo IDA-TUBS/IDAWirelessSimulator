@@ -35,6 +35,9 @@ RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragme
     rtpsMsg->setPayloadSize(rtpsMsg->getPayloadSize() + 20);
     // InfoDestination
     rtpsMsg->setInfoDestinationSet(false);
+    // TODO set destination address (needed in InetAdapter)
+    //rtpsMsg->setDestinationAddress(address);
+    // TODO set appId!
     // InfoTimestamp
     if(sampleFragment->fragmentStartingNum == 0){
         rtpsMsg->setInfoTimestampSet(true);

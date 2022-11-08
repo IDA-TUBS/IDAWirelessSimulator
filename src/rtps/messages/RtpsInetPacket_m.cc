@@ -184,6 +184,8 @@ void RtpsInetPacket::copy(const RtpsInetPacket& other)
     this->rtpsMessageSize = other.rtpsMessageSize;
     this->sourceNodeId = other.sourceNodeId;
     this->sourceParticipantId = other.sourceParticipantId;
+    this->destinationAddress = other.destinationAddress;
+    this->appId = other.appId;
     this->AckNackSet = other.AckNackSet;
     this->readerId = other.readerId;
     this->writerId = other.writerId;
@@ -231,6 +233,8 @@ void RtpsInetPacket::parsimPack(omnetpp::cCommBuffer *b) const
     doParsimPacking(b,this->rtpsMessageSize);
     doParsimPacking(b,this->sourceNodeId);
     doParsimPacking(b,this->sourceParticipantId);
+    doParsimPacking(b,this->destinationAddress);
+    doParsimPacking(b,this->appId);
     doParsimPacking(b,this->AckNackSet);
     doParsimPacking(b,this->readerId);
     doParsimPacking(b,this->writerId);
@@ -274,6 +278,8 @@ void RtpsInetPacket::parsimUnpack(omnetpp::cCommBuffer *b)
     doParsimUnpacking(b,this->rtpsMessageSize);
     doParsimUnpacking(b,this->sourceNodeId);
     doParsimUnpacking(b,this->sourceParticipantId);
+    doParsimUnpacking(b,this->destinationAddress);
+    doParsimUnpacking(b,this->appId);
     doParsimUnpacking(b,this->AckNackSet);
     doParsimUnpacking(b,this->readerId);
     doParsimUnpacking(b,this->writerId);
@@ -357,6 +363,26 @@ int RtpsInetPacket::getSourceParticipantId() const
 void RtpsInetPacket::setSourceParticipantId(int sourceParticipantId)
 {
     this->sourceParticipantId = sourceParticipantId;
+}
+
+const char * RtpsInetPacket::getDestinationAddress() const
+{
+    return this->destinationAddress.c_str();
+}
+
+void RtpsInetPacket::setDestinationAddress(const char * destinationAddress)
+{
+    this->destinationAddress = destinationAddress;
+}
+
+int RtpsInetPacket::getAppId() const
+{
+    return this->appId;
+}
+
+void RtpsInetPacket::setAppId(int appId)
+{
+    this->appId = appId;
 }
 
 bool RtpsInetPacket::getAckNackSet() const
@@ -713,6 +739,8 @@ class RtpsInetPacketDescriptor : public omnetpp::cClassDescriptor
         FIELD_rtpsMessageSize,
         FIELD_sourceNodeId,
         FIELD_sourceParticipantId,
+        FIELD_destinationAddress,
+        FIELD_appId,
         FIELD_AckNackSet,
         FIELD_readerId,
         FIELD_writerId,
@@ -812,7 +840,7 @@ const char *RtpsInetPacketDescriptor::getProperty(const char *propertyName) cons
 int RtpsInetPacketDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *base = getBaseClassDescriptor();
-    return base ? 38+base->getFieldCount() : 38;
+    return base ? 40+base->getFieldCount() : 40;
 }
 
 unsigned int RtpsInetPacketDescriptor::getFieldTypeFlags(int field) const
@@ -829,6 +857,8 @@ unsigned int RtpsInetPacketDescriptor::getFieldTypeFlags(int field) const
         FD_ISEDITABLE,    // FIELD_rtpsMessageSize
         FD_ISEDITABLE,    // FIELD_sourceNodeId
         FD_ISEDITABLE,    // FIELD_sourceParticipantId
+        FD_ISEDITABLE,    // FIELD_destinationAddress
+        FD_ISEDITABLE,    // FIELD_appId
         FD_ISEDITABLE,    // FIELD_AckNackSet
         FD_ISEDITABLE,    // FIELD_readerId
         FD_ISEDITABLE,    // FIELD_writerId
@@ -863,7 +893,7 @@ unsigned int RtpsInetPacketDescriptor::getFieldTypeFlags(int field) const
         FD_ISEDITABLE,    // FIELD_fragCount
         FD_ISEDITABLE,    // FIELD_sentFragments
     };
-    return (field >= 0 && field < 38) ? fieldTypeFlags[field] : 0;
+    return (field >= 0 && field < 40) ? fieldTypeFlags[field] : 0;
 }
 
 const char *RtpsInetPacketDescriptor::getFieldName(int field) const
@@ -880,6 +910,8 @@ const char *RtpsInetPacketDescriptor::getFieldName(int field) const
         "rtpsMessageSize",
         "sourceNodeId",
         "sourceParticipantId",
+        "destinationAddress",
+        "appId",
         "AckNackSet",
         "readerId",
         "writerId",
@@ -914,7 +946,7 @@ const char *RtpsInetPacketDescriptor::getFieldName(int field) const
         "fragCount",
         "sentFragments",
     };
-    return (field >= 0 && field < 38) ? fieldNames[field] : nullptr;
+    return (field >= 0 && field < 40) ? fieldNames[field] : nullptr;
 }
 
 int RtpsInetPacketDescriptor::findField(const char *fieldName) const
@@ -926,39 +958,41 @@ int RtpsInetPacketDescriptor::findField(const char *fieldName) const
     if (strcmp(fieldName, "rtpsMessageSize") == 0) return baseIndex + 2;
     if (strcmp(fieldName, "sourceNodeId") == 0) return baseIndex + 3;
     if (strcmp(fieldName, "sourceParticipantId") == 0) return baseIndex + 4;
-    if (strcmp(fieldName, "AckNackSet") == 0) return baseIndex + 5;
-    if (strcmp(fieldName, "readerId") == 0) return baseIndex + 6;
-    if (strcmp(fieldName, "writerId") == 0) return baseIndex + 7;
-    if (strcmp(fieldName, "readerSNStateBase") == 0) return baseIndex + 8;
-    if (strcmp(fieldName, "readerSNStateNbrBits") == 0) return baseIndex + 9;
-    if (strcmp(fieldName, "readerSNStateBitmap") == 0) return baseIndex + 10;
-    if (strcmp(fieldName, "DataSet") == 0) return baseIndex + 11;
-    if (strcmp(fieldName, "writerSN") == 0) return baseIndex + 12;
-    if (strcmp(fieldName, "sampleSize") == 0) return baseIndex + 13;
-    if (strcmp(fieldName, "DataFragSet") == 0) return baseIndex + 14;
-    if (strcmp(fieldName, "fragmentStartingNum") == 0) return baseIndex + 15;
-    if (strcmp(fieldName, "fragmentsInSubmessage") == 0) return baseIndex + 16;
-    if (strcmp(fieldName, "fragmentSize") == 0) return baseIndex + 17;
-    if (strcmp(fieldName, "HeartBeatSet") == 0) return baseIndex + 18;
-    if (strcmp(fieldName, "firstSN") == 0) return baseIndex + 19;
-    if (strcmp(fieldName, "lastSN") == 0) return baseIndex + 20;
-    if (strcmp(fieldName, "HeartBeatFragSet") == 0) return baseIndex + 21;
-    if (strcmp(fieldName, "lastFragmentNum") == 0) return baseIndex + 22;
-    if (strcmp(fieldName, "InfoDestinationSet") == 0) return baseIndex + 23;
-    if (strcmp(fieldName, "destinationNodeId") == 0) return baseIndex + 24;
-    if (strcmp(fieldName, "destinationParticipantId") == 0) return baseIndex + 25;
-    if (strcmp(fieldName, "InfoTimestampSet") == 0) return baseIndex + 26;
-    if (strcmp(fieldName, "timestamp") == 0) return baseIndex + 27;
-    if (strcmp(fieldName, "NackFragSet") == 0) return baseIndex + 28;
-    if (strcmp(fieldName, "fragmentNumberStateBase") == 0) return baseIndex + 29;
-    if (strcmp(fieldName, "fragmentNumberStateNbrBits") == 0) return baseIndex + 30;
-    if (strcmp(fieldName, "fragmentNumberBitmap") == 0) return baseIndex + 31;
-    if (strcmp(fieldName, "GeneralFragmentSize") == 0) return baseIndex + 32;
-    if (strcmp(fieldName, "publisherSendTime") == 0) return baseIndex + 33;
-    if (strcmp(fieldName, "writerSendTime") == 0) return baseIndex + 34;
-    if (strcmp(fieldName, "readerReceiveTime") == 0) return baseIndex + 35;
-    if (strcmp(fieldName, "fragCount") == 0) return baseIndex + 36;
-    if (strcmp(fieldName, "sentFragments") == 0) return baseIndex + 37;
+    if (strcmp(fieldName, "destinationAddress") == 0) return baseIndex + 5;
+    if (strcmp(fieldName, "appId") == 0) return baseIndex + 6;
+    if (strcmp(fieldName, "AckNackSet") == 0) return baseIndex + 7;
+    if (strcmp(fieldName, "readerId") == 0) return baseIndex + 8;
+    if (strcmp(fieldName, "writerId") == 0) return baseIndex + 9;
+    if (strcmp(fieldName, "readerSNStateBase") == 0) return baseIndex + 10;
+    if (strcmp(fieldName, "readerSNStateNbrBits") == 0) return baseIndex + 11;
+    if (strcmp(fieldName, "readerSNStateBitmap") == 0) return baseIndex + 12;
+    if (strcmp(fieldName, "DataSet") == 0) return baseIndex + 13;
+    if (strcmp(fieldName, "writerSN") == 0) return baseIndex + 14;
+    if (strcmp(fieldName, "sampleSize") == 0) return baseIndex + 15;
+    if (strcmp(fieldName, "DataFragSet") == 0) return baseIndex + 16;
+    if (strcmp(fieldName, "fragmentStartingNum") == 0) return baseIndex + 17;
+    if (strcmp(fieldName, "fragmentsInSubmessage") == 0) return baseIndex + 18;
+    if (strcmp(fieldName, "fragmentSize") == 0) return baseIndex + 19;
+    if (strcmp(fieldName, "HeartBeatSet") == 0) return baseIndex + 20;
+    if (strcmp(fieldName, "firstSN") == 0) return baseIndex + 21;
+    if (strcmp(fieldName, "lastSN") == 0) return baseIndex + 22;
+    if (strcmp(fieldName, "HeartBeatFragSet") == 0) return baseIndex + 23;
+    if (strcmp(fieldName, "lastFragmentNum") == 0) return baseIndex + 24;
+    if (strcmp(fieldName, "InfoDestinationSet") == 0) return baseIndex + 25;
+    if (strcmp(fieldName, "destinationNodeId") == 0) return baseIndex + 26;
+    if (strcmp(fieldName, "destinationParticipantId") == 0) return baseIndex + 27;
+    if (strcmp(fieldName, "InfoTimestampSet") == 0) return baseIndex + 28;
+    if (strcmp(fieldName, "timestamp") == 0) return baseIndex + 29;
+    if (strcmp(fieldName, "NackFragSet") == 0) return baseIndex + 30;
+    if (strcmp(fieldName, "fragmentNumberStateBase") == 0) return baseIndex + 31;
+    if (strcmp(fieldName, "fragmentNumberStateNbrBits") == 0) return baseIndex + 32;
+    if (strcmp(fieldName, "fragmentNumberBitmap") == 0) return baseIndex + 33;
+    if (strcmp(fieldName, "GeneralFragmentSize") == 0) return baseIndex + 34;
+    if (strcmp(fieldName, "publisherSendTime") == 0) return baseIndex + 35;
+    if (strcmp(fieldName, "writerSendTime") == 0) return baseIndex + 36;
+    if (strcmp(fieldName, "readerReceiveTime") == 0) return baseIndex + 37;
+    if (strcmp(fieldName, "fragCount") == 0) return baseIndex + 38;
+    if (strcmp(fieldName, "sentFragments") == 0) return baseIndex + 39;
     return base ? base->findField(fieldName) : -1;
 }
 
@@ -976,6 +1010,8 @@ const char *RtpsInetPacketDescriptor::getFieldTypeString(int field) const
         "int",    // FIELD_rtpsMessageSize
         "int",    // FIELD_sourceNodeId
         "int",    // FIELD_sourceParticipantId
+        "string",    // FIELD_destinationAddress
+        "int",    // FIELD_appId
         "bool",    // FIELD_AckNackSet
         "int",    // FIELD_readerId
         "int",    // FIELD_writerId
@@ -1010,7 +1046,7 @@ const char *RtpsInetPacketDescriptor::getFieldTypeString(int field) const
         "int",    // FIELD_fragCount
         "int",    // FIELD_sentFragments
     };
-    return (field >= 0 && field < 38) ? fieldTypeStrings[field] : nullptr;
+    return (field >= 0 && field < 40) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **RtpsInetPacketDescriptor::getFieldPropertyNames(int field) const
@@ -1100,6 +1136,8 @@ std::string RtpsInetPacketDescriptor::getFieldValueAsString(omnetpp::any_ptr obj
         case FIELD_rtpsMessageSize: return long2string(pp->getRtpsMessageSize());
         case FIELD_sourceNodeId: return long2string(pp->getSourceNodeId());
         case FIELD_sourceParticipantId: return long2string(pp->getSourceParticipantId());
+        case FIELD_destinationAddress: return oppstring2string(pp->getDestinationAddress());
+        case FIELD_appId: return long2string(pp->getAppId());
         case FIELD_AckNackSet: return bool2string(pp->getAckNackSet());
         case FIELD_readerId: return long2string(pp->getReaderId());
         case FIELD_writerId: return long2string(pp->getWriterId());
@@ -1154,6 +1192,8 @@ void RtpsInetPacketDescriptor::setFieldValueAsString(omnetpp::any_ptr object, in
         case FIELD_rtpsMessageSize: pp->setRtpsMessageSize(string2long(value)); break;
         case FIELD_sourceNodeId: pp->setSourceNodeId(string2long(value)); break;
         case FIELD_sourceParticipantId: pp->setSourceParticipantId(string2long(value)); break;
+        case FIELD_destinationAddress: pp->setDestinationAddress((value)); break;
+        case FIELD_appId: pp->setAppId(string2long(value)); break;
         case FIELD_AckNackSet: pp->setAckNackSet(string2bool(value)); break;
         case FIELD_readerId: pp->setReaderId(string2long(value)); break;
         case FIELD_writerId: pp->setWriterId(string2long(value)); break;
@@ -1206,6 +1246,8 @@ omnetpp::cValue RtpsInetPacketDescriptor::getFieldValue(omnetpp::any_ptr object,
         case FIELD_rtpsMessageSize: return pp->getRtpsMessageSize();
         case FIELD_sourceNodeId: return pp->getSourceNodeId();
         case FIELD_sourceParticipantId: return pp->getSourceParticipantId();
+        case FIELD_destinationAddress: return pp->getDestinationAddress();
+        case FIELD_appId: return pp->getAppId();
         case FIELD_AckNackSet: return pp->getAckNackSet();
         case FIELD_readerId: return pp->getReaderId();
         case FIELD_writerId: return pp->getWriterId();
@@ -1260,6 +1302,8 @@ void RtpsInetPacketDescriptor::setFieldValue(omnetpp::any_ptr object, int field,
         case FIELD_rtpsMessageSize: pp->setRtpsMessageSize(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_sourceNodeId: pp->setSourceNodeId(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_sourceParticipantId: pp->setSourceParticipantId(omnetpp::checked_int_cast<int>(value.intValue())); break;
+        case FIELD_destinationAddress: pp->setDestinationAddress(value.stringValue()); break;
+        case FIELD_appId: pp->setAppId(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_AckNackSet: pp->setAckNackSet(value.boolValue()); break;
         case FIELD_readerId: pp->setReaderId(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_writerId: pp->setWriterId(omnetpp::checked_int_cast<int>(value.intValue())); break;

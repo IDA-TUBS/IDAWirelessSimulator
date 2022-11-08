@@ -12,9 +12,9 @@ Define_Module(Reader);
 void Reader::initialize()
 {
     /// Initialize RTPS context
-    Rtps* rtpsParent = dynamic_cast<Rtps*>(getParentModule());
-    entityId = rtpsParent->getNextEntityId();
     appID = par("appID");
+    Rtps* rtpsParent = dynamic_cast<Rtps*>(getParentModule());
+    entityId = rtpsParent->getNextEntityId(appID, false);
 
     sizeCache = par("historySize");
 
@@ -36,11 +36,16 @@ void Reader::handleMessage(cMessage *msg)
     {
         RtpsInetPacket *rtpsMsg = check_and_cast<RtpsInetPacket*>(msg);
 
+        // first check whether appID is corresponding to the reader's appID
+
         if(rtpsMsg->getDataFragSet())
         {
             // if DataFrag
 
             // update cache
+            // new change (sequence number)?
+            // create new change
+            // else only "add" new fragment
         }
 
         if(rtpsMsg->getHeartBeatFragSet())

@@ -43,6 +43,8 @@ namespace inet {
  *     // ---------- Header ----------
  *     int sourceNodeId;
  *     int sourceParticipantId;
+ *     string destinationAddress;
+ *     int appId;
  * 
  *     // AckNack
  *     bool AckNackSet;
@@ -126,6 +128,8 @@ class RtpsInetPacket : public ::inet::Packet
     int rtpsMessageSize = 0;
     int sourceNodeId = 0;
     int sourceParticipantId = 0;
+    ::omnetpp::opp_string destinationAddress;
+    int appId = 0;
     bool AckNackSet = false;
     int readerId = 0;
     int writerId = 0;
@@ -189,6 +193,12 @@ class RtpsInetPacket : public ::inet::Packet
 
     virtual int getSourceParticipantId() const;
     virtual void setSourceParticipantId(int sourceParticipantId);
+
+    virtual const char * getDestinationAddress() const;
+    virtual void setDestinationAddress(const char * destinationAddress);
+
+    virtual int getAppId() const;
+    virtual void setAppId(int appId);
 
     virtual bool getAckNackSet() const;
     virtual void setAckNackSet(bool AckNackSet);

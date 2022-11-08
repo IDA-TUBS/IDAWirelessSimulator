@@ -20,12 +20,14 @@ package src.rtps.adapters;
 //
 simple InetAdapter
 {
+    @display("i=block/segm");
+    
     gates:
         //UDP inputs and outputs
-        input udp_socket_in;
-        output udp_socket_out;
+        input udpSocketIn;
+        output udpSocketOut;
         //Writer inputs
-        input shaper_in;
+        input dispatcherIn;
         //Reader Outputs
-        output dispatcher_out;
+        output dispatcherOut;
 }

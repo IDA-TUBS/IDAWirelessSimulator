@@ -10,6 +10,9 @@ using namespace omnetpp;
 
 Define_Module(Rtps);
 
+unsigned int Rtps::entityIdCounter;
+std::vector<unsigned int> Rtps::entityIdPerApp;
+
 Rtps::~Rtps()
 {
    // cancelAndDelete(selfMsg);
@@ -17,8 +20,46 @@ Rtps::~Rtps()
 
 void Rtps::initialize()
 {
-    // Entity id is needed to dispatch message destinations
+    numberApps = par("nbrApps");
+    numberReadersPerApp = par("nbrReadersPerApp");
+
     entityIdCounter = 0;
+
+
+    for(int i = 0; i < numberApps; i++)
+    {
+        // reader entity IDs per App: [i*numberReadersPerApp+1, (i+1)*numberReadersPerApp -1]
+        entityIdPerApp.push_back(i*numberReadersPerApp + 1);
+    }
+}
+
+
+unsigned int Rtps::getNextEntityId(){
+    return entityIdCounter++;
+}
+
+unsigned int Rtps::getNextEntityId(unsigned int appId, bool writer)
+{
+    if(appId > numberApps-1)
+    {
+        throw omnetpp::cRuntimeError("App ID exceeds valid range: [0,%d]", numberApps-1);
+    }
+
+    if(writer)
+    {
+        // writer entity IDs per App: appID*numberReadersPerApp
+        return appId*numberReadersPerApp;
+    }
+    else
+    {
+        // reader entity IDs per App: [appID*numberReadersPerApp+1, (appID+1)*numberReadersPerApp -1]
+        if(entityIdPerApp[appId]%numberReadersPerApp == numberReadersPerApp)
+        {
+            throw omnetpp::cRuntimeError("Cannot register more than %d readers per app", numberReadersPerApp);
+        }
+        unsigned int id = entityIdPerApp[appId]%numberReadersPerApp++;
+        return id;
+    }
 }
 
 void Rtps::handleMessage(cMessage *msg)

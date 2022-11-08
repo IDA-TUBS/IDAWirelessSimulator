@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package src.helper;
+package src.rtps.helper;
 
 //
 // TODO auto-generated type
@@ -22,14 +22,14 @@ simple RtpsMessageDispatcher
 {
     @display("i=block/routing");
     gates:
-        input adapter_in;
-        output shaper_out;
+        input adapterIn;
+        output adapterOut;
 
         //input and output for discovery
-        input writer_in[];
-        output writer_out[];
-        input reader_in[];
-        output reader_out[];
+        input writerIn[];
+        output writerOut[];
+        input readerIn[];
+        output readerOut[];
 
 
 }

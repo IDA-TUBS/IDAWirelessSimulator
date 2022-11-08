@@ -13,17 +13,34 @@ class Rtps : public cSimpleModule
 {
 
   public:
+    // total number of apps
+    unsigned int numberApps;
+    // maximum number of readers per App
+    unsigned int numberReadersPerApp;
 
     // The counter for the entity IDs
-    unsigned int entityIdCounter;
+    static unsigned int entityIdCounter;
+    static std::vector<unsigned int> entityIdPerApp;
 
     Rtps() {}
     virtual ~Rtps();
 
-    // Create entity id number for dispatching
-    unsigned int getNextEntityId(){
-        return entityIdCounter++;
-    }
+    /*
+     * Legacy function: Create entity id number for dispatching
+     *
+     * @return unique entity ID
+     */
+    unsigned int getNextEntityId();
+
+    /*
+     * Create entity id number based on AppID
+     * so far only allows for a single writer per App!
+     *
+     * @param appID
+     * @param writer boolean value signaling whether reader or writer
+     * @return unique entity ID
+     */
+    unsigned int getNextEntityId(unsigned int appId, bool writer);
   protected:
 
 

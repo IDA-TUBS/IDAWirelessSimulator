@@ -16,9 +16,11 @@
 package src.rtps;
 
 import src.rtps.adapters.InetAdapter;
+import src.rtps.contract.iWriter;
+import src.rtps.contract.iReader;
 import src.rtps.entities.Writer;
 import src.rtps.entities.Reader;
-import src.helper.RtpsMessageDispatcher;
+import src.rtps.helper.RtpsMessageDispatcher;
 
 
 //
@@ -29,11 +31,14 @@ module Rtps
     parameters:
 
         //Nbr of writers and readers
-        int nbr_writers;
-        int nbr_readers;
+        int nbrWriters;
+        int nbrReaders;
+
+        int nbrReadersPerApp;
+        int nbrApps;
 
         @class(Rtps);
-        @display("i=block/layer;bgb=450,385");
+        @display("i=block/layer;bgb=449,299");
     gates:
         input socketIn;
         output socketOut;
@@ -42,15 +47,15 @@ module Rtps
         output appApiOut[]; //To Reader
 
     submodules:
-        inet_adapter: InetAdapter {
-            @display("p=222,313");
+        inetAdapter: InetAdapter {
+            @display("p=222,243");
         }
 
-        reader[sizeof(appApiOut)]: Reader {
+        reader[sizeof(appApiOut)]: <default("Reader")> like iReader {
             @display("p=343,72");
         }
 
-        writer[sizeof(appApiIn)]: Writer {
+        writer[sizeof(appApiIn)]: <default("Writer")> like iWriter {
             @display("p=128,72");
         }
 
@@ -59,24 +64,26 @@ module Rtps
         }
     connections:
 
-        inet_adapter.udp_socket_in <-- socketIn;
-        inet_adapter.udp_socket_out --> socketOut;
+        inetAdapter.udpSocketIn <-- socketIn;
+        inetAdapter.udpSocketOut --> socketOut;
 
-        inet_adapter.dispatcher_out --> dispatcher.adapter_in;
+        inetAdapter.dispatcherOut --> dispatcher.adapterIn;
+        
+        dispatcher.adapterOut --> inetAdapter.dispatcherIn;
 
         // Reader ports
         for i=0..sizeof(appApiOut)-1 {
-            dispatcher.reader_out++ --> reader[i].dispatcher_in;
-            dispatcher.reader_in++ <-- reader[i].dispatcher_out;
+            dispatcher.readerOut++ --> reader[i].dispatcherIn;
+            dispatcher.readerIn++ <-- reader[i].dispatcherOut;
 
-            reader[i].app_out --> appApiOut++;
+            reader[i].appOut --> appApiOut++;
         }
 
         // Writer ports
         for i=0..sizeof(appApiIn)-1 {
-            dispatcher.writer_in++ <-- writer[i].dispatcher_out;
-            dispatcher.writer_out++ --> writer[i].dispatcher_in;
+            dispatcher.writerIn++ <-- writer[i].dispatcherOut;
+            dispatcher.writerOut++ --> writer[i].dispatcherIn;
 
-            writer[i].app_in <-- appApiIn++;
+            writer[i].appIn <-- appApiIn++;
         }
 }

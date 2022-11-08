@@ -33,6 +33,8 @@ packet RtpsInetPacket extends Packet {
     // ---------- Header ----------
     int sourceNodeId;
     int sourceParticipantId;
+	string destinationAddress;
+	int appId;
         
     // AckNack
     bool AckNackSet;
