@@ -40,18 +40,22 @@ void Reader::handleMessage(cMessage *msg)
 
         if(rtpsMsg->getDataFragSet())
         {
-            // if DataFrag
-
-            // update cache
-            // new change (sequence number)?
+            // if DataFrag, update cache
             // create new change
-            // else only "add" new fragment
+            auto change = new CacheChange(rtpsMsg->getWriterSN(), rtpsMsg->getSampleSize(), rtpsMsg->getFragmentSize(), rtpsMsg->getArrivalTime());
+            writerProxy->addChange(*change); // only adds change if new, else WriterProxy does nothing here
+
+            // mark fragment as received
+            unsigned int fn = rtpsMsg->getFragmentStartingNum();
+            writerProxy->updateFragmentStatus(RECEIVED, change->sequenceNumber, fn);
         }
 
         if(rtpsMsg->getHeartBeatFragSet())
         {
             // if HB or HBFrag
             // respond with NackFrag
+            auto nackFrag = generateNackFrag(rtpsMsg);
+            sendMessage(nackFrag);
         }
     }
 
@@ -60,6 +64,8 @@ void Reader::handleMessage(cMessage *msg)
         RtpsInetPacket *rtpsMsg = check_and_cast<RtpsInetPacket*>(msg);
         send(rtpsMsg, "dispatcher_out");
     }
+
+    delete msg;
 }
 
 void Reader::sendMessage(RtpsInetPacket* rtpsMsg)
@@ -137,7 +143,7 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
         endFragNum = highestUnackedMsg;
     }
 
-    // Last fill the bitmap up to the net 32 bit
+    // Last fill the bitmap up to the next 32 bit
     int nbrPadBits = 32-((endFragNum - startFragNum + 1)%32);
 
     // use space below
@@ -169,7 +175,7 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
 
     nackFrag->setWriterSN(sequenceNumber);
 
-    //Finally, calculate the overall rtps message size
+    // Finally, calculate the overall rtps message size
     nackFrag->setInfoDestinationSet(false);
     calculateRtpsMsgSize(nackFrag);
 

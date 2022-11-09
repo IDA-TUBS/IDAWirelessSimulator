@@ -23,6 +23,9 @@ class WriterProxy
   private:
     /// history story all samples
     std::list<ChangeForWriter*> history;
+    /// latest sample number;
+    unsigned int highestSequenceNumber;
+
     /// max size of history
     unsigned int historySize;
 
