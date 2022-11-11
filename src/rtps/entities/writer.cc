@@ -182,7 +182,7 @@ SampleFragment* Writer::selectNextFragment(ReaderProxy* rp)
 }
 
 
-bool Writer::sendMessage() // TODO implement completely
+bool Writer::sendMessage()
 {
     // Check if the writer is currently allowed to send
     if(sendEvent->isScheduled()){

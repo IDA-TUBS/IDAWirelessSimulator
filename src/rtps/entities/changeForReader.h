@@ -45,7 +45,6 @@ class ChangeForReader: public CacheChange
 
     /*
      * overloaded constructor
-     * // TODO add reference to cache change?
      *
      * @param id of reader
      * @param seqNum sequence number of the current sample

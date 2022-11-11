@@ -31,7 +31,7 @@ class ReaderProxy
     /// history story all samples
     std::list<ChangeForReader*> history;
     /// max size of history
-    unsigned int historySize; // TODO: actually use historySize (handle exceeding of max size how?)
+    unsigned int historySize;
 
   public:
     /*

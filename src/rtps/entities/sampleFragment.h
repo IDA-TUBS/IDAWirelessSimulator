@@ -24,8 +24,8 @@ class SampleFragment
     /// reference (pointer) to ChangeForReader owning this object
     CacheChange* baseChange;
 
-    /// timestamp the fragment has been sent (the latest timestamp if already sent multiple times) // TODO correct???!!!
-    simtime_t sentTime;
+    /// timestamp the fragment has been sent (the latest timestamp if already sent multiple times) // TODO use this way!
+    simtime_t sendTime;
 
     /// flag fragment as sent - relevant for writer
     bool sent;
@@ -47,9 +47,9 @@ class SampleFragment
      * @param baseChange reference (pointer) to Change, the fragment is associated to
      * @param fragStartNum fragment number
      * @param dataSize size of the fragment in bytes
-     * @param sendTime time when sample first arrived at middleware // TODO why is that??
+     * @param sendTime time when sample first arrived at middleware
      */
-    SampleFragment(CacheChange *baseChange, unsigned int fragStartNum, unsigned int dataSize, simtime_t sentTime):
+    SampleFragment(CacheChange *baseChange, unsigned int fragStartNum, unsigned int dataSize, simtime_t sendTime):
         fragmentStartingNum(fragStartNum),
         dataSize(dataSize),
         sentTime(sentTime),
@@ -62,7 +62,7 @@ class SampleFragment
     {};
 
     /*
-     * TODO proper copy constructor
+     * copy constructor
      *
      * @param sf reference to object to be copied
      */

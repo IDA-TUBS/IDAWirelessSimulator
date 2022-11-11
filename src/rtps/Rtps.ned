@@ -29,7 +29,6 @@ import src.rtps.helper.RtpsMessageDispatcher;
 module Rtps
 {
     parameters:
-
         //Nbr of writers and readers
         int nbrWriters;
         int nbrReaders;

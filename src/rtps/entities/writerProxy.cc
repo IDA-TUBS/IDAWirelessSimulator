@@ -52,7 +52,7 @@ bool WriterProxy::checkSampleCompleteness(unsigned int sequenceNumber)
     bool complete = change->checkForCompleteness();
     if(complete)
     {
-        // TODO remove sample from history
+        // TODO remove sample from history? or do at a different point in time
     }
     return complete;
 }
