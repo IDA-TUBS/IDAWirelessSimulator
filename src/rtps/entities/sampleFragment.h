@@ -52,7 +52,7 @@ class SampleFragment
     SampleFragment(CacheChange *baseChange, unsigned int fragStartNum, unsigned int dataSize, simtime_t sendTime):
         fragmentStartingNum(fragStartNum),
         dataSize(dataSize),
-        sentTime(sentTime),
+        sendTime(sendTime),
         // Relevant for the Writer
         sent(false),
         acked(false),
@@ -69,7 +69,7 @@ class SampleFragment
     SampleFragment(SampleFragment &sf):
         fragmentStartingNum(sf.fragmentStartingNum),
         dataSize(sf.dataSize),
-        sentTime(sf.sentTime),
+        sendTime(sf.sendTime),
         sent(sf.sent),
         acked(sf.acked),
         received(sf.received),

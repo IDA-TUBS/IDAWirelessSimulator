@@ -20,6 +20,10 @@ package src.rtps.adapters;
 //
 simple InetAdapter
 {
+    // Legacy ??? TODO 
+    int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
+    
+    
     string interfaceTableModule;   							// The path to the InterfaceTable module
     int localPort = default(-1);  							// local port (-1: use ephemeral port)
     int numberDestinations = default(-1);

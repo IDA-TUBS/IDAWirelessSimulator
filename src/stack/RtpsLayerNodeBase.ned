@@ -13,7 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package src.inet_ref;
+package src.stack;
 
 import inet.node.base.TransportLayerNodeBase;
 import inet.common.MessageDispatcher;

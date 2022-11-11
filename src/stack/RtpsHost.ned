@@ -1,7 +1,7 @@
-package src.inet_ref;
+package src.stack;
 
 import src.rtps.Rtps;
-import src.inet_ref.RtpsLayerNodeBase;
+import src.stack.RtpsLayerNodeBase;
 import src.rtps.contract.iRtpsApp;
 
 //
