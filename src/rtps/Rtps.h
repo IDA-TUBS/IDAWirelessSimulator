@@ -41,6 +41,13 @@ class Rtps : public cSimpleModule
      * @return unique entity ID
      */
     unsigned int getNextEntityId(unsigned int appId, bool writer);
+
+    /*
+     * get parameter numberReadersPerApp
+     *
+     * @return numberReadersPerApp
+     */
+    unsigned int getMaxNumberOfReaders();
   protected:
 
 

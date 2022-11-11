@@ -42,7 +42,9 @@ void InetAdapter::initialize(int stage)
         dontFragment = par("dontFragment");
         numberDestinations = par("numberDestinations");
         if (stopTime >= SIMTIME_ZERO && stopTime < startTime)
+        {
             throw cRuntimeError("Invalid startTime/stopTime parameters");
+        }
         selfMsg = new cMessage("sendTimer");
     }
 }

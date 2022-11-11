@@ -8,11 +8,14 @@
 #include <omnetpp.h>
 #include "./../messages/RtpsInetPacket_m.h"
 #include "./../messages/Sample_m.h"
+#include "./../Rtps.h"
 
 #include "endpoint.h"
 #include "changeForReader.h"
 #include "readerProxy.h"
 #include "sampleFragment.h"
+
+#include <string.h>
 
 using namespace omnetpp;
 using namespace inet;
@@ -58,32 +61,33 @@ class Writer : public cSimpleModule, Endpoint
     unsigned int fragmentSize;
     /// Sample latency deadline
     simtime_t deadline;
-    /// nack suppression duration
-    simtime_t nackSuppressionDuration;
     /// max number of cache changes to be stored simultaneously
     unsigned int sizeCache;
 
     /// number of subscribers/readers
     unsigned int numReaders;
 
-    /// application ID
-    unsigned int appID;
-
     /// shaping parameter - value given in us
     simtime_t shaping;
-
     /// heartbeat period
     simtime_t hbPeriod;
+    /// nack suppression duration // TODO implement properly
+    simtime_t nackSuppressionDuration;
 
-    /// TODO destination address(es)
-
+    /// application ID
+    unsigned int appID;
+    /// vector storing destination address(es)
+    std::vector<std::string> destinationAddresses;
 
     // ===========================
     // ==== protocol entities ====
     // ===========================
 
-    std::vector<ReaderProxy*> matchedReaders;
+    /// storing the "actual" data that is transmitted via RTPS
     std::list<CacheChange*> historyCache;
+    /// the reader proxies keep track of sending/acknowledgment states for each reader
+    std::vector<ReaderProxy*> matchedReaders;
+    /// list of fragments to send next
     std::list<SampleFragment*> sendQueue;
 
 
@@ -96,6 +100,12 @@ class Writer : public cSimpleModule, Endpoint
     cMessage *hbTimer;
     /// self message used for triggering timeouts
     cMessage *nextTimeoutEvent;
+
+    // ==============
+    // ==== misc ====
+    // ==============
+    /// pointer to rtps parent instances, used for parameter retrieval
+    Rtps* rtpsParent;
 
 
   protected:
@@ -125,7 +135,7 @@ class Writer : public cSimpleModule, Endpoint
      *
      * @param sample containing all information for building CacheChange
      */
-    void addSampleToCache(Sample* sample);
+    bool addSampleToCache(Sample* sample);
 
     /*
      * Method for evaluating whether a sample is still valid or whether its deadline elapsed.

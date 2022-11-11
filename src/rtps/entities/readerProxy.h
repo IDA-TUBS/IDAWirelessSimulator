@@ -68,8 +68,9 @@ class ReaderProxy
      * method for adding a new Cache Change to the proxy's history cache
      *
      * @param change reference to cache change that will be replicated in the reader proxy
+     * @return true if change was added, false if cache was full and change was not added to history
      */
-    void addChange(CacheChange &change);
+    bool addChange(CacheChange &change);
 
     /*
      * set priority of corresponding reader
@@ -121,6 +122,14 @@ class ReaderProxy
     {
         return history.front();
     }
+
+    /*
+     * gather all fragments of a given change that are currently in state unsent (and not acknowledged!)
+     *
+     * @param sequenceNumber seq number of sample that shall be checked
+     * @return list of fragments
+     */
+    std::vector<SampleFragment*> getUnsentFragments(unsigned int sequenceNumber);
 
 };
 

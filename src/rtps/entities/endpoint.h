@@ -55,18 +55,13 @@ public:
      * Method building constructs a complete RTPS inet packet from any sample fragment
      *
      * @param sampleFragment pointer to sample fragment that shall be packaged
+     * @param entityID entity ID of the transmitting entity (writer)
+     * @param fragmentSize actual size of the fragment
+     * @param addr destination address
+     * @param appId application id used for stream differentiation
      * @return sample fragment packaged in as an RtpsInetPacket
      */
-    RtpsInetPacket* createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize);
-
-    /*
-     * Method for adding HBFrag to RTPS message
-     *
-     * @param msg RTPS inet packet to which to add the heartbeat frag
-     * @return RtpsInetPacket with HBFrag
-     */
-    RtpsInetPacket* addHbFragToRtpsMsg(RtpsInetPacket *msg);
-
+    RtpsInetPacket* createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize, std::string addr, unsigned int appId);
 
 
     /*

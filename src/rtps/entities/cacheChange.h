@@ -81,7 +81,12 @@ class CacheChange
         numberFragments(change.numberFragments),
         arrivalTime(change.arrivalTime)
     {
-        // TODO copy contents of the sampleFragmentArray
+        auto sampleArrayRef = change.getFragmentArray();
+
+        // copy contents of reference array (CacheChange) to this instance's array
+        for(unsigned int i = 0; i < this->numberFragments; i++){
+            sampleFragmentArray[i] = new SampleFragment(*sampleArrayRef[i]);
+        }
     }
 
     /*
@@ -89,7 +94,7 @@ class CacheChange
      */
     ~CacheChange()
     {
-        delete sampleFragmentArray; // TODO necessary to delete all SampleFragments first?
+        delete[] sampleFragmentArray;
     };
 
     /*
@@ -127,6 +132,23 @@ class CacheChange
     {
         return ((simTime() - this->arrivalTime) <= deadline);
     }
+
+    /*
+     * check whether sample has been received or acknowledged in its entirety
+     *
+     * @return true if complete, else returns false
+     */
+    bool checkForCompleteness()
+    {
+       bool complete = true;
+       for(int i = 0; i < this->numberFragments; i++){
+           SampleFragment* fragment = this->sampleFragmentArray[i];
+           if(!fragment->acked && !fragment->received){
+               return false;
+           }
+       }
+       return complete;
+    };
 
 };
 

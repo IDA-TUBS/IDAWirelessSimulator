@@ -3,7 +3,6 @@
  */
 
 #include "writer.h"
-#include "./../Rtps.h"
 
 using namespace omnetpp;
 
@@ -18,8 +17,12 @@ void Writer::initialize()
 
     /// Initialize RTPS context
     appID = par("appID");
-    Rtps* rtpsParent = dynamic_cast<Rtps*>(getParentModule());
+    rtpsParent = dynamic_cast<Rtps*>(getParentModule());
     entityId = rtpsParent->getNextEntityId(appID, true);
+
+    // process destination addresses
+    const char *destAddrs = par("destAddresses");
+    destinationAddresses = cStringTokenizer(destAddrs).asVector();
 
     // writer parametrization
     deadline = par("deadline");
@@ -32,8 +35,8 @@ void Writer::initialize()
 
     // reader proxy initialization
     for(int i = 0; i < numReaders; i++) {
-        // TODO set up reader IDs here as well!
-        unsigned int readerId = i;
+        // the app's reader IDs are in the range of [appID * maxNumberReader + 1, (appID + 1) * maxNumberReader - 1]
+        unsigned int readerId = this->appID * rtpsParent->getMaxNumberOfReaders() + i + 1;
         auto rp = new ReaderProxy(readerId, this->sizeCache);
         matchedReaders.push_back(rp);
     }
@@ -78,18 +81,24 @@ void Writer::handleMessage(cMessage *msg)
 }
 
 
-void Writer::addSampleToCache(Sample* sample)
+bool Writer::addSampleToCache(Sample* sample)
 {
-    // TODO what to do if max size exceeded?
-
     // create cacheChange once
     auto change = new CacheChange(sample->getSequenceNumber(), sample->getSize(), this->fragmentSize, simTime());
+
+    if(historyCache.size() == sizeCache)
+    {
+        return false;
+    }
+    historyCache.push_back(change);
 
     // then generate ChangeForReaders based on CacheChange and add to reader proxies (done by ReaderProxy itself)
     for (auto rp: matchedReaders)
     {
         rp->addChange(*change);
     }
+
+    return true;
 }
 
 
@@ -100,6 +109,7 @@ void Writer::checkSampleLiveliness()
     }
 
     std::vector<unsigned int> deprecatedSNs;
+    std::vector<CacheChange*> toDelete;
     // check liveliness of samples in history cache, if deadline expired remove sample from cache and ReaderProxies
     while(1){
         auto* change = historyCache.front();
@@ -108,7 +118,7 @@ void Writer::checkSampleLiveliness()
         {
             deprecatedSNs.push_back(change->sequenceNumber);
             historyCache.pop_front();
-            delete change; // only viable as all objects storing references to that change will be removed in the following
+            toDelete.push_back(change); // delete all expired changes in the end
         }
     }
 
@@ -120,14 +130,35 @@ void Writer::checkSampleLiveliness()
         }
     }
 
-    // TODO necessary??? also purge fragments from sendQueue if deadline expired?
+    if(!sendQueue.empty())
+    {
+        // also purge fragments of expired samples from sendQueue
+        for(auto it = sendQueue.cbegin(); it != sendQueue.end(); it++)
+        {
+            // remove fragments if their sequence number matches any of those in deprecatedSNs
+            unsigned int sequenceNumber = (*it)->baseChange->sequenceNumber;
+            for(unsigned int deprecatedSn: deprecatedSNs)
+            {
+                if(sequenceNumber == deprecatedSn)
+                {
+                    sendQueue.erase(it--);
+                    break;
+                }
+            }
+        }
+    }
 
+    // finally delete expired changes
+    for(auto &change: toDelete)
+    {
+        delete[] change;
+    }
 }
 
 
 ReaderProxy* Writer::selectReader() {
     // for retransmissions this does not matter anyway, as default RTPS just retransmits any
-    //negatively acknowledged fragment immediately, hence just select the first one
+    // negatively acknowledged fragment immediately, hence just select the first one
     ReaderProxy* rp = matchedReaders[0];
 
     return rp;
@@ -194,15 +225,17 @@ bool Writer::sendMessage() // TODO implement completely
         }
 
         // construct RtpsInetPacket from fragment and send out to dispatcher
-        auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize);
+        if(destinationAddresses.size() > 1)
+        {
+            throw cRuntimeError("Handling of multiple addresses not implemented yet!");
+        }
+        std::string addr = destinationAddresses[0];
+
+        auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID);
         send(msg , gate("dispatcherOut"));
     }
 
-    // check whether there are any unsent fragments or new samples left
-    // only schedule new event if there is something to be send left
-    // TODO
-
-    // Schedule the next event with ideal shaping
+    // Schedule the next event
     simtime_t timeToSend = simTime() + shaping;
     scheduleAt(timeToSend, sendEvent);
 }
@@ -222,7 +255,6 @@ bool Writer::sendHeartbeatMsg()
 
     // set all other message attributes accordingly
     rtpsMsg->setHeartBeatFragSet(true);
-//    rtpsMsg->setUcId(-1); // TODO for simulation only (otherwise sometimes data missing, would likely to be communicated via discovery protocol IRL)
     rtpsMsg->setSampleSize(change->sampleSize);
     rtpsMsg->setFragmentSize(this->fragmentSize);
     rtpsMsg->setGeneralFragmentSize(this->fragmentSize);
@@ -241,18 +273,27 @@ bool Writer::sendHeartbeatMsg()
 }
 
 
-void Writer::handleNackFrag(RtpsInetPacket* nackFrag) { // TODO implement completely
+void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
     /// First find the history cache corresponding to the reader, sending the NackFrag msg
-    // TODO how to implement entity IDs simulation wide and allow for easy assignment here?
     unsigned int readerID = nackFrag->getReaderId();
-    auto rp = matchedReaders[readerID];
+    // the app's reader IDs are in the range of [appID * maxNumberReader + 1, (appID + 1) * maxNumberReader - 1]
+    /// reader entity ID mapped to (entityId % maxNumberReader) - 1
+    auto rp = matchedReaders[(readerID % rtpsParent->getMaxNumberOfReaders() - 1)];
 
     rp->processNack(nackFrag);
     unsigned int sequenceNumber = nackFrag->getWriterSN();
     bool complete = rp->checkSampleCompleteness(sequenceNumber);
-    // TODO how to proceed from here?
 
-    // TODO: default RTPS behavior: just retransmit all fragments marked as missing asap
+    // default RTPS behavior: just retransmit all fragments marked as missing asap
     // add missing fragments to sendQueue (if not already present)
+    auto unsentFragments = rp->getUnsentFragments(sequenceNumber);
+
+    // use actual 'data' sample fragment from history cache instead of sf from reader proxy
+    for (auto sf: unsentFragments)
+    {
+        auto sfToSend = (sf->baseChange->getFragmentArray())[sf->fragmentStartingNum];
+        sendQueue.push_back(sfToSend);
+    }
+
 }
 

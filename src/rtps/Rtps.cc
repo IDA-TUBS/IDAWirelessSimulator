@@ -62,6 +62,12 @@ unsigned int Rtps::getNextEntityId(unsigned int appId, bool writer)
     }
 }
 
+unsigned int Rtps::getMaxNumberOfReaders()
+{
+    return this->numberReadersPerApp;
+}
+
+
 void Rtps::handleMessage(cMessage *msg)
 {
 }

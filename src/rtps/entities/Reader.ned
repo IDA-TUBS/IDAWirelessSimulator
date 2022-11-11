@@ -23,6 +23,8 @@ simple Reader like iReader
         int appID = default(-1);
         int historySize = default(1);
         
+        string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
+        
         @display("i=block/rx");
     gates:        
         output appOut;

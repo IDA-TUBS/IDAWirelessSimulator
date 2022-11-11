@@ -7,6 +7,7 @@
 
 #include <omnetpp.h>
 #include "./../messages/RtpsInetPacket_m.h"
+#include "./../Rtps.h"
 
 #include "endpoint.h"
 #include "changeForWriter.h"
@@ -33,10 +34,7 @@ class Reader : public cSimpleModule, Endpoint
     };
 
   private:
-    // self-message
-    cMessage *selfEvent;
-
-    /// TODO description, actually used?
+    /// user configurable reader response delay
     simtime_t responseDelay;
 
     /// HistoryCache
@@ -48,6 +46,15 @@ class Reader : public cSimpleModule, Endpoint
     /// max number of cache changes to be stored simultaneously
     unsigned int sizeCache;
 
+    /// vector storing destination address(es)
+    std::vector<std::string> destinationAddresses;
+
+    // ==============
+    // ==== misc ====
+    // ==============
+    /// pointer to rtps parent instances, used for parameter retrieval
+    Rtps* rtpsParent;
+
   protected:
     /*
      * Method that is triggered from transmitting NackFrags. At the end, sends a packaged sample fragment down towards the UDP/IP stack
@@ -57,23 +64,12 @@ class Reader : public cSimpleModule, Endpoint
     void sendMessage(RtpsInetPacket* msg);
 
     /*
-     * TODO
+     * generate a NackFrag message with bitmap based on a heartbeat message
      *
-     * @param TODO
-     */
-    void addNewSampleToProxy(RtpsInetPacket* rtpsInetPacket);
-
-    /*
-     * TODO
-     *
-     * @param TODO
+     * @param hb heartbearmessage
+     * @return NackFrag message
      */
     RtpsInetPacket* generateNackFrag(RtpsInetPacket* hb);
-
-    /*
-     * TODO
-     */
-    void checkCompletionOfLatestSample();
 
 
     /*

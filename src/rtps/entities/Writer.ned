@@ -23,17 +23,17 @@ simple Writer like iWriter
         // Other configuration parameters
         int fragmentSize = default(1000);
         double deadline @unit(s) = default(100ms);
-        int numberReaders = default(0);
+        int historySize = default(1);
         
-        int historySize = default(1);        
-                
-        int appID = default(-1);
+        int numberReaders = default(0);        
         
-        // Shaping Model
+        // Timing Model
         double shaping @unit(s) = default(10us);
         double hbPeriod @unit(s) = default(2000us);
+        double nackSuppressionDuration @unit(s) = default(0us);
         
-        string destAddresses = default("");
+        int appID = default(-1);
+        string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
         
         // Display Parameters
         @display("i=block/tx");

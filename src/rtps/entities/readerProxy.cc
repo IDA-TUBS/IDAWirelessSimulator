@@ -5,13 +5,17 @@
 #include "readerProxy.h"
 
 
-void ReaderProxy::addChange(CacheChange &change)
+bool ReaderProxy::addChange(CacheChange &change)
 {
-    // TODO what to do if max size exceeded?
-
+    if(history.size() == historySize)
+    {
+        // cannot add a new change the history
+        return false;
+    }
     ChangeForReader* cfr = new ChangeForReader(this->readerID, change);
 
     history.push_back(cfr);
+    return true;
 }
 
 void ReaderProxy::removeChange(unsigned int sequenceNumber)
@@ -89,9 +93,47 @@ bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)
             this->updateFragmentStatus(NACKED, sequenceNumber, i);
         }
     }
+
+    return true;
 }
+
+
+std::vector<SampleFragment*> ReaderProxy::getUnsentFragments(unsigned int sequenceNumber)
+{
+    // access change with the given sequence number
+    ChangeForReader* change = nullptr;
+    for (auto cfr: history)
+    {
+        if (cfr->sequenceNumber == sequenceNumber)
+        {
+            change = cfr;
+            break;
+        }
+    }
+
+    std::vector<SampleFragment*> unsentFragments = change->getUnsentFragments();
+
+    return unsentFragments;
+}
+
 
 bool ReaderProxy::checkSampleCompleteness(unsigned int sequenceNumber)
 {
-    // TODO implement
+    // access change with the given sequence number
+    ChangeForReader* change = nullptr;
+    for (auto cfr: history)
+    {
+        if (cfr->sequenceNumber == sequenceNumber)
+        {
+            change = cfr;
+            break;
+        }
+    }
+
+    bool complete = change->checkForCompleteness();
+    if(complete)
+    {
+        // TODO remove sample from history? maybe just remove if expired or all readers completed reception of a given sample
+    }
+    return complete;
 }

@@ -27,7 +27,7 @@ cModule* Endpoint::getAnalysisModule(cModule* parent){
 }
 
 
-RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize)
+RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize, std::string addr, unsigned int appId)
 {
     RtpsInetPacket* rtpsMsg = new RtpsInetPacket();
     rtpsMsg->setPayloadSize(0);
@@ -35,9 +35,10 @@ RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragme
     rtpsMsg->setPayloadSize(rtpsMsg->getPayloadSize() + 20);
     // InfoDestination
     rtpsMsg->setInfoDestinationSet(false);
-    // TODO set destination address (needed in InetAdapter)
-    //rtpsMsg->setDestinationAddress(address);
-    // TODO set appId!
+    // set destination address (needed in InetAdapter)
+    rtpsMsg->setDestinationAddress(addr.c_str());
+    // set appId!
+    rtpsMsg->setAppId(appId);
     // InfoTimestamp
     if(sampleFragment->fragmentStartingNum == 0){
         rtpsMsg->setInfoTimestampSet(true);
@@ -57,25 +58,9 @@ RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragme
     // Other
     rtpsMsg->setGeneralFragmentSize(fragmentSize);
 
-    //misc
-//    rtpsMsg->setUcId(-1);
-
     calculateRtpsMsgSize(rtpsMsg);
     return rtpsMsg;
 }
-
-RtpsInetPacket* Endpoint::addHbFragToRtpsMsg(RtpsInetPacket *msg)
-{
-//    rtpsMsg->setHeartBeatFragSet(true);
-//    if(sampleFragment->fragmentStartingNum > sampleFragment->baseChange->highest_entry_send){
-//        sampleFragment->base_sample->highest_entry_send = sampleFragment->fragmentStartingNum;
-//    }
-//    rtpsMsg->setLastFragmentNum(sampleFragment->base_sample->highest_entry_send);
-
-    calculateRtpsMsgSize(msg);
-}
-
-
 
 
 void Endpoint::calculateRtpsMsgSize(RtpsInetPacket* rtpsMsg){

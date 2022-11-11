@@ -58,7 +58,13 @@ class WriterProxy
         history.clear();
     };
 
-    void addChange(CacheChange &change);
+    /*
+     * method for adding a new Cache Change to the proxy's history cache
+     *
+     * @param change reference to cache change that will be replicated in the reader proxy
+     * @return true if change was added, false if cache was full and change was not added to history
+     */
+    bool addChange(CacheChange &change);
 
     /*
      * method for altering a fragment's status (unsent, sent, acked, ...)

@@ -5,17 +5,18 @@
 #include "writerProxy.h"
 
 
-void WriterProxy::addChange(CacheChange &change)
+bool WriterProxy::addChange(CacheChange &change)
 {
-    if(change.sequenceNumber == highestSequenceNumber)
+    if(change.sequenceNumber == highestSequenceNumber || history.size() == historySize)
     {
         // no new sample, no need to add to history
-        return;
+        return false;
     }
-    /// TODO check cache size prior to adding new change
     ChangeForWriter* cfr = new ChangeForWriter(change);
 
     history.push_back(cfr);
+
+    return true;
 }
 
 bool WriterProxy::updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber)
@@ -37,5 +38,21 @@ bool WriterProxy::updateFragmentStatus (fragmentStates status, unsigned int sequ
 
 bool WriterProxy::checkSampleCompleteness(unsigned int sequenceNumber)
 {
-    // TODO implement
+    // access change with the given sequence number
+    ChangeForWriter* change = nullptr;
+    for (auto cfw: history)
+    {
+        if (cfw->sequenceNumber == sequenceNumber)
+        {
+            change = cfw;
+            break;
+        }
+    }
+
+    bool complete = change->checkForCompleteness();
+    if(complete)
+    {
+        // TODO remove sample from history
+    }
+    return complete;
 }

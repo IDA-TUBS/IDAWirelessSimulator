@@ -3,7 +3,6 @@
  */
 
 #include "reader.h"
-#include "./../Rtps.h"
 
 using namespace omnetpp;
 
@@ -13,8 +12,12 @@ void Reader::initialize()
 {
     /// Initialize RTPS context
     appID = par("appID");
-    Rtps* rtpsParent = dynamic_cast<Rtps*>(getParentModule());
+    rtpsParent = dynamic_cast<Rtps*>(getParentModule());
     entityId = rtpsParent->getNextEntityId(appID, false);
+
+    // process destination addresses
+    const char *destAddrs = par("destAddresses");
+    destinationAddresses = cStringTokenizer(destAddrs).asVector();
 
     sizeCache = par("historySize");
 
@@ -37,6 +40,10 @@ void Reader::handleMessage(cMessage *msg)
         RtpsInetPacket *rtpsMsg = check_and_cast<RtpsInetPacket*>(msg);
 
         // first check whether appID is corresponding to the reader's appID
+        if(rtpsMsg->getAppId() != this->appID)
+        {
+            return;
+        }
 
         if(rtpsMsg->getDataFragSet())
         {
@@ -48,6 +55,8 @@ void Reader::handleMessage(cMessage *msg)
             // mark fragment as received
             unsigned int fn = rtpsMsg->getFragmentStartingNum();
             writerProxy->updateFragmentStatus(RECEIVED, change->sequenceNumber, fn);
+
+            writerProxy->checkSampleCompleteness(change->sequenceNumber);
         }
 
         if(rtpsMsg->getHeartBeatFragSet())
@@ -75,17 +84,18 @@ void Reader::sendMessage(RtpsInetPacket* rtpsMsg)
 }
 
 
-
-
-void Reader::addNewSampleToProxy(RtpsInetPacket* rtpsInetPacket)
-{
-
-}
-
 RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
 {
     //Create message instance
     RtpsInetPacket* nackFrag = new RtpsInetPacket();
+
+    // set destination address
+    if(destinationAddresses.size() > 1)
+    {
+        throw cRuntimeError("Handling of multiple addresses not implemented yet!");
+    }
+    std::string addr = destinationAddresses[0];
+    nackFrag->setDestinationAddress(addr.c_str());
 
     // Create header
     this->setGuid(nackFrag);
@@ -179,18 +189,5 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
     nackFrag->setInfoDestinationSet(false);
     calculateRtpsMsgSize(nackFrag);
 
-    // TODO set destination address!
-
     return nackFrag;
 }
-
-void Reader::checkCompletionOfLatestSample()
-{
-
-}
-
-
-
-
-
-

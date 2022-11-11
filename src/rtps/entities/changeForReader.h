@@ -155,6 +155,13 @@ class ChangeForReader: public CacheChange
      */
     virtual bool setFragmentStatus(fragmentStates status, unsigned int fragmentNumber);
 
+    /*
+     * gather all fragments of a given change that are currently in state unsent (and not acknowledged!)
+     *
+     * @return list of fragments
+     */
+    std::vector<SampleFragment*> getUnsentFragments();
+
 };
 
 
