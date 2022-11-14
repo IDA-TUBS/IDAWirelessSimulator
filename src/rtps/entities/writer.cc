@@ -156,7 +156,8 @@ void Writer::checkSampleLiveliness()
 }
 
 
-ReaderProxy* Writer::selectReader() {
+ReaderProxy* Writer::selectReader()
+{
     // for retransmissions this does not matter anyway, as default RTPS just retransmits any
     // negatively acknowledged fragment immediately, hence just select the first one
     ReaderProxy* rp = matchedReaders[0];

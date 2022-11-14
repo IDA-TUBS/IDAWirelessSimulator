@@ -26,7 +26,13 @@ bool ChangeForWriter::setFragmentStatus(fragmentStates status, unsigned int frag
     switch(status)
     {
         case RECEIVED:
+            lastReceivedFN = fragmentNumber;
             frag->received = true;
+            if(fragmentNumber > highestFNreceived)
+            {
+                highestFNreceived = fragmentNumber;
+            }
+
             break;
         default:
             break;

@@ -110,7 +110,6 @@ class WriterProxy
 
         return tmp;
     }
-
 };
 
 #endif // RTPS_WRITERPROXY_H_

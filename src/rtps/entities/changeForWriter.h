@@ -23,9 +23,9 @@ class ChangeForWriter: public CacheChange
     bool complete;
 
     /// storing fragment number that has been sent last
-    int lastSentFN;
+    int lastReceivedFN;
     /// highest yet sent fragment number
-    int highestFNSend;
+    int highestFNreceived;
 
   public:
     /*
@@ -34,8 +34,8 @@ class ChangeForWriter: public CacheChange
     ChangeForWriter()
     {
         complete = false;
-        lastSentFN = -1;
-        highestFNSend = 0;
+        lastReceivedFN = -1;
+        highestFNreceived = 0;
     }
 
     /*
@@ -50,8 +50,8 @@ class ChangeForWriter: public CacheChange
     ChangeForWriter(unsigned int seqNum, unsigned int sampleSize, unsigned int fragmentSize, simtime_t timestamp):
         CacheChange(seqNum, sampleSize, fragmentSize, timestamp),
         complete(false),
-        lastSentFN(-1),
-        highestFNSend(-1)
+        lastReceivedFN(-1),
+        highestFNreceived(-1)
     {
         sampleFragmentArray = new SampleFragment*[this->numberFragments];
 
@@ -72,8 +72,8 @@ class ChangeForWriter: public CacheChange
     ChangeForWriter(CacheChange &change):
         CacheChange(change.sequenceNumber, change.sampleSize, change.fragmentSize, change.arrivalTime),
         complete(false),
-        lastSentFN(-1),
-        highestFNSend(-1)
+        lastReceivedFN(-1),
+        highestFNreceived(-1)
     {
         sampleFragmentArray = new SampleFragment*[this->numberFragments];
 
@@ -94,8 +94,8 @@ class ChangeForWriter: public CacheChange
     ChangeForWriter(ChangeForWriter &change):
         CacheChange(change.sequenceNumber, change.sampleSize, change.fragmentSize, change.arrivalTime),
         complete(change.complete),
-        lastSentFN(change.lastSentFN),
-        highestFNSend(change.highestFNSend)
+        lastReceivedFN(change.lastReceivedFN),
+        highestFNreceived(change.highestFNreceived)
     {
         sampleFragmentArray = new SampleFragment*[this->numberFragments];
         auto sampleArrayRef = change.getFragmentArray();

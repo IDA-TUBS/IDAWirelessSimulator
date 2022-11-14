@@ -20,7 +20,7 @@
 using namespace omnetpp;
 using namespace inet;
 
-class Writer : public cSimpleModule, Endpoint
+class Writer : public cSimpleModule, protected Endpoint
 {
   public:
     /*
@@ -52,7 +52,7 @@ class Writer : public cSimpleModule, Endpoint
         sendQueue.clear();
     };
 
-  private:
+  protected:
     // ==============================
     // ==== rtps parametrization ====
     // ==============================
@@ -114,7 +114,7 @@ class Writer : public cSimpleModule, Endpoint
      *
      * @return true on success, else false
      */
-    bool sendMessage();
+    virtual bool sendMessage();
 
     /*
      * Method that is used for "default" RTPS implementation to mimic only sending a heartbeart message - without any data attached
