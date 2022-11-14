@@ -24,6 +24,7 @@ void Writer::initialize()
     const char *destAddrs = par("destAddresses");
     destinationAddresses = cStringTokenizer(destAddrs).asVector();
 
+
     // writer parametrization
     deadline = par("deadline");
     fragmentSize = par("fragmentSize");
@@ -51,8 +52,6 @@ void Writer::finish()
 
 void Writer::handleMessage(cMessage *msg)
 {
-    // FIXME Livelock!
-
     // Check message type
     if (dynamic_cast<Sample*>(msg)!=NULL){
 		// Received new sample from application
@@ -63,6 +62,12 @@ void Writer::handleMessage(cMessage *msg)
 		// TODO if new sample is the only sample in the historyCache: priming send queue with all fragments of the new sample
 
 		sendMessage();
+
+		// schedule periodic heartbeats
+		if(hbTimer->isScheduled()){
+            cancelEvent(hbTimer);
+        }
+        scheduleAt(simTime() + hbPeriod, hbTimer);
 
 		delete msg;
     }
@@ -272,6 +277,14 @@ bool Writer::sendHeartbeatMsg()
     RtpsInetPacket* rtpsMsg = new RtpsInetPacket();
     rtpsMsg->setInfoDestinationSet(false);
 
+    if(destinationAddresses.size() > 1)
+    {
+        throw cRuntimeError("Handling of multiple addresses not implemented yet!");
+    }
+    std::string addr = destinationAddresses[0];
+    // set destination address (needed in InetAdapter)
+    rtpsMsg->setDestinationAddress(addr.c_str());
+
     // get highest sent fragment number from the change
     rtpsMsg->setLastFragmentNum(change->highestFNSend);
 
@@ -281,14 +294,15 @@ bool Writer::sendHeartbeatMsg()
     rtpsMsg->setFragmentSize(this->fragmentSize);
     rtpsMsg->setGeneralFragmentSize(this->fragmentSize);
 
+    rtpsMsg->setWriterSN(change->sequenceNumber);
+    rtpsMsg->setWriterId(this->entityId);
+
     // calc and set message size
     calculateRtpsMsgSize(rtpsMsg);
 
     // transmit HB message
-    cModule *target = getAnalysisModule(getParentModule());
-    if(target != nullptr){
-        send(rtpsMsg , gate("dispatcher_out"));
-    }
+    send(rtpsMsg , gate("dispatcherOut"));
+
     // schedule next heartbeat
     scheduleAt(simTime() + hbPeriod, hbTimer);
     return true;
@@ -296,11 +310,11 @@ bool Writer::sendHeartbeatMsg()
 
 
 void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
-    /// First find the history cache corresponding to the reader, sending the NackFrag msg
+    // First find the history cache corresponding to the reader, sending the NackFrag msg
     unsigned int readerID = nackFrag->getReaderId();
     // the app's reader IDs are in the range of [appID * maxNumberReader + 1, (appID + 1) * maxNumberReader - 1]
-    /// reader entity ID mapped to (entityId % maxNumberReader) - 1
-    auto rp = matchedReaders[(readerID % rtpsParent->getMaxNumberOfReaders() - 1)];
+    // reader entity ID mapped to entityId - thisappID * (maxNumberReader + 1) - 1
+    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders() + 1) - 1];
 
     rp->processNack(nackFrag);
     unsigned int sequenceNumber = nackFrag->getWriterSN();

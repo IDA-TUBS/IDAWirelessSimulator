@@ -57,7 +57,7 @@ class ChangeForReader: public CacheChange
         readerID(id),
         complete(false),
         lastSentFN(-1),
-        highestFNSend(-1),
+        highestFNSend(0),
         baseChange(change)
     {
         sampleFragmentArray = new SampleFragment*[this->numberFragments];
@@ -82,7 +82,7 @@ class ChangeForReader: public CacheChange
         readerID(id),
         complete(false),
         lastSentFN(-1),
-        highestFNSend(-1),
+        highestFNSend(0),
         baseChange(&change)
     {
         sampleFragmentArray = new SampleFragment*[this->numberFragments];

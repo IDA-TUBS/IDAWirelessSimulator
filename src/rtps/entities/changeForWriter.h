@@ -51,7 +51,7 @@ class ChangeForWriter: public CacheChange
         CacheChange(seqNum, sampleSize, fragmentSize, timestamp),
         complete(false),
         lastReceivedFN(-1),
-        highestFNreceived(-1)
+        highestFNreceived(0)
     {
         sampleFragmentArray = new SampleFragment*[this->numberFragments];
 
@@ -73,7 +73,7 @@ class ChangeForWriter: public CacheChange
         CacheChange(change.sequenceNumber, change.sampleSize, change.fragmentSize, change.arrivalTime),
         complete(false),
         lastReceivedFN(-1),
-        highestFNreceived(-1)
+        highestFNreceived(0)
     {
         sampleFragmentArray = new SampleFragment*[this->numberFragments];
 

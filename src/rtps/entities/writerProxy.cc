@@ -15,6 +15,7 @@ bool WriterProxy::addChange(CacheChange &change)
     ChangeForWriter* cfr = new ChangeForWriter(change);
 
     history.push_back(cfr);
+    highestSequenceNumber = change.sequenceNumber;
 
     return true;
 }

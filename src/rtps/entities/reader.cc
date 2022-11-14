@@ -66,15 +66,17 @@ void Reader::handleMessage(cMessage *msg)
             auto nackFrag = generateNackFrag(rtpsMsg);
             sendMessage(nackFrag);
         }
+
+        delete msg;
     }
 
     if (msg->isSelfMessage()) {
         // self message for delaying answering (reader response delay)
         RtpsInetPacket *rtpsMsg = check_and_cast<RtpsInetPacket*>(msg);
-        send(rtpsMsg, "dispatcher_out");
+        send(rtpsMsg, "dispatcherOut");
     }
 
-    delete msg;
+
 }
 
 void Reader::sendMessage(RtpsInetPacket* rtpsMsg)
@@ -92,7 +94,7 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
     // set destination address
     if(destinationAddresses.size() > 1)
     {
-        throw cRuntimeError("Handling of multiple addresses not implemented yet!");
+        throw cRuntimeError("Handling of multiple addresses not supported by reader yet!");
     }
     std::string addr = destinationAddresses[0];
     nackFrag->setDestinationAddress(addr.c_str());
@@ -116,6 +118,12 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
 
     // relevant history cache entry in WriterProxy
     ChangeForWriter* cfw = writerProxy->getChange(sequenceNumber);
+    if(!cfw)
+    {
+        // TODO implement properly: reader shall answer with empty bitmap - all fragments missing
+        // TODO doable by just creating the change if it does not exist yet
+        return nullptr;
+    }
     // sample fragment array
     auto frags = cfw->getFragmentArray();
 
@@ -182,7 +190,6 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
         auto fragStatus = frags[i+startFragNum]->received;
         nackFrag->setFragmentNumberBitmap(i, fragStatus);
     }
-
     nackFrag->setWriterSN(sequenceNumber);
 
     // Finally, calculate the overall rtps message size

@@ -24,7 +24,7 @@ class WriterProxy
     /// history story all samples
     std::list<ChangeForWriter*> history;
     /// latest sample number;
-    unsigned int highestSequenceNumber;
+    int highestSequenceNumber;
 
     /// max size of history
     unsigned int historySize;
@@ -34,7 +34,8 @@ class WriterProxy
      * default constructor
      */
     WriterProxy(unsigned int historySize):
-        historySize(historySize)
+        historySize(historySize),
+        highestSequenceNumber(-1)
     {};
 
     /*
