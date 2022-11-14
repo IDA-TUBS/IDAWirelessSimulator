@@ -52,10 +52,6 @@ class WriterProxy
      */
     ~WriterProxy()
     {
-        for(auto &cfw: history)
-        {
-            delete[] cfw;
-        }
         history.clear();
     };
 

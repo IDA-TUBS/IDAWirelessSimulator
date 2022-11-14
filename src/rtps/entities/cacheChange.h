@@ -146,6 +146,7 @@ class CacheChange
            if(!fragment->acked && !fragment->received){
                return false;
            }
+           EV << "fragment "  << i << "  received\n";
        }
        return complete;
     };

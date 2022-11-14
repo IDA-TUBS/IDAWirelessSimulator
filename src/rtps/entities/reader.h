@@ -30,7 +30,7 @@ class Reader : public cSimpleModule, Endpoint
      */
     ~Reader()
     {
-        delete[] writerProxy;
+        delete writerProxy;
     };
 
   private:

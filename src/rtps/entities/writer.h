@@ -33,22 +33,8 @@ class Writer : public cSimpleModule, protected Endpoint
      */
     ~Writer()
     {
-        for(auto &rp: matchedReaders)
-        {
-            delete[] rp;
-        }
         matchedReaders.clear();
-
-        for(auto &cc: historyCache)
-        {
-            delete[] cc;
-        }
         historyCache.clear();
-
-        for(auto &sf: sendQueue)
-        {
-            delete[] sf;
-        }
         sendQueue.clear();
     };
 

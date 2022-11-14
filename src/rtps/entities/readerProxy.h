@@ -57,10 +57,6 @@ class ReaderProxy
      */
     ~ReaderProxy()
     {
-        for(auto &cfr: history)
-        {
-            delete[] cfr;
-        }
         history.clear();
     };
 
