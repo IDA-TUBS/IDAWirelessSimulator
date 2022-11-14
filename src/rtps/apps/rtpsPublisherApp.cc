@@ -28,6 +28,8 @@ void RtpsPublisherApp::initialize()
 
     c = 0;
 
+    EV << getIndex() << "index \n";
+
     // Create and schedule the self_event for periodic data transmission
     selfEvent = new cMessage("event");
     scheduleAt(simTime(),selfEvent);

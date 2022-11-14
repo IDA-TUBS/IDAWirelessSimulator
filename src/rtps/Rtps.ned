@@ -30,8 +30,8 @@ module Rtps
 {
     parameters:
         //Nbr of writers and readers
-        int nbrWriters;
-        int nbrReaders;
+        int numberWriters;
+        int numberReaders;
 
         int nbrReadersPerApp;
         int nbrApps;
@@ -76,6 +76,7 @@ module Rtps
             dispatcher.readerIn++ <-- reader[i].dispatcherOut;
 
             reader[i].appOut --> appApiOut++;
+            
         }
 
         // Writer ports

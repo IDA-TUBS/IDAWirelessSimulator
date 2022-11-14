@@ -24,6 +24,7 @@ simple Reader like iReader
         int historySize = default(1);
         
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
+        // TODO static delay
         
         @display("i=block/rx");
     gates:        

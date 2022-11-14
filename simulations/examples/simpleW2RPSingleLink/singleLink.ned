@@ -21,8 +21,7 @@ import inet.node.contract.INetworkNode;
 import inet.physicallayer.wireless.common.contract.packetlevel.IRadioMedium;
 import inet.visualizer.contract.IIntegratedVisualizer;
 
-
-import src.stack.StandardRtpsHost;
+import src.stack.RtpsHost;
 
 network singleLink
 {
@@ -45,13 +44,13 @@ network singleLink
             @display("p=580,275");
         }
 
-        hostA: <default("StandardRtpsHost")> like INetworkNode {
+        camera: <default("RtpsHost")> like INetworkNode {
             parameters:
                 @display("p=353.808,367.92;i=misc/securitycamera");
                 numWlanInterfaces = default(1);
 
         }
-        hostB: <default("StandardRtpsHost")> like INetworkNode {
+        vehicle: <default("RtpsHost")> like INetworkNode {
             parameters:
                 @display("p=453.6,367.92;i=misc/car3");
                 numWlanInterfaces = 1;
