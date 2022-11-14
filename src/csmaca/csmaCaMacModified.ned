@@ -10,6 +10,7 @@ package src.csmaca;
 import inet.queueing.contract.IPacketQueue;
 import inet.linklayer.base.MacProtocolBase;
 import inet.linklayer.contract.IMacProtocol;
+import inet.linklayer.csmaca.CsmaCaMac;
 
 //
 // Implements an imaginary CSMA/CA-based MAC protocol with optional
@@ -46,39 +47,15 @@ import inet.linklayer.contract.IMacProtocol;
 // to keep its code simple and accessible, so lost ACKs will cause duplicates
 // in the stream of packets sent up to higher layers.
 //
-module CsmaCaMac_mod6 extends MacProtocolBase like IMacProtocol
+module CsmaCaMacModified extends CsmaCaMac like IMacProtocol
 {
     parameters:
         
-        // -------------- Added parameters ------------
-        double bit_error_rate = default(0);                
-        //int threshold = default(1000);
+        double biterrorrate = default(0);   
         double ta = default(84.0);
         bool ta_enable = default(false);
-        double sample_period @unit(s) = default(100ms); 
-        bool disable_debug_stats = default(false);
-        int writer_entity_id = default(0);
-        // --------------------------------------------
-        
-        string radioModule = default("^.radio"); // The path to the Radio module  //FIXME remove default value
-        string address @mutable = default("auto"); // MAC address as hex string (12 hex digits), or
-                                                   // "auto". "auto" values will be replaced by
-                                                   // a generated MAC address in init stage 0.
-        string fcsMode @enum("declared","computed") = default("declared");
-        bool useAck = default(true);
-        double bitrate @unit(bps);
-        int headerLength @unit(B) = default(17B); // maximum 255 byte, minimum 17B for serializing, see CsmaCaMacDataHeader
-        int ackLength @unit(B) = default(14B); // maximum 255 byte, minimum 14B for serializing, see CsmaCaMacAckHeader
-        double sifsTime @unit(s) = default(10us);
-        double slotTime @unit(s) = default(20us);
-        double difsTime @unit(s) = default(sifsTime + 2 * slotTime);
-        double ackTimeout @unit(s) = default(dropUnit(ackLength * 8) / dropUnit(bitrate) * 1s + sifsTime + slotTime); // measured from the end of data transmission; includes sifs, preamble, physical header, mac ack duration, 2x propagation time, by default assumes slot time > preamble + physical header + 2x propagation time
-        int mtu = default(1500);
-        int cwMin = default(31); // minimum contention window
-        int cwMax = default(1023); // maximum contention window
-        int cwMulticast = default(cwMin); // multicast contention window
-        int retryLimit = default(7); // maximum number of retries
-        @class(CsmaCaMac_mod6);
+
+        @class(CsmaCaMacModified);
         @signal[linkBroken](type=inet::Packet);
         @statistic[linkBroken](title="link break"; source=linkBroken; record=count; interpolationmode=none);
         @statistic[packetDropIncorrectlyReceived](title="packet drop: incorrectly received"; source=packetDropReasonIsIncorrectlyReceived(packetDropped); record=count,sum(packetBytes),vector(packetBytes); interpolationmode=none);

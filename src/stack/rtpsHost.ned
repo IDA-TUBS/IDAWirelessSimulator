@@ -18,20 +18,49 @@ package src.stack;
 import inet.node.base.TransportLayerNodeBase;
 import inet.common.MessageDispatcher;
 import src.rtps.Rtps;
+import src.rtps.contract.iRtpsApp;
+import src.rtps.apps.RtpsSubscriberApp;
+import src.rtps.apps.RtpsPublisherApp;
 
 //
 // TODO auto-generated type
 //
-network RtpsLayerNodeBase extends TransportLayerNodeBase
+network RtpsHost extends TransportLayerNodeBase
 {
     parameters:
-        int numApps = default(0);
+        
+        // int numApps = default(0);
+        int numberReaderApps = default(0);
+        int numberWriterApps = default(0);
+        
+   //     rtpsAppWriter[0..numberWriterApps] = [0..numberWriterApps];
+        
         @figure[applicationLayer](type=rectangle; pos=250,6; size=1000,130; lineColor=#808080; cornerRadius=5; fillColor=#ffff00; fillOpacity=0.1);
         @figure[applicationLayer.title](type=text; pos=1245,11; anchor=ne; text="application layer");
+        @figure[submodules];
+        @display("i=device/pc2;bgb=1253.7,776.475");
+        ipv4.arp.proxyArpInterfaces = default(""); // proxy arp is disabled on hosts by default
+
+        
+        //rtpsAppWriter[0..sizeof(rtpsAppWriter)] = 1;
+        
+        
     submodules:
 
+        rtpsAppWriter[numberWriterApps]:  <default("RtpsPublisherApp")> like iRtpsApp {
+            @display("p=347.24625,65.9925");
+            
+        }
+
+        rtpsAppReader[numberReaderApps]:  <default("RtpsSubscriberApp")> like iRtpsApp {
+
+            @display("p=883.0425,65.9925");
+        }
+        
         rtps: Rtps {
             @display("p=585.89996,66.15");
+            numberWriters = parent.numberWriterApps;
+            numberReaders = parent.numberReaderApps;
         }
 
 
@@ -40,8 +69,22 @@ network RtpsLayerNodeBase extends TransportLayerNodeBase
                 @display("p=750,146;b=1000,5,,,,1");
         }
 
+
+
+
+        
     connections allowunconnected:
 
+        // Connection of Apps
+        for i=0..numberWriterApps-1 {
+            rtpsAppWriter[i].AppOut --> rtps.appApiIn++;
+        }
+
+        for i=0..numberReaderApps-1 {
+            rtpsAppReader[i].AppIn <-- rtps.appApiOut++;
+        }
+
+        // Integration of RTPS
         rtps.socketOut --> at.in++;
         rtps.socketIn <-- at.out++;
 

@@ -5,7 +5,7 @@
 //
 
 
-#include "CsmaCaMac_mod6.h"
+#include "csmaCaMacModified.h"
 
 #include "inet/common/ModuleAccess.h"
 #include "inet/common/ProtocolGroup.h"
@@ -23,9 +23,9 @@ using namespace inet;
 
 using namespace inet::physicallayer;
 
-Define_Module(CsmaCaMac_mod6);
+Define_Module(CsmaCaMacModified);
 
-CsmaCaMac_mod6::~CsmaCaMac_mod6()
+CsmaCaMacModified::~CsmaCaMacModified()
 {
     if (endSifs != nullptr)
         delete static_cast<Packet *>(endSifs->getContextPointer());
@@ -40,19 +40,14 @@ CsmaCaMac_mod6::~CsmaCaMac_mod6()
 /****************************************************************
  * Initialization functions.
  */
-void CsmaCaMac_mod6::initialize(int stage)
+void CsmaCaMacModified::initialize(int stage)
 {
     MacProtocolBase::initialize(stage);
     if (stage == INITSTAGE_LOCAL) {
         EV << "Initializing stage 0\n";
 
         // ---- Added parameters ----
-        bit_error_rate = par("bit_error_rate");
-        disable_debug_stats = par("disable_debug_stats");
-
-
-        //sample_period = par("sample_period");
-
+        biterrorrate = par("biterrorrate");
         // --------------------------
 
 
@@ -76,6 +71,8 @@ void CsmaCaMac_mod6::initialize(int stage)
         difsTime = par("difsTime");
         cwMin = par("cwMin");
         cwMax = par("cwMax");
+
+        // -------------------------------------------------------------------
         // ---- New values to overwrite cwMin and cwMax to the same value ----
         ta = par("ta");
         ta_enable = par("ta_enable");
@@ -84,20 +81,9 @@ void CsmaCaMac_mod6::initialize(int stage)
             cwMax = ta;
         }
         // -------------------------------------------------------------------
+
         cwMulticast = par("cwMulticast");
         retryLimit = par("retryLimit");
-
-        writer_entity_id = par("writer_entity_id");
-
-        std::stringstream ss;
-        ss << writer_entity_id << "_nbr_packets_in_queue_vec";
-        std::string result = ss.str().c_str();
-        const char * c = result.c_str();
-        NumberOfPacketsInQueueVector.setName(c);
-
-        NumberOfPacketsInQueueHistogram.setName("number_of_packets_in_queue_hist");
-//        NumberOfPacketsInQueueVector.setName("number_of_packets_in_queue_vec");
-
 
 
         // initialize self messages
@@ -112,7 +98,7 @@ void CsmaCaMac_mod6::initialize(int stage)
         txQueue = getQueue(gate(upperLayerInGateId));
 
         // state variables
-        fsm.setName("CsmaCaMac_mod6 State Machine");
+        fsm.setName("CsmaCaMacModified State Machine");
         backoffPeriod = -1;
         retryCounter = 0;
 
@@ -149,7 +135,7 @@ void CsmaCaMac_mod6::initialize(int stage)
     }
 }
 
-void CsmaCaMac_mod6::finish()
+void CsmaCaMacModified::finish()
 {
     recordScalar("numRetry", numRetry);
     recordScalar("numSentWithoutRetry", numSentWithoutRetry);
@@ -161,7 +147,7 @@ void CsmaCaMac_mod6::finish()
     recordScalar("numReceivedBroadcast", numReceivedBroadcast);
 }
 
-void CsmaCaMac_mod6::configureNetworkInterface()
+void CsmaCaMacModified::configureNetworkInterface()
 {
     MacAddress address = parseMacAddressParameter(par("address"));
 
@@ -182,23 +168,18 @@ void CsmaCaMac_mod6::configureNetworkInterface()
 /****************************************************************
  * Message handling functions.
  */
-void CsmaCaMac_mod6::handleSelfMessage(cMessage *msg)
+void CsmaCaMacModified::handleSelfMessage(cMessage *msg)
 {
     EV << "received self message: " << msg << endl;
     handleWithFsm(msg);
 }
 
-void CsmaCaMac_mod6::handleUpperPacket(Packet *packet)
+void CsmaCaMacModified::handleUpperPacket(Packet *packet)
 {
     auto destAddress = packet->getTag<MacAddressReq>()->getDestAddress();
     ASSERT(!destAddress.isUnspecified());
     EV << "frame " << packet << " received from higher layer, receiver = " << destAddress << endl;
     encapsulate(packet);
-
-    if(!disable_debug_stats){
-        NumberOfPacketsInQueueHistogram.collect(txQueue->getNumPackets());
-        NumberOfPacketsInQueueVector.record(txQueue->getNumPackets());
-    }
 
     if (currentTxFrame != nullptr)
         throw cRuntimeError("Model error: incomplete transmission exists");
@@ -206,13 +187,13 @@ void CsmaCaMac_mod6::handleUpperPacket(Packet *packet)
     handleWithFsm(currentTxFrame);
 }
 
-void CsmaCaMac_mod6::handleLowerPacket(Packet *packet)
+void CsmaCaMacModified::handleLowerPacket(Packet *packet)
 {
     EV << "received message from lower layer: " << packet << endl;
     handleWithFsm(packet);
 }
 
-void CsmaCaMac_mod6::handleWithFsm(cMessage *msg)
+void CsmaCaMacModified::handleWithFsm(cMessage *msg)
 {
     Packet *frame = dynamic_cast<Packet *>(msg);
     FSMA_Switch(fsm)
@@ -396,7 +377,7 @@ void CsmaCaMac_mod6::handleWithFsm(cMessage *msg)
     getDisplayString().setTagArg("t", 0, fsm.getStateName());
 }
 
-void CsmaCaMac_mod6::receiveSignal(cComponent *source, simsignal_t signalID, intval_t value, cObject *details)
+void CsmaCaMacModified::receiveSignal(cComponent *source, simsignal_t signalID, intval_t value, cObject *details)
 {
     Enter_Method("%s", cComponent::getSignalName(signalID));
 
@@ -412,7 +393,7 @@ void CsmaCaMac_mod6::receiveSignal(cComponent *source, simsignal_t signalID, int
     }
 }
 
-void CsmaCaMac_mod6::encapsulate(Packet *frame)
+void CsmaCaMacModified::encapsulate(Packet *frame)
 {
     auto macHeader = makeShared<CsmaCaMacDataHeader>();
     macHeader->setChunkLength(headerLength);
@@ -437,7 +418,7 @@ void CsmaCaMac_mod6::encapsulate(Packet *frame)
     frame->getTagForUpdate<PacketProtocolTag>()->setProtocol(&Protocol::csmaCaMac);
 }
 
-void CsmaCaMac_mod6::decapsulate(Packet *frame)
+void CsmaCaMacModified::decapsulate(Packet *frame)
 {
     auto macHeader = frame->popAtFront<CsmaCaMacDataHeader>();
     frame->popAtBack(B(4));
@@ -455,48 +436,48 @@ void CsmaCaMac_mod6::decapsulate(Packet *frame)
 /****************************************************************
  * Timer functions.
  */
-void CsmaCaMac_mod6::scheduleSifsTimer(Packet *frame)
+void CsmaCaMacModified::scheduleSifsTimer(Packet *frame)
 {
     EV << "scheduling SIFS timer\n";
     endSifs->setContextPointer(frame);
     scheduleAfter(sifsTime, endSifs);
 }
 
-void CsmaCaMac_mod6::scheduleDifsTimer()
+void CsmaCaMacModified::scheduleDifsTimer()
 {
     EV << "scheduling DIFS timer\n";
     scheduleAfter(difsTime, endDifs);
 }
 
-void CsmaCaMac_mod6::cancelDifsTimer()
+void CsmaCaMacModified::cancelDifsTimer()
 {
     EV << "canceling DIFS timer\n";
     cancelEvent(endDifs);
 }
 
-void CsmaCaMac_mod6::scheduleAckTimeout(Packet *frameToSend)
+void CsmaCaMacModified::scheduleAckTimeout(Packet *frameToSend)
 {
     EV << "scheduling ACK timeout\n";
     scheduleAfter(ackTimeout, endAckTimeout);
 }
 
-void CsmaCaMac_mod6::cancelAckTimer()
+void CsmaCaMacModified::cancelAckTimer()
 {
     EV << "canceling ACK timer\n";
     cancelEvent(endAckTimeout);
 }
 
-void CsmaCaMac_mod6::invalidateBackoffPeriod()
-{
-    backoffPeriod = -1;
-}
+//void CsmaCaMacModified::invalidateBackoffPeriod()
+//{
+//    backoffPeriod = -1;
+//}
 
-bool CsmaCaMac_mod6::isInvalidBackoffPeriod()
-{
-    return backoffPeriod == -1;
-}
+//bool CsmaCaMacModified::isInvalidBackoffPeriod()
+//{
+//    return backoffPeriod == -1;
+//}
 
-void CsmaCaMac_mod6::generateBackoffPeriod()
+void CsmaCaMacModified::generateBackoffPeriod()
 {
     ASSERT(0 <= retryCounter && retryCounter <= retryLimit);
     EV << "generating backoff slot number for retry: " << retryCounter << endl;
@@ -520,15 +501,15 @@ void CsmaCaMac_mod6::generateBackoffPeriod()
     EV << "backoff period set to " << backoffPeriod << endl;
 }
 
-void CsmaCaMac_mod6::decreaseBackoffPeriod()
-{
-    simtime_t elapsedBackoffTime = simTime() - endBackoff->getSendingTime();
-    backoffPeriod -= ((int)(elapsedBackoffTime / slotTime)) * slotTime;
-    ASSERT(backoffPeriod >= 0);
-    EV << "backoff period decreased to " << backoffPeriod << endl;
-}
+//void CsmaCaMacModified::decreaseBackoffPeriod()
+//{
+//    simtime_t elapsedBackoffTime = simTime() - endBackoff->getSendingTime();
+//    backoffPeriod -= ((int)(elapsedBackoffTime / slotTime)) * slotTime;
+//    ASSERT(backoffPeriod >= 0);
+//    EV << "backoff period decreased to " << backoffPeriod << endl;
+//}
 
-void CsmaCaMac_mod6::scheduleBackoffTimer()
+void CsmaCaMacModified::scheduleBackoffTimer()
 {
     EV << "scheduling backoff timer\n";
     if (isInvalidBackoffPeriod())
@@ -536,29 +517,24 @@ void CsmaCaMac_mod6::scheduleBackoffTimer()
     scheduleAfter(backoffPeriod, endBackoff);
 }
 
-void CsmaCaMac_mod6::cancelBackoffTimer()
-{
-    EV << "canceling backoff timer\n";
-    cancelEvent(endBackoff);
-}
+//void CsmaCaMacModified::cancelBackoffTimer()
+//{
+//    EV << "canceling backoff timer\n";
+//    cancelEvent(endBackoff);
+//}
 
 /****************************************************************
  * Frame sender functions.
  */
-void CsmaCaMac_mod6::sendDataFrame(Packet *frameToSend)
+void CsmaCaMacModified::sendDataFrame(Packet *frameToSend)
 {
     EV << "sending Data frame " << frameToSend->getName() << endl;
     radio->setRadioMode(IRadio::RADIO_MODE_TRANSMITTER);
 
-    if(!disable_debug_stats){
-        NumberOfPacketsInQueueHistogram.collect(txQueue->getNumPackets());
-        NumberOfPacketsInQueueVector.record(txQueue->getNumPackets());
-    }
-
     sendDown(frameToSend->dup());
 }
 
-void CsmaCaMac_mod6::sendAckFrame()
+void CsmaCaMacModified::sendAckFrame()
 {
     EV << "sending Ack frame\n";
     auto frameToAck = static_cast<Packet *>(endSifs->getContextPointer());
@@ -586,13 +562,13 @@ void CsmaCaMac_mod6::sendAckFrame()
 /****************************************************************
  * Helper functions.
  */
-void CsmaCaMac_mod6::finishCurrentTransmission()
+void CsmaCaMacModified::finishCurrentTransmission()
 {
     deleteCurrentTxFrame();
     resetTransmissionVariables();
 }
 
-void CsmaCaMac_mod6::giveUpCurrentTransmission()
+void CsmaCaMacModified::giveUpCurrentTransmission()
 {
     auto packet = getCurrentTransmission();
     emitPacketDropSignal(packet, RETRY_LIMIT_REACHED, retryLimit);
@@ -602,7 +578,7 @@ void CsmaCaMac_mod6::giveUpCurrentTransmission()
     numGivenUp++;
 }
 
-void CsmaCaMac_mod6::retryCurrentTransmission()
+void CsmaCaMacModified::retryCurrentTransmission()
 {
     ASSERT(retryCounter < retryLimit);
     retryCounter++;
@@ -610,19 +586,19 @@ void CsmaCaMac_mod6::retryCurrentTransmission()
     generateBackoffPeriod();
 }
 
-Packet *CsmaCaMac_mod6::getCurrentTransmission()
+Packet *CsmaCaMacModified::getCurrentTransmission()
 {
     ASSERT(currentTxFrame != nullptr);
     return currentTxFrame;
 }
 
-void CsmaCaMac_mod6::resetTransmissionVariables()
+void CsmaCaMacModified::resetTransmissionVariables()
 {
     backoffPeriod = -1;
     retryCounter = 0;
 }
 
-void CsmaCaMac_mod6::emitPacketDropSignal(Packet *frame, PacketDropReason reason, int limit)
+void CsmaCaMacModified::emitPacketDropSignal(Packet *frame, PacketDropReason reason, int limit)
 {
     PacketDropDetails details;
     details.setReason(reason);
@@ -630,48 +606,42 @@ void CsmaCaMac_mod6::emitPacketDropSignal(Packet *frame, PacketDropReason reason
     emit(packetDroppedSignal, frame, &details);
 }
 
-bool CsmaCaMac_mod6::isMediumFree()
+bool CsmaCaMacModified::isMediumFree()
 {
     return radio->getReceptionState() == IRadio::RECEPTION_STATE_IDLE;
 }
 
-bool CsmaCaMac_mod6::isReceiving()
+bool CsmaCaMacModified::isReceiving()
 {
     return radio->getReceptionState() == IRadio::RECEPTION_STATE_RECEIVING;
 }
 
-bool CsmaCaMac_mod6::isAck(Packet *frame)
+bool CsmaCaMacModified::isAck(Packet *frame)
 {
     const auto& macHeader = frame->peekAtFront<CsmaCaMacHeader>();
     return macHeader->getType() == CSMA_ACK;
 }
 
-bool CsmaCaMac_mod6::isBroadcast(Packet *frame)
+bool CsmaCaMacModified::isBroadcast(Packet *frame)
 {
     const auto& macHeader = frame->peekAtFront<CsmaCaMacHeader>();
     return macHeader->getReceiverAddress().isBroadcast();
 }
 
-bool CsmaCaMac_mod6::isForUs(Packet *frame)
+bool CsmaCaMacModified::isForUs(Packet *frame)
 {
     const auto& macHeader = frame->peekAtFront<CsmaCaMacHeader>();
     return macHeader->getReceiverAddress() == networkInterface->getMacAddress();
 }
 
-bool CsmaCaMac_mod6::isFcsOk(Packet *frame)
+bool CsmaCaMacModified::isFcsOk(Packet *frame)
 {
 
     // ----------------- PER calculation from bit error rate and packet length ----------------------
-//    double packet_loss_prob = 1.0-pow(1.0-bit_error_rate,frame->getBitLength());
-//    EV << " --- CSMA CA --- \n";
-//    EV << "bit error rate:" << bit_error_rate << "\n";
-//    EV << "packet length: " << frame->getBitLength()/8 << "\n";
-//    EV << "packet error rate: " << packet_loss_prob << "\n";
-//    if (uniform(0, 1) < packet_loss_prob) {
-//        EV << "packet lost\n";
-//        return false;
-//    }
-//    EV << " --- CSMA CA --- \n";
+    double packet_loss_prob = 1.0-pow(1.0-biterrorrate,frame->getBitLength());
+    if (uniform(0, 1) < packet_loss_prob) {
+        return false;
+    }
     // ----------------------------------------------------------------------------------------------
 
 
@@ -699,7 +669,7 @@ bool CsmaCaMac_mod6::isFcsOk(Packet *frame)
     }
 }
 
-uint32_t CsmaCaMac_mod6::computeFcs(const Ptr<const BytesChunk>& bytes)
+uint32_t CsmaCaMacModified::computeFcs(const Ptr<const BytesChunk>& bytes)
 {
     auto bufferLength = B(bytes->getChunkLength()).get();
     auto buffer = new uint8_t[bufferLength];
@@ -709,30 +679,30 @@ uint32_t CsmaCaMac_mod6::computeFcs(const Ptr<const BytesChunk>& bytes)
     return computedFcs;
 }
 
-void CsmaCaMac_mod6::handleStopOperation(LifecycleOperation *operation)
+void CsmaCaMacModified::handleStopOperation(LifecycleOperation *operation)
 {
     MacProtocolBase::handleStopOperation(operation);
     resetTransmissionVariables();
 }
 
-void CsmaCaMac_mod6::handleCrashOperation(LifecycleOperation *operation)
+void CsmaCaMacModified::handleCrashOperation(LifecycleOperation *operation)
 {
     MacProtocolBase::handleCrashOperation(operation);
     resetTransmissionVariables();
 }
 
-void CsmaCaMac_mod6::processUpperPacket()
+void CsmaCaMacModified::processUpperPacket()
 {
     Packet *packet = dequeuePacket();
     handleUpperPacket(packet);
 }
 
-queueing::IPassivePacketSource *CsmaCaMac_mod6::getProvider(cGate *gate)
+queueing::IPassivePacketSource *CsmaCaMacModified::getProvider(cGate *gate)
 {
     return (gate->getId() == upperLayerInGateId) ? txQueue.get() : nullptr;
 }
 
-void CsmaCaMac_mod6::handleCanPullPacketChanged(cGate *gate)
+void CsmaCaMacModified::handleCanPullPacketChanged(cGate *gate)
 {
     Enter_Method("handleCanPullPacketChanged");
     if (fsm.getState() == IDLE && !txQueue->isEmpty()) {
@@ -740,7 +710,7 @@ void CsmaCaMac_mod6::handleCanPullPacketChanged(cGate *gate)
     }
 }
 
-void CsmaCaMac_mod6::handlePullPacketProcessed(Packet *packet, cGate *gate, bool successful)
+void CsmaCaMacModified::handlePullPacketProcessed(Packet *packet, cGate *gate, bool successful)
 {
     Enter_Method("handlePullPacketProcessed");
     throw cRuntimeError("Not supported callback");

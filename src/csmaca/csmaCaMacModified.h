@@ -5,8 +5,8 @@
 //
 
 
-#ifndef __CsmaCaMac_mod6_H
-#define __CsmaCaMac_mod6_H
+#ifndef __CSMACAMACMODIFIED_H
+#define __CSMACAMACMODIFIED_H
 
 #include "inet/common/FSMA.h"
 #include "inet/common/packet/Packet.h"
@@ -16,10 +16,11 @@
 #include "inet/physicallayer/wireless/common/contract/packetlevel/IRadio.h"
 #include "inet/queueing/contract/IActivePacketSink.h"
 #include "inet/queueing/contract/IPacketQueue.h"
+#include "inet/linklayer/csmaca/CsmaCaMac.h"
 
 using namespace inet;
 
-class CsmaCaMac_mod6 : public MacProtocolBase, public IMacProtocol, public queueing::IActivePacketSink
+class CsmaCaMacModified : public CsmaCaMac
 {
   protected:
 
@@ -109,37 +110,13 @@ class CsmaCaMac_mod6 : public MacProtocolBase, public IMacProtocol, public queue
      * @name Construction functions
      */
     //@{
-    virtual ~CsmaCaMac_mod6();
+    virtual ~CsmaCaMacModified();
     //@}
 
     // -------- Added values --------
-    double bit_error_rate;
-    cHistogram PacketArbitrationTimesHistogram;
-    cOutVector PacketArbitrationTimeVector;
-
-    cHistogram NumberOfPacketsInQueueHistogram;
-    cOutVector NumberOfPacketsInQueueVector;
-
-//    cHistogram AverageSampleArbitrationTimesHistogram;
-//    cOutVector AverageSampleArbitrationTimeVector;
-
-//    cHistogram NoArbitratingHistogram;
-//    cOutVector NoArbitratingVector;
-
-    simtime_t sample_period;
-    simtime_t  sum_arbitration_time;
-    double count_number_of_arbitrations;
-    simtime_t  start_arbitration_time;
-    simtime_t last_arbitration_finished_ts;
-    bool currently_arbitrating;
-    int threshold;
-
-    bool disable_debug_stats;
+    double biterrorrate;
     bool ta_enable;
     double ta;
-    int writer_entity_id;
-
-
 
 
 
@@ -183,12 +160,12 @@ class CsmaCaMac_mod6 : public MacProtocolBase, public IMacProtocol, public queue
     virtual void scheduleAckTimeout(Packet *frame);
     virtual void cancelAckTimer();
 
-    virtual void invalidateBackoffPeriod();
-    virtual bool isInvalidBackoffPeriod();
+//    virtual void invalidateBackoffPeriod();
+//    virtual bool isInvalidBackoffPeriod();
     virtual void generateBackoffPeriod();
-    virtual void decreaseBackoffPeriod();
+//    virtual void decreaseBackoffPeriod();
     virtual void scheduleBackoffTimer();
-    virtual void cancelBackoffTimer();
+//    virtual void cancelBackoffTimer();
     //@}
 
     /**
