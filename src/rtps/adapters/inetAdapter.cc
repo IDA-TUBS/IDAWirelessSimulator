@@ -54,7 +54,7 @@ void InetAdapter::handleMessageWhenUp(cMessage *msg)
     if (dynamic_cast<RtpsInetPacket*>(msg))
     {
         cGate *inGate = msg->getArrivalGate();
-        if(inGate->getName() == gate("updSocketIn")->getName())
+        if(inGate->getName() == gate("udpSocketIn")->getName())
         {
             send(msg, gate("dispatcherOut"));
         }

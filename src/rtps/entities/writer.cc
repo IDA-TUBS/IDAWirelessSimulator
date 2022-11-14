@@ -51,10 +51,7 @@ void Writer::finish()
 
 void Writer::handleMessage(cMessage *msg)
 {
-
-
-    delete msg;
-    return; // FIXME Livelock!
+    // FIXME Livelock!
 
     // Check message type
     if (dynamic_cast<Sample*>(msg)!=NULL){
@@ -66,12 +63,15 @@ void Writer::handleMessage(cMessage *msg)
 		// TODO if new sample is the only sample in the historyCache: priming send queue with all fragments of the new sample
 
 		sendMessage();
+
+		delete msg;
     }
     else if(dynamic_cast<RtpsInetPacket*>(msg)!=NULL)
     {
         // Received new NackFrag
         RtpsInetPacket *rtpsMsg = check_and_cast<RtpsInetPacket*>(msg);
         handleNackFrag(rtpsMsg);
+        delete msg;
     }
     else if(msg == sendEvent)
     {
@@ -82,7 +82,7 @@ void Writer::handleMessage(cMessage *msg)
         sendHeartbeatMsg();
 	}
 
-	delete msg;
+
 }
 
 
@@ -124,6 +124,10 @@ void Writer::checkSampleLiveliness()
             deprecatedSNs.push_back(change->sequenceNumber);
             historyCache.pop_front();
             toDelete.push_back(change); // delete all expired changes in the end
+        }
+        if(change == historyCache.back())
+        {
+            break;
         }
     }
 
@@ -184,6 +188,7 @@ SampleFragment* Writer::selectNextFragment(ReaderProxy* rp)
         }
         // take the first unsent and unacknowledged fragment
         tmp = sf;
+        break;
     }
     return tmp;
 }
@@ -245,6 +250,8 @@ bool Writer::sendMessage()
     // Schedule the next event
     simtime_t timeToSend = simTime() + shaping;
     scheduleAt(timeToSend, sendEvent);
+
+    return true;
 }
 
 

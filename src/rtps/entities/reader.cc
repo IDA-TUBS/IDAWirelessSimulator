@@ -35,7 +35,7 @@ void Reader::finish()
 void Reader::handleMessage(cMessage *msg)
 {
     // Check message type
-    if((dynamic_cast<RtpsInetPacket*>(msg) != NULL) && msg->isSelfMessage())
+    if((dynamic_cast<RtpsInetPacket*>(msg) != NULL) && !(msg->isSelfMessage()))
     {
         RtpsInetPacket *rtpsMsg = check_and_cast<RtpsInetPacket*>(msg);
 

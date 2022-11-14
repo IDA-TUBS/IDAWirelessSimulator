@@ -57,7 +57,8 @@ unsigned int Rtps::getNextEntityId(unsigned int appId, bool writer)
         {
             throw omnetpp::cRuntimeError("Cannot register more than %d readers per app", numberReadersPerApp);
         }
-        unsigned int id = entityIdPerApp[appId]%numberReadersPerApp++;
+        unsigned int id = entityIdPerApp[appId];
+        entityIdPerApp[appId]++;
         return id;
     }
 }
