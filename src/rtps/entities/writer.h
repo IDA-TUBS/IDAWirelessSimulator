@@ -131,6 +131,13 @@ class Writer : public cSimpleModule, protected Endpoint
     void handleNackFrag(RtpsInetPacket* nackFrag);
 
     /*
+     * Method for enabling or disabling scheduling of new events in case of an empty send queue
+     *
+     * @return true if timer shall be stopped, false if new event shall be scheduled anyway
+     */
+    virtual bool stopScheduledTimer();
+
+    /*
      * Method for creating new cache change on arrival of new sample
      *
      * @param sample containing all information for building CacheChange
@@ -179,10 +186,10 @@ class Writer : public cSimpleModule, protected Endpoint
      */
 
     virtual void handleMessage(cMessage *msg) override;
+
     /*
      * Overwritten method, called at the end of the simulation
      */
-
     virtual void finish() override;
 };
 

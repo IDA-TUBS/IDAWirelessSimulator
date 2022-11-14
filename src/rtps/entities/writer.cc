@@ -246,6 +246,14 @@ bool Writer::sendMessage()
         auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID);
         send(msg , gate("dispatcherOut"));
     }
+    else
+    {
+        // do not schedule a new event if not desired
+        if(stopScheduledTimer())
+        {
+            return true;
+        }
+    }
 
     // Schedule the next event
     simtime_t timeToSend = simTime() + shaping;
@@ -309,5 +317,14 @@ void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
         sendQueue.push_back(sfToSend);
     }
 
+    // if no new send event is scheduled, schedule a new one immediately (default rtps behaviour)
+    if(!sendEvent->isScheduled()){
+        scheduleAt(simTime(), sendEvent);
+    }
+}
+
+bool Writer::stopScheduledTimer()
+{
+    return true;
 }
 
