@@ -27,7 +27,7 @@ void Writer::initialize()
     // writer parametrization
     deadline = par("deadline");
     fragmentSize = par("fragmentSize");
-    numReaders = par("numReaders");
+    numReaders = par("numberReaders");
     sizeCache = par("historySize");
 
     shaping = par("shaping");
@@ -51,6 +51,11 @@ void Writer::finish()
 
 void Writer::handleMessage(cMessage *msg)
 {
+
+
+    delete msg;
+    return; // FIXME Livelock!
+
     // Check message type
     if (dynamic_cast<Sample*>(msg)!=NULL){
 		// Received new sample from application
@@ -132,6 +137,7 @@ void Writer::checkSampleLiveliness()
 
     if(!sendQueue.empty())
     {
+
         // also purge fragments of expired samples from sendQueue
         for(auto it = sendQueue.cbegin(); it != sendQueue.end(); it++)
         {
