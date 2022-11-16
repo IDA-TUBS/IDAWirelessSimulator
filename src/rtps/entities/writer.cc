@@ -57,6 +57,9 @@ void Writer::handleMessage(cMessage *msg)
 		// Received new sample from application
 		Sample *sample = check_and_cast<Sample*>(msg);
 
+		// first check existing samples for deadline expiry
+		checkSampleLiveliness();
+
 		addSampleToCache(sample);
 
 		// TODO if new sample is the only sample in the historyCache: priming send queue with all fragments of the new sample
@@ -129,6 +132,11 @@ void Writer::checkSampleLiveliness()
             deprecatedSNs.push_back(change->sequenceNumber);
             historyCache.pop_front();
             toDelete.push_back(change); // delete all expired changes in the end
+            if(historyCache.size() == 0)
+            {
+                // deleted only existing entry in cache
+                break;
+            }
         }
         if(change == historyCache.back())
         {
@@ -164,10 +172,7 @@ void Writer::checkSampleLiveliness()
     }
 
     // finally delete expired changes
-    for(auto &change: toDelete)
-    {
-        delete[] change;
-    }
+    toDelete.clear();
 }
 
 
@@ -319,6 +324,7 @@ void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
     rp->processNack(nackFrag);
     unsigned int sequenceNumber = nackFrag->getWriterSN();
     bool complete = rp->checkSampleCompleteness(sequenceNumber);
+
 
     // default RTPS behavior: just retransmit all fragments marked as missing asap
     // add missing fragments to sendQueue (if not already present)

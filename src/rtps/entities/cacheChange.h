@@ -81,6 +81,8 @@ class CacheChange
         numberFragments(change.numberFragments),
         arrivalTime(change.arrivalTime)
     {
+        sampleFragmentArray = new SampleFragment*[this->numberFragments];
+
         auto sampleArrayRef = change.getFragmentArray();
 
         // copy contents of reference array (CacheChange) to this instance's array
@@ -94,7 +96,11 @@ class CacheChange
      */
     ~CacheChange()
     {
-        delete[] sampleFragmentArray;
+        for(int i = 0; i < numberFragments; i++)
+        {
+            SampleFragment* fragment = this->sampleFragmentArray[i];
+            delete fragment;
+        }
     };
 
     /*
@@ -130,7 +136,7 @@ class CacheChange
      */
     bool isValid(simtime_t deadline)
     {
-        return ((simTime() - this->arrivalTime) <= deadline);
+        return ((simTime() - this->arrivalTime) < deadline);
     }
 
     /*
