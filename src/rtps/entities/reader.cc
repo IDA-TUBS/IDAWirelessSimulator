@@ -88,7 +88,7 @@ void Reader::sendMessage(RtpsInetPacket* rtpsMsg)
 
 RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
 {
-    //Create message instance
+    // Create message instance
     RtpsInetPacket* nackFrag = new RtpsInetPacket();
 
     // set destination address
@@ -121,7 +121,7 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
     if(!cfw)
     {
         // TODO implement properly: reader shall answer with empty bitmap - all fragments missing
-        // TODO doable by just creating the change if it does not exist yet
+        // TODO doable by just creating the change if it does not exist yet or just respond with "empty" bitmap
         return nullptr;
     }
     // sample fragment array
@@ -145,7 +145,7 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
         startFragNum = lowestUnackedMsg;
     }
 
-    // Get the highest unacknowledged fragment number within the currently send
+    // Get the highest unacknowledged fragment number within the already sent fragments
     int highestUnackedMsg = 0;
     for(int i = 0; i < cfw->numberFragments; i++)
     {
@@ -174,12 +174,12 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
     }
 
     // use space up
-    if(hb->getLastFragmentNum()- endFragNum >= nbrPadBits){
+    if(hb->getLastFragmentNum() - endFragNum >= nbrPadBits){
         startFragNum = startFragNum + nbrPadBits;
         nbrPadBits = 0;
     } else {
-        nbrPadBits = nbrPadBits - (hb->getLastFragmentNum()- startFragNum);
-        startFragNum = hb->getLastFragmentNum();
+        nbrPadBits = nbrPadBits - (hb->getLastFragmentNum()- endFragNum);
+        endFragNum = hb->getLastFragmentNum();
     }
 
     nackFrag->setFragmentNumberStateNbrBits(endFragNum - startFragNum + 1);
