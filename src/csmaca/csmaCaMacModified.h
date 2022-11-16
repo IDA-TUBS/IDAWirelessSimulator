@@ -160,12 +160,12 @@ class CsmaCaMacModified : public CsmaCaMac
     virtual void scheduleAckTimeout(Packet *frame);
     virtual void cancelAckTimer();
 
-//    virtual void invalidateBackoffPeriod();
-//    virtual bool isInvalidBackoffPeriod();
+    virtual void invalidateBackoffPeriod();
+    virtual bool isInvalidBackoffPeriod();
     virtual void generateBackoffPeriod();
-//    virtual void decreaseBackoffPeriod();
+    virtual void decreaseBackoffPeriod();
     virtual void scheduleBackoffTimer();
-//    virtual void cancelBackoffTimer();
+    virtual void cancelBackoffTimer();
     //@}
 
     /**

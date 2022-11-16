@@ -467,15 +467,15 @@ void CsmaCaMacModified::cancelAckTimer()
     cancelEvent(endAckTimeout);
 }
 
-//void CsmaCaMacModified::invalidateBackoffPeriod()
-//{
-//    backoffPeriod = -1;
-//}
+void CsmaCaMacModified::invalidateBackoffPeriod()
+{
+    backoffPeriod = -1;
+}
 
-//bool CsmaCaMacModified::isInvalidBackoffPeriod()
-//{
-//    return backoffPeriod == -1;
-//}
+bool CsmaCaMacModified::isInvalidBackoffPeriod()
+{
+    return backoffPeriod == -1;
+}
 
 void CsmaCaMacModified::generateBackoffPeriod()
 {
@@ -501,13 +501,13 @@ void CsmaCaMacModified::generateBackoffPeriod()
     EV << "backoff period set to " << backoffPeriod << endl;
 }
 
-//void CsmaCaMacModified::decreaseBackoffPeriod()
-//{
-//    simtime_t elapsedBackoffTime = simTime() - endBackoff->getSendingTime();
-//    backoffPeriod -= ((int)(elapsedBackoffTime / slotTime)) * slotTime;
-//    ASSERT(backoffPeriod >= 0);
-//    EV << "backoff period decreased to " << backoffPeriod << endl;
-//}
+void CsmaCaMacModified::decreaseBackoffPeriod()
+{
+    simtime_t elapsedBackoffTime = simTime() - endBackoff->getSendingTime();
+    backoffPeriod -= ((int)(elapsedBackoffTime / slotTime)) * slotTime;
+    ASSERT(backoffPeriod >= 0);
+    EV << "backoff period decreased to " << backoffPeriod << endl;
+}
 
 void CsmaCaMacModified::scheduleBackoffTimer()
 {
@@ -517,11 +517,11 @@ void CsmaCaMacModified::scheduleBackoffTimer()
     scheduleAfter(backoffPeriod, endBackoff);
 }
 
-//void CsmaCaMacModified::cancelBackoffTimer()
-//{
-//    EV << "canceling backoff timer\n";
-//    cancelEvent(endBackoff);
-//}
+void CsmaCaMacModified::cancelBackoffTimer()
+{
+    EV << "canceling backoff timer\n";
+    cancelEvent(endBackoff);
+}
 
 /****************************************************************
  * Frame sender functions.
