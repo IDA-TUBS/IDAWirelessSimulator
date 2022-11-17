@@ -383,7 +383,6 @@ void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
         unsigned int sequenceNumber = nackFrag->getWriterSN();
         bool complete = rp->checkSampleCompleteness(sequenceNumber);
 
-
         // default RTPS behavior: just retransmit all fragments marked as missing asap
         // add missing fragments to sendQueue (if not already present)
         auto unsentFragments = rp->getUnsentFragments(sequenceNumber);
@@ -396,9 +395,10 @@ void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
         }
 
         // if no new send event is scheduled, schedule a new one immediately (default rtps behaviour)
-        if(!sendEvent->isScheduled()){
+        if(!sendEvent->isScheduled())
+        {
             scheduleAt(simTime(), sendEvent);
-    }
+        }
     }
 }
 
