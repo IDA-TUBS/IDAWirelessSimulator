@@ -47,7 +47,7 @@ void CsmaCaMacModified::initialize(int stage)
         EV << "Initializing stage 0\n";
 
         // ---- Added parameters ----
-        biterrorrate = par("biterrorrate");
+        bitErrorRate = par("bitErrorRate");
         // --------------------------
 
 
@@ -631,14 +631,21 @@ bool CsmaCaMacModified::isBroadcast(Packet *frame)
 bool CsmaCaMacModified::isForUs(Packet *frame)
 {
     const auto& macHeader = frame->peekAtFront<CsmaCaMacHeader>();
-    return macHeader->getReceiverAddress() == networkInterface->getMacAddress();
+
+    // TODO is it possible to do this properly without accepting any multicast packet??
+    if(macHeader->getReceiverAddress().isMulticast()){
+        return true;
+    }
+
+    bool tmp = macHeader->getReceiverAddress() == networkInterface->getMacAddress();
+    return tmp;
 }
 
 bool CsmaCaMacModified::isFcsOk(Packet *frame)
 {
 
     // ----------------- PER calculation from bit error rate and packet length ----------------------
-    double packet_loss_prob = 1.0-pow(1.0-biterrorrate,frame->getBitLength());
+    double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength());
     if (uniform(0, 1) < packet_loss_prob) {
         return false;
     }

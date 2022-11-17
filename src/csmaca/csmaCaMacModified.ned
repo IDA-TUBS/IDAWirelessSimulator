@@ -51,7 +51,7 @@ module CsmaCaMacModified extends CsmaCaMac like IMacProtocol
 {
     parameters:
         
-        double biterrorrate = default(0);   
+        double bitErrorRate = default(0);   
         double ta = default(84.0);
         bool ta_enable = default(false);
 

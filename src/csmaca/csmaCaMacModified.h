@@ -114,7 +114,7 @@ class CsmaCaMacModified : public CsmaCaMac
     //@}
 
     // -------- Added values --------
-    double biterrorrate;
+    double bitErrorRate;
     bool ta_enable;
     double ta;
 
