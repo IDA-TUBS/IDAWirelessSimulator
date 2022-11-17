@@ -137,12 +137,10 @@ class Writer : public cSimpleModule, protected Endpoint
     void checkSampleLiveliness();
 
     /*
-     * Method for evaluating whether a reader has received all fragments of a sample
-     *
-     * @param rp pointer to ReaderProxy corresponding to the reader whose status of the current sample shall be checked
-     * @return true if complete, else false
+     * Method for removing samples from the history cache in case the sample has been successfully
+     * transmitted to ALL matched readers
      */
-    bool checkSampleCompletenessAtReader(ReaderProxy* rp);
+    void removeCompleteSamples();
 
     /*
      * Method for selecting a reader for the next transmission

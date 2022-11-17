@@ -89,8 +89,6 @@ void Writer::handleMessage(cMessage *msg)
     {
         sendHeartbeatMsg();
 	}
-
-
 }
 
 
@@ -176,6 +174,50 @@ void Writer::checkSampleLiveliness()
 }
 
 
+
+
+void Writer::removeCompleteSamples()
+{
+    if(historyCache.size() == 0)
+    {
+        return;
+    }
+
+    // iterate over all changes, remove those that are complete at ALL (!!) readers
+    while(1)
+    {
+        auto* change = historyCache.front();
+
+        bool completed = true;
+        for(auto rp: matchedReaders)
+        {
+            if(!(rp->checkSampleCompleteness(change->sequenceNumber)))
+            {
+                completed = false;
+                break;
+            }
+        }
+
+        if(completed)
+        {
+            // remove if change successfully acknowledged by all readers
+            for(auto rp: matchedReaders)
+            {
+                rp->removeChange(change->sequenceNumber);
+            }
+            historyCache.pop_front();
+            delete change;
+        }
+
+        if(historyCache.size() == 0 || change == historyCache.back())
+        {
+            break;
+        }
+    }
+}
+
+
+
 ReaderProxy* Writer::selectReader()
 {
     // for retransmissions this does not matter anyway, as default RTPS just retransmits any
@@ -211,8 +253,18 @@ bool Writer::sendMessage()
         return false;
     }
 
-    // check liveliness of sample in history cache
+    // check liveliness of sample in history cache, removes outdated samples
     checkSampleLiveliness();
+
+    // check whether a sample has been successfully transmitted to all readers
+    removeCompleteSamples();
+
+    // if no sample left to transmit: no need to transmit anything or schedule a new transmission
+    if(historyCache.size() == 0)
+    {
+        return false;
+    }
+
 
     // differentiate two scenarios:
     // 1. send queue is empty, select a new fragment for tx
@@ -279,34 +331,38 @@ bool Writer::sendHeartbeatMsg()
     // could choose any reader, as we assume multicast and not multiple unicast streams here
     ChangeForReader* change = matchedReaders[0]->getCurrentChange();
 
-    RtpsInetPacket* rtpsMsg = new RtpsInetPacket();
-    rtpsMsg->setInfoDestinationSet(false);
-
-    if(destinationAddresses.size() > 1)
+    if(change)
     {
-        throw cRuntimeError("Handling of multiple addresses not implemented yet!");
+        // only send heartbeat if there is a sample in the history cache
+        RtpsInetPacket* rtpsMsg = new RtpsInetPacket();
+        rtpsMsg->setInfoDestinationSet(false);
+
+        if(destinationAddresses.size() > 1)
+        {
+            throw cRuntimeError("Handling of multiple addresses not implemented yet!");
+        }
+        std::string addr = destinationAddresses[0];
+        // set destination address (needed in InetAdapter)
+        rtpsMsg->setDestinationAddress(addr.c_str());
+
+        // get highest sent fragment number from the change
+        rtpsMsg->setLastFragmentNum(change->highestFNSend);
+
+        // set all other message attributes accordingly
+        rtpsMsg->setHeartBeatFragSet(true);
+        rtpsMsg->setSampleSize(change->sampleSize);
+        rtpsMsg->setFragmentSize(this->fragmentSize);
+        rtpsMsg->setGeneralFragmentSize(this->fragmentSize);
+
+        rtpsMsg->setWriterSN(change->sequenceNumber);
+        rtpsMsg->setWriterId(this->entityId);
+
+        // calc and set message size
+        calculateRtpsMsgSize(rtpsMsg);
+
+        // transmit HB message
+        send(rtpsMsg , gate("dispatcherOut"));
     }
-    std::string addr = destinationAddresses[0];
-    // set destination address (needed in InetAdapter)
-    rtpsMsg->setDestinationAddress(addr.c_str());
-
-    // get highest sent fragment number from the change
-    rtpsMsg->setLastFragmentNum(change->highestFNSend);
-
-    // set all other message attributes accordingly
-    rtpsMsg->setHeartBeatFragSet(true);
-    rtpsMsg->setSampleSize(change->sampleSize);
-    rtpsMsg->setFragmentSize(this->fragmentSize);
-    rtpsMsg->setGeneralFragmentSize(this->fragmentSize);
-
-    rtpsMsg->setWriterSN(change->sequenceNumber);
-    rtpsMsg->setWriterId(this->entityId);
-
-    // calc and set message size
-    calculateRtpsMsgSize(rtpsMsg);
-
-    // transmit HB message
-    send(rtpsMsg , gate("dispatcherOut"));
 
     // schedule next heartbeat
     scheduleAt(simTime() + hbPeriod, hbTimer);
@@ -321,25 +377,28 @@ void Writer::handleNackFrag(RtpsInetPacket* nackFrag) {
     // reader entity ID mapped to entityId - thisappID * (maxNumberReader + 1) - 1
     auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders() + 1) - 1];
 
-    rp->processNack(nackFrag);
-    unsigned int sequenceNumber = nackFrag->getWriterSN();
-    bool complete = rp->checkSampleCompleteness(sequenceNumber);
-
-
-    // default RTPS behavior: just retransmit all fragments marked as missing asap
-    // add missing fragments to sendQueue (if not already present)
-    auto unsentFragments = rp->getUnsentFragments(sequenceNumber);
-
-    // use actual 'data' sample fragment from history cache instead of sf from reader proxy
-    for (auto sf: unsentFragments)
+    // only handle NackFrag if sample still in history, if already complete or expired just ignore NackFrag
+    if(rp->processNack(nackFrag))
     {
-        auto sfToSend = (sf->baseChange->getFragmentArray())[sf->fragmentStartingNum];
-        sendQueue.push_back(sfToSend);
-    }
+        unsigned int sequenceNumber = nackFrag->getWriterSN();
+        bool complete = rp->checkSampleCompleteness(sequenceNumber);
 
-    // if no new send event is scheduled, schedule a new one immediately (default rtps behaviour)
-    if(!sendEvent->isScheduled()){
-        scheduleAt(simTime(), sendEvent);
+
+        // default RTPS behavior: just retransmit all fragments marked as missing asap
+        // add missing fragments to sendQueue (if not already present)
+        auto unsentFragments = rp->getUnsentFragments(sequenceNumber);
+
+        // use actual 'data' sample fragment from history cache instead of sf from reader proxy
+        for (auto sf: unsentFragments)
+        {
+            auto sfToSend = (sf->baseChange->getFragmentArray())[sf->fragmentStartingNum];
+            sendQueue.push_back(sfToSend);
+        }
+
+        // if no new send event is scheduled, schedule a new one immediately (default rtps behaviour)
+        if(!sendEvent->isScheduled()){
+            scheduleAt(simTime(), sendEvent);
+    }
     }
 }
 

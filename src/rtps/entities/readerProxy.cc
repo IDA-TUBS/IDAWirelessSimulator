@@ -56,9 +56,14 @@ bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)
     // first get relevant sequence number
     unsigned int sequenceNumber = nackFrag->getWriterSN();
 
+    if(history.size() == 0)
+    {
+        return false;
+    }
+
     // access change with the given sequence number
     ChangeForReader* change = nullptr;
-    for (auto cfr: history)
+    for(auto cfr: history)
     {
         if (cfr->sequenceNumber == sequenceNumber)
         {
@@ -130,7 +135,11 @@ bool ReaderProxy::checkSampleCompleteness(unsigned int sequenceNumber)
         }
     }
 
-    bool complete = change->checkForCompleteness();
+    bool complete = false;
+    if(change)
+    {
+        complete = change->checkForCompleteness();
+    }
     if(complete)
     {
         // TODO remove sample from history? maybe just remove if expired or all readers completed reception of a given sample

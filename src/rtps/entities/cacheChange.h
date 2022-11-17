@@ -34,8 +34,12 @@ class CacheChange
     /// total number of fragments per sample
     unsigned int numberFragments;
 
+
     /// timestamp: when did the sample arrive at the middleware
     simtime_t arrivalTime;
+
+    /// status flag for indicating complete transmission of a sample (to a reader)
+    bool complete;
 
     /// array storing the 'data'
     SampleFragment** sampleFragmentArray;
@@ -146,7 +150,7 @@ class CacheChange
      */
     bool checkForCompleteness()
     {
-       bool complete = true;
+       bool tmp = true;
        for(int i = 0; i < this->numberFragments; i++){
            SampleFragment* fragment = this->sampleFragmentArray[i];
            if(!fragment->acked && !fragment->received){
@@ -154,7 +158,8 @@ class CacheChange
            }
            EV << "fragment "  << i << "  received\n";
        }
-       return complete;
+       this->complete = tmp;
+       return this->complete;
     };
 
 };
