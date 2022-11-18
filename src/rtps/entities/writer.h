@@ -60,6 +60,9 @@ class Writer : public cSimpleModule, protected Endpoint
     /// nack suppression duration // TODO implement properly
     simtime_t nackSuppressionDuration;
 
+    /// flag for enabling or disabling separate HB messages
+    bool enableSeparateHBs;
+
     /// application ID
     unsigned int appID;
     /// vector storing destination address(es)
@@ -92,6 +95,8 @@ class Writer : public cSimpleModule, protected Endpoint
     // ==============
     /// pointer to rtps parent instances, used for parameter retrieval
     Rtps* rtpsParent;
+    /// variable storing the sequence number of the sample that is currently being transmitted
+    int currentSampleNumber;
 
 
   protected:

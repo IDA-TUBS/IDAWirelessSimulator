@@ -63,6 +63,14 @@ public:
      */
     RtpsInetPacket* createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize, std::string addr, unsigned int appId);
 
+    /*
+     * Method for adding a HBFrag to an already existing data frag msg
+     *
+     * @param rtpsMsg message to which to append the heartbeat frag
+     * @param highestFragmentNumber highest yet transmitted fragment number
+     */
+    void addHBFrag(RtpsInetPacket* rtpsMsg, unsigned int highestFragmentNumber);
+
 
     /*
      * This method calculates the message size of an rtps message in order to model realistic message sizes.

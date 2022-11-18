@@ -25,15 +25,15 @@ class ReaderProxy
     /// entity of corresponding reader
     unsigned int readerID;
 
-    /// the reader's priority
-    unsigned int priority;
-
     /// history story all samples
     std::list<ChangeForReader*> history;
     /// max size of history
     unsigned int historySize;
 
   public:
+    /// the reader's priority
+    unsigned int priority;
+
     /*
      * default constructor
      */

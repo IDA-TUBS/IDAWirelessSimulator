@@ -17,7 +17,7 @@ package src.rtps.entities;
 
 import src.rtps.contract.iWriter;
 
-simple Writer like iWriter
+simple WriterWiMEP like iWriter
 {
     parameters:
         // Other configuration parameters
@@ -29,14 +29,13 @@ simple Writer like iWriter
         
         // Timing Model
         double shaping @unit(s) = default(10us);
-        double hbPeriod @unit(s) = default(2000us);
         double nackSuppressionDuration @unit(s) = default(0us);
-        
-        // enabling or disabling separate HBs
-        bool enableSeparateHBs = default(true);
         
         int appID = default(-1);
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
+        
+        // multicast extension
+        bool prioritized = default(true);
         
         // Display Parameters
         @display("i=block/tx");

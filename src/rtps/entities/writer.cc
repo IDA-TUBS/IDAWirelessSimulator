@@ -32,7 +32,9 @@ void Writer::initialize()
     sizeCache = par("historySize");
 
     shaping = par("shaping");
+    enableSeparateHBs = par("enableSeparateHBs");
     hbPeriod = par("hbPeriod");
+
 
     // reader proxy initialization
     for(int i = 0; i < numReaders; i++) {
@@ -41,6 +43,9 @@ void Writer::initialize()
         auto rp = new ReaderProxy(readerId, this->sizeCache);
         matchedReaders.push_back(rp);
     }
+
+    // set up currentSampleNumber for new writer instance
+    currentSampleNumber = -1;
 }
 
 void Writer::finish()
@@ -62,16 +67,16 @@ void Writer::handleMessage(cMessage *msg)
 
 		addSampleToCache(sample);
 
-		// TODO if new sample is the only sample in the historyCache: priming send queue with all fragments of the new sample
-
 		sendMessage();
 
-		// schedule periodic heartbeats
-		if(hbTimer->isScheduled()){
-            cancelEvent(hbTimer);
-        }
-        scheduleAt(simTime() + hbPeriod, hbTimer);
-
+		if(enableSeparateHBs)
+		{
+		    // schedule periodic heartbeats
+            if(hbTimer->isScheduled()){
+                cancelEvent(hbTimer);
+            }
+            scheduleAt(simTime() + hbPeriod, hbTimer);
+		}
 		delete msg;
     }
     else if(dynamic_cast<RtpsInetPacket*>(msg)!=NULL)
@@ -221,7 +226,8 @@ void Writer::removeCompleteSamples()
 ReaderProxy* Writer::selectReader()
 {
     // for retransmissions this does not matter anyway, as default RTPS just retransmits any
-    // negatively acknowledged fragment immediately, hence just select the first one
+    // negatively acknowledged fragment immediately, hence just select the first one here
+    // only used for queuing fragments at the beginning
     ReaderProxy* rp = matchedReaders[0];
 
     return rp;
@@ -230,6 +236,7 @@ ReaderProxy* Writer::selectReader()
 
 SampleFragment* Writer::selectNextFragment(ReaderProxy* rp)
 {
+    // find the unacknowledged fragment and return that fragment for transmission
     SampleFragment *tmp = nullptr;
     SampleFragment **fragments = rp->getCurrentChange()->getFragmentArray();
     for (int i = 0; i < rp->getCurrentChange()->numberFragments; i++)
@@ -264,7 +271,7 @@ bool Writer::sendMessage()
     {
         return false;
     }
-
+    currentSampleNumber = historyCache.front()->sequenceNumber;
 
     // differentiate two scenarios:
     // 1. send queue is empty, select a new fragment for tx
@@ -328,11 +335,12 @@ bool Writer::sendMessage()
 bool Writer::sendHeartbeatMsg()
 {
     // first get the relevant sample
-    // could choose any reader, as we assume multicast and not multiple unicast streams here
+    // could choose any reader as we assume either uni- or multicast and not multiple unicast streams here
     ChangeForReader* change = matchedReaders[0]->getCurrentChange();
 
     if(change)
     {
+        // TODO move the following code to a separate method in class Endpoint
         // only send heartbeat if there is a sample in the history cache
         RtpsInetPacket* rtpsMsg = new RtpsInetPacket();
         rtpsMsg->setInfoDestinationSet(false);

@@ -63,6 +63,13 @@ RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragme
 }
 
 
+void Endpoint::addHBFrag(RtpsInetPacket* rtpsMsg, unsigned int highestFragmentNumber)
+{
+    rtpsMsg->setHeartBeatFragSet(true);
+    rtpsMsg->setLastFragmentNum(highestFragmentNumber);
+}
+
+
 void Endpoint::calculateRtpsMsgSize(RtpsInetPacket* rtpsMsg){
 
     int currentSize = 0;
