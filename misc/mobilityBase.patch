@@ -1,0 +1,12 @@
+--- MobilityBase.cc	2022-11-18 07:11:07.329648100 +0100
++++ MobilityBase_new.cc	2022-11-18 07:28:35.979622700 +0100
+@@ -125,9 +125,6 @@
+     auto coordinateSystem = findModuleFromPar<IGeographicCoordinateSystem>(par("coordinateSystemModule"), this);
+     if (subjectModule != nullptr && hasPar("initFromDisplayString") && par("initFromDisplayString")) {
+         const char *s = subjectModule->getDisplayString().getTagArg("p", 2);
+-        if (s && *s)
+-            throw cRuntimeError("The coordinates of '%s' are invalid. Please remove automatic arrangement"
+-                                " (3rd argument of 'p' tag) from '@display' attribute.", subjectModule->getFullPath().c_str());
+         bool filled = parseIntTo(subjectModule->getDisplayString().getTagArg("p", 0), lastPosition.x) &&
+                       parseIntTo(subjectModule->getDisplayString().getTagArg("p", 1), lastPosition.y);
+         if (filled) {
