@@ -120,7 +120,9 @@ bool Writer::addSampleToCache(Sample* sample)
 
 void Writer::checkSampleLiveliness()
 {
-    if(historyCache.size() == 0){
+    if(historyCache.size() == 0)
+    {
+        sendQueue.clear();
         return;
     }
 
@@ -158,7 +160,6 @@ void Writer::checkSampleLiveliness()
 
     if(!sendQueue.empty())
     {
-
         // also purge fragments of expired samples from sendQueue
         for(auto it = sendQueue.cbegin(); it != sendQueue.end(); it++)
         {
@@ -212,6 +213,19 @@ void Writer::removeCompleteSamples()
                 rp->removeChange(change->sequenceNumber);
             }
             historyCache.pop_front();
+            // remove all queued fragments of that sample from the send queue
+            for(auto it = sendQueue.cbegin(); it != sendQueue.end(); it++)
+            {
+                // remove fragments if their sequence number matches that of the just removed change
+                unsigned int sequenceNumber = (*it)->baseChange->sequenceNumber;
+
+                if(sequenceNumber == change->sequenceNumber)
+                {
+                    sendQueue.erase(it--);
+                    break;
+                }
+
+            }
             delete change;
         }
 

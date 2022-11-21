@@ -51,7 +51,11 @@ bool WriterProxy::updateFragmentStatus (fragmentStates status, unsigned int sequ
         }
     }
 
-    return tmp->setFragmentStatus(status, fragmentNumber);
+    if(tmp)
+    {
+        return tmp->setFragmentStatus(status, fragmentNumber);
+    }
+    return false;
 }
 
 
@@ -68,7 +72,11 @@ bool WriterProxy::checkSampleCompleteness(unsigned int sequenceNumber)
         }
     }
 
-    bool complete = change->checkForCompleteness();
+    bool complete = false;
+    if(change)
+    {
+        complete = change->checkForCompleteness();
+    }
     if(complete)
     {
         // TODO remove sample from history? or do at a different point in time
