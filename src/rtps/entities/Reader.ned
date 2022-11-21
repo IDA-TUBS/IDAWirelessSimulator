@@ -23,6 +23,9 @@ simple Reader like iReader
         int appID = default(-1);
         int historySize = default(1);
         
+        double deadline @unit(s) = default(100ms);
+        double readerResponseDelay @unit(s) = default(0ms);
+        
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
         // TODO static delay
         

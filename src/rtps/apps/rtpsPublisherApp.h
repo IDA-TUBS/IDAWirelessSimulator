@@ -29,6 +29,8 @@ class RtpsPublisherApp : public cSimpleModule
 
     /// misc
     int c;
+    /// sequence number counter
+    unsigned int sequenceNumber;
 
   public:
     RtpsPublisherApp() {}

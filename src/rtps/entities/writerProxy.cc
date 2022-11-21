@@ -7,11 +7,12 @@
 
 bool WriterProxy::addChange(CacheChange &change)
 {
-    if(change.sequenceNumber == highestSequenceNumber || history.size() == historySize)
+    if(change.sequenceNumber == highestSequenceNumber) // || history.size() == historySize)
     {
         // no new sample, no need to add to history
         return false;
     }
+
     ChangeForWriter* cfr = new ChangeForWriter(change);
 
     history.push_back(cfr);
@@ -19,6 +20,23 @@ bool WriterProxy::addChange(CacheChange &change)
 
     return true;
 }
+
+void WriterProxy::removeChange(unsigned int sequenceNumber)
+{
+    for (auto it = history.begin(); it != history.end();)
+    {
+        if ((*it)->sequenceNumber <= sequenceNumber)
+        {
+            history.erase(it);
+            return;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
 
 bool WriterProxy::updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber)
 {

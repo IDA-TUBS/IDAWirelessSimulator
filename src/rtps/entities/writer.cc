@@ -127,7 +127,8 @@ void Writer::checkSampleLiveliness()
     std::vector<unsigned int> deprecatedSNs;
     std::vector<CacheChange*> toDelete;
     // check liveliness of samples in history cache, if deadline expired remove sample from cache and ReaderProxies
-    while(1){
+    while(1)
+    {
         auto* change = historyCache.front();
 
         if(!change->isValid(this->deadline))

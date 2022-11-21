@@ -19,11 +19,13 @@ void Reader::initialize()
     const char *destAddrs = par("destAddresses");
     destinationAddresses = cStringTokenizer(destAddrs).asVector();
 
+    deadline = par("deadline");
+
     sizeCache = par("historySize");
 
     writerProxy = new WriterProxy(this->sizeCache);
 
-    responseDelay = 0;
+    responseDelay = par("readerResponseDelay");
 }
 
 
@@ -47,6 +49,9 @@ void Reader::handleMessage(cMessage *msg)
 
         if(rtpsMsg->getDataFragSet())
         {
+            // first check whether existing samples in history expired or are still valid
+            checkSampleLiveliness();
+
             // if DataFrag, update cache
             // create new change
             auto change = new CacheChange(rtpsMsg->getWriterSN(), rtpsMsg->getSampleSize(), rtpsMsg->getFragmentSize(), rtpsMsg->getArrivalTime());
@@ -64,9 +69,11 @@ void Reader::handleMessage(cMessage *msg)
             // if HB or HBFrag
             // respond with NackFrag
             auto nackFrag = generateNackFrag(rtpsMsg);
-            sendMessage(nackFrag);
+            if(nackFrag)
+            {
+                sendMessage(nackFrag);
+            }
         }
-
         delete msg;
     }
 
@@ -78,6 +85,46 @@ void Reader::handleMessage(cMessage *msg)
 
 
 }
+
+
+void Reader::checkSampleLiveliness()
+{
+    if(writerProxy->getCurrentChange() == nullptr){
+        return;
+    }
+
+    std::vector<unsigned int> deprecatedSNs;
+    // check liveliness of samples in history cache, if deadline expired remove sample from cache and ReaderProxies
+    // assumption: samples transmitted in the right order and each sample has the same deadline, hence if the first
+    // sample is not expired yet, all other example did not expire too
+    while(1)
+    {
+        auto change = writerProxy->getCurrentChange();
+
+        if(!change->isValid(this->deadline))
+        {
+            deprecatedSNs.push_back(change->sequenceNumber);
+            writerProxy->removeChange(change->sequenceNumber);
+            if(writerProxy->getSize() == 0)
+            {
+                break;
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
 
 void Reader::sendMessage(RtpsInetPacket* rtpsMsg)
 {

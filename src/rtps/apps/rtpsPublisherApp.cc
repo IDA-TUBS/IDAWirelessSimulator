@@ -27,6 +27,7 @@ void RtpsPublisherApp::initialize()
     jitter = par("jitter");
 
     c = 0;
+    sequenceNumber = 0;
 
     EV << getIndex() << "index \n";
 
@@ -49,6 +50,9 @@ void RtpsPublisherApp::handleMessage(cMessage *msg)
     }
     else
     {
+        sample->setSequenceNumber(sequenceNumber);
+        sequenceNumber++;
+
         send(sample, "AppOut");
         // Trigger the next self-event after the defined sample period
 

@@ -64,6 +64,13 @@ class WriterProxy
     bool addChange(CacheChange &change);
 
     /*
+     * method for removing a Cache Change from the proxie's history cache
+     *
+     * @param sequenceNumber sequence number of the change that has be be removed
+     */
+    void removeChange(unsigned int sequenceNumber);
+
+    /*
      * method for altering a fragment's status (unsent, sent, acked, ...)
      *
      * @param status fragment status
@@ -87,6 +94,22 @@ class WriterProxy
     ChangeForWriter* getCurrentChange()
     {
         return history.front();
+    }
+
+    /*
+     * method returning the latest cache change
+     */
+    ChangeForWriter* getLatestChange()
+    {
+        return history.back();
+    }
+
+    /*
+     * Method for returning history size
+     */
+    unsigned int getSize()
+    {
+        return history.size();
     }
 
     /*

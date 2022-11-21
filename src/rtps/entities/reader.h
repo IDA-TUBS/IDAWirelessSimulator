@@ -34,6 +34,9 @@ class Reader : public cSimpleModule, Endpoint
     };
 
   private:
+    /// Sample latency deadline
+    simtime_t deadline;
+
     /// user configurable reader response delay
     simtime_t responseDelay;
 
@@ -71,6 +74,11 @@ class Reader : public cSimpleModule, Endpoint
      */
     RtpsInetPacket* generateNackFrag(RtpsInetPacket* hb);
 
+    /*
+     * Method for evaluating whether a sample is still valid or whether its deadline elapsed.
+     * Handles removing of sample in case of elapsed deadline
+     */
+    void checkSampleLiveliness();
 
     /*
      * Overwritten method, initializes modules after its instantiation
