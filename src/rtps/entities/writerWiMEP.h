@@ -70,6 +70,11 @@ class WriterWiMEP : public Writer
     bool sendMessage() override;
 
     /*
+     * Handle some writer configuration that would normally be done during discovery
+     */
+    virtual void handleDiscovery() override;
+
+    /*
      * Method for selecting a reader for the next transmission
      *
      * @return reader proxy

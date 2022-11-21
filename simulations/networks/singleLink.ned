@@ -43,19 +43,20 @@ network singleLink
         radioMedium: <default("UnitDiskRadioMedium")> like IRadioMedium {
             @display("p=580,275");
         }
+		
+		vehicle: <default("RtpsHost")> like INetworkNode {
+            parameters:
+                @display("p=453.6,367.92;i=misc/car3");
+                numWlanInterfaces = 1;
 
+        }
         camera: <default("RtpsHost")> like INetworkNode {
             parameters:
                 @display("p=353.808,367.92;i=misc/securitycamera");
                 numWlanInterfaces = default(1);
 
         }
-        vehicle: <default("RtpsHost")> like INetworkNode {
-            parameters:
-                @display("p=453.6,367.92;i=misc/car3");
-                numWlanInterfaces = 1;
-
-        }
+        
 
 
 

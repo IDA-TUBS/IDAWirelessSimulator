@@ -69,6 +69,16 @@ class ReaderProxy
     bool addChange(CacheChange &change);
 
     /*
+     * get readerID (entity ID) of corresponding reader, added for WiMEP protocol
+     *
+     * @return entity id
+     */
+    unsigned int getReaderId()
+    {
+        return readerID;
+    }
+
+    /*
      * set priority of corresponding reader, added for WiMEP protocol
      *
      * @param prio the priority assigned to the corresponding reader

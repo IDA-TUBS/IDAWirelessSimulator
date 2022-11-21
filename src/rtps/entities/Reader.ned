@@ -27,6 +27,8 @@ simple Reader like iReader
         double readerResponseDelay @unit(s) = default(0ms);
         
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
+        
+        int priority = default(0);
         // TODO static delay
         
         @display("i=block/rx");

@@ -44,8 +44,6 @@ void WriterWiMEP::initialize()
         matchedReaders.push_back(rp);
     }
 
-    // TODO reader priority assignment
-
     // set up currentSampleNumber for new writer instance
     currentSampleNumber = -1;
 }
@@ -55,6 +53,14 @@ void WriterWiMEP::finish()
 
 }
 
+void WriterWiMEP::handleDiscovery()
+{
+    // setup reader priorities
+    for(auto rp: matchedReaders)
+    {
+        rp->setPriority(rtpsParent->getReaderPriority(rp->getReaderId()));
+    }
+}
 
 ReaderProxy* WriterWiMEP::selectReader()
 {

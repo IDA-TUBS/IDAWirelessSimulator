@@ -46,6 +46,9 @@ class Reader : public cSimpleModule, Endpoint
     /// application ID
     unsigned int appID;
 
+    /// the readers priority
+    unsigned int priority;
+
     /// max number of cache changes to be stored simultaneously
     unsigned int sizeCache;
 

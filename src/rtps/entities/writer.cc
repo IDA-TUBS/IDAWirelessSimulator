@@ -59,6 +59,13 @@ void Writer::handleMessage(cMessage *msg)
 {
     // Check message type
     if (dynamic_cast<Sample*>(msg)!=NULL){
+
+        // "discovery" setup
+        if(currentSampleNumber == -1)
+        {
+            handleDiscovery();
+        }
+
 		// Received new sample from application
 		Sample *sample = check_and_cast<Sample*>(msg);
 
@@ -94,6 +101,12 @@ void Writer::handleMessage(cMessage *msg)
     {
         sendHeartbeatMsg();
 	}
+}
+
+
+void Writer::handleDiscovery()
+{
+    // no additional setup needed here so far
 }
 
 

@@ -41,20 +41,17 @@ network multiLink
         }
         radioMedium: <default("UnitDiskRadioMedium")> like IRadioMedium {
             @display("p=580,275");
-        }
-
+        }      
+			
+                
         sender: <default("RtpsHost")> like INetworkNode {
             parameters:
                 @display("p=50,325;i=misc/truck");
                 numWlanInterfaces = default(1);
         }
-
         receivers[numberReceivingNodes]: <default("RtpsHost")> like INetworkNode {
             parameters:
                 @display("p=125,325,r,,50,50;i=misc/truck");
                 numWlanInterfaces = 1;
         }
-
-
-
 }

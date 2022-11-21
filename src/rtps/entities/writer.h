@@ -173,8 +173,12 @@ class Writer : public cSimpleModule, protected Endpoint
      *
      * @param msg each incoming (external or self) message is interpreted as a stimulus
      */
-
     virtual void handleMessage(cMessage *msg) override;
+
+    /*
+     * Handle some writer configuration that would normally be done during discovery
+     */
+    virtual void handleDiscovery();
 
     /*
      * Overwritten method, called at the end of the simulation

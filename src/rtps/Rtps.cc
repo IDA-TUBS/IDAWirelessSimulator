@@ -12,6 +12,8 @@ Define_Module(Rtps);
 
 unsigned int Rtps::entityIdCounter;
 std::vector<unsigned int> Rtps::entityIdPerApp;
+std::vector<unsigned int> Rtps::mapIdToPriority;
+bool Rtps::init = true;
 
 Rtps::~Rtps()
 {
@@ -23,13 +25,30 @@ void Rtps::initialize()
     numberApps = par("nbrApps");
     numberReadersPerApp = par("nbrReadersPerApp");
 
-    entityIdCounter = 0;
-
-
-    for(int i = 0; i < numberApps; i++)
+    if(init)
     {
-        // reader entity IDs per App: [i*numberReadersPerApp+1, (i+1)*numberReadersPerApp -1]
-        entityIdPerApp.push_back(i*numberReadersPerApp + 1);
+        entityIdCounter = 0;
+
+
+        for(int i = 0; i < numberApps; i++)
+        {
+            // reader entity IDs per App: [i*numberReadersPerApp+1, (i+1)*numberReadersPerApp -1]
+            entityIdPerApp.push_back(i*numberReadersPerApp + 1);
+            // TODO test whether IDs are correct for scenarios with more than a single app!
+        }
+
+        for(int i = 0; i < numberApps; i++)
+        {
+            //create list (vector) containing all possible reader IDs
+            mapIdToPriority.push_back(std::numeric_limits<unsigned int>::max()); // ID reserved for writer
+            for(int i = 0; i < numberReadersPerApp; i++)
+            {
+                // fill in placeholders for reader priorities
+                mapIdToPriority.push_back(0);
+            }
+        }
+
+        init = false;
     }
 }
 
@@ -66,6 +85,16 @@ unsigned int Rtps::getNextEntityId(unsigned int appId, bool writer)
 unsigned int Rtps::getMaxNumberOfReaders()
 {
     return this->numberReadersPerApp;
+}
+
+void Rtps::setReaderPriority(unsigned int readerID, unsigned int priority)
+{
+    mapIdToPriority[readerID] = priority;
+}
+
+unsigned int Rtps::getReaderPriority(unsigned int readerID)
+{
+    return mapIdToPriority[readerID];
 }
 
 

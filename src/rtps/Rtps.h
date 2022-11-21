@@ -18,9 +18,15 @@ class Rtps : public cSimpleModule
     // maximum number of readers per App
     unsigned int numberReadersPerApp;
 
-    // The counter for the entity IDs
+    // The counters for the entity IDs
     static unsigned int entityIdCounter;
     static std::vector<unsigned int> entityIdPerApp;
+
+    // structure for mapping reader IDs to priorities - used for WiMEP protocol
+    static std::vector<unsigned int> mapIdToPriority;
+
+    // parameter used for disabling initialization of global entityId and priority map
+    static bool init;
 
     Rtps() {}
     virtual ~Rtps();
@@ -48,6 +54,22 @@ class Rtps : public cSimpleModule
      * @return numberReadersPerApp
      */
     unsigned int getMaxNumberOfReaders();
+
+    /*
+     * set store priority of reader based on the reader's entity ID
+     *
+     * @param readerID entity id of the reader calling the function
+     * @param priority that shall be assigned to the reader
+     */
+    void setReaderPriority(unsigned int readerID, unsigned int priority);
+
+    /*
+     * returns a reader's priority
+     *
+     * @param readerID entity id of the reader which priority is being requested
+     * @param priority (unsigned) integer corresponding to the priority of the reader
+     */
+    unsigned int getReaderPriority(unsigned int readerID);
   protected:
 
 
