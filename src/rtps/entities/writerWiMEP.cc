@@ -44,6 +44,8 @@ void WriterWiMEP::initialize()
         matchedReaders.push_back(rp);
     }
 
+    // TODO reader priority assignment
+
     // set up currentSampleNumber for new writer instance
     currentSampleNumber = -1;
 }

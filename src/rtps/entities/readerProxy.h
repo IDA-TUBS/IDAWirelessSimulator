@@ -69,7 +69,7 @@ class ReaderProxy
     bool addChange(CacheChange &change);
 
     /*
-     * set priority of corresponding reader
+     * set priority of corresponding reader, added for WiMEP protocol
      *
      * @param prio the priority assigned to the corresponding reader
      */
