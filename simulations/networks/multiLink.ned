@@ -14,7 +14,7 @@
 //
 
 //package src.networks;
-package simulations.examples.simpleW2RPSingleLink;
+package simulations.networks;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.node.contract.INetworkNode;
@@ -23,14 +23,13 @@ import inet.visualizer.contract.IIntegratedVisualizer;
 
 import src.stack.RtpsHost;
 
-network singleLink
+network multiLink
 {
     parameters:
         @display("bgb=650,500;bgg=100,1,grey95");
         @figure[title](type=label; pos=0,-1; anchor=sw; color=darkblue);
 
-        @figure[rcvdPkText](type=indicatorText; pos=380,20; anchor=w; font=,18; textFormat="packets received: %g"; initialValue=0);
-//        @statistic[packetReceived](source=hostB.app[0].packetReceived; record=figure(count); targetFigure=rcvdPkText);
+        int numberReceivingNodes;
 
     submodules:
         visualizer: <default(firstAvailableOrEmpty("IntegratedCanvasVisualizer"))> like IIntegratedVisualizer if typename != "" {
@@ -44,17 +43,16 @@ network singleLink
             @display("p=580,275");
         }
 
-        camera: <default("RtpsHost")> like INetworkNode {
+        sender: <default("RtpsHost")> like INetworkNode {
             parameters:
-                @display("p=353.808,367.92;i=misc/securitycamera");
+                @display("p=50,325;i=misc/truck");
                 numWlanInterfaces = default(1);
-
         }
-        vehicle: <default("RtpsHost")> like INetworkNode {
-            parameters:
-                @display("p=453.6,367.92;i=misc/car3");
-                numWlanInterfaces = 1;
 
+        receivers[numberReceivingNodes]: <default("RtpsHost")> like INetworkNode {
+            parameters:
+                @display("p=125,325,r,,50,50;i=misc/truck");
+                numWlanInterfaces = 1;
         }
 
 

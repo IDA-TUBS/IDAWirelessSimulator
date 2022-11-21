@@ -14,7 +14,7 @@
 //
 
 //package src.networks;
-package simulations.examples.simpleWiMEPMultiLink;
+package simulations.networks;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.node.contract.INetworkNode;
@@ -23,13 +23,14 @@ import inet.visualizer.contract.IIntegratedVisualizer;
 
 import src.stack.RtpsHost;
 
-network multiLink
+network singleLink
 {
     parameters:
         @display("bgb=650,500;bgg=100,1,grey95");
         @figure[title](type=label; pos=0,-1; anchor=sw; color=darkblue);
 
-        int numberReceivingNodes;
+        @figure[rcvdPkText](type=indicatorText; pos=380,20; anchor=w; font=,18; textFormat="packets received: %g"; initialValue=0);
+//        @statistic[packetReceived](source=hostB.app[0].packetReceived; record=figure(count); targetFigure=rcvdPkText);
 
     submodules:
         visualizer: <default(firstAvailableOrEmpty("IntegratedCanvasVisualizer"))> like IIntegratedVisualizer if typename != "" {
@@ -43,16 +44,17 @@ network multiLink
             @display("p=580,275");
         }
 
-        sender: <default("RtpsHost")> like INetworkNode {
+        camera: <default("RtpsHost")> like INetworkNode {
             parameters:
-                @display("p=50,325;i=misc/truck");
+                @display("p=353.808,367.92;i=misc/securitycamera");
                 numWlanInterfaces = default(1);
-        }
 
-        receivers[numberReceivingNodes]: <default("RtpsHost")> like INetworkNode {
+        }
+        vehicle: <default("RtpsHost")> like INetworkNode {
             parameters:
-                @display("p=125,325,r,,50,50;i=misc/truck");
+                @display("p=453.6,367.92;i=misc/car3");
                 numWlanInterfaces = 1;
+
         }
 
 
