@@ -48,6 +48,8 @@ void WriterWiMEP::initialize()
     // set up currentSampleNumber for new writer instance
     currentSampleNumber = -1;
 
+    activeTimeouts = 0;
+
     // analysis related code
     RTPSAnalysis::registerAppID(this->appID);
 }
@@ -89,6 +91,8 @@ void WriterWiMEP::handleTimeout(Timeout *timeoutMsg)
 
     rp->timeoutActive = false;
     rp->resetTimeoutedFragments(sequenceNumber);
+
+    activeTimeouts--;
 }
 
 void WriterWiMEP::handleNackFrag(RtpsInetPacket* nackFrag) {
@@ -215,6 +219,8 @@ bool WriterWiMEP::sendMessage()
                 nextTimeout->setId(rp->getReaderId());
                 nextTimeout->setSequenceNumber(sf->baseChange->sequenceNumber);
 
+                activeTimeouts++;
+
                 scheduleAt(simTime() + timeout, nextTimeout);
             }
         }
@@ -263,5 +269,17 @@ void WriterWiMEP::fillSendQueueWithSample(unsigned int sequenceNumber)
     {
         auto sfToSend = (sf->baseChange->getFragmentArray())[sf->fragmentStartingNum];
         sendQueue.push_back(sfToSend);
+    }
+}
+
+bool WriterWiMEP::stopScheduledTimer()
+{
+    if(activeTimeouts > 0)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
     }
 }

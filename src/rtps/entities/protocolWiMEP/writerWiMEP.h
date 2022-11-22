@@ -63,6 +63,8 @@ class WriterWiMEP : public Writer
     // ==============
 
     // same as Writer
+    /// Counter for active timeouts
+    unsigned int activeTimeouts;
 
 
   protected:
@@ -113,6 +115,14 @@ class WriterWiMEP : public Writer
      * @return the sample fragment to be transmitted next
      */
     virtual SampleFragment* selectNextFragment(ReaderProxy *rp) override;
+
+    /*
+     * Method for enabling or disabling scheduling of new events in case of an empty send queue
+     * here: do not stop timer (scheduling of new fragments if there is a timeout active)+
+     *
+     * @return true if timer shall be stopped, false if new event shall be scheduled anyway
+     */
+    virtual bool stopScheduledTimer() override;
 
     /*
      * Overwritten method, initializes modules after its instantiation
