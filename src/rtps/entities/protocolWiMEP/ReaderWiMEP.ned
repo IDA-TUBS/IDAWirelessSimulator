@@ -13,35 +13,27 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package src.rtps.entities;
+package src.rtps.entities.protocolWiMEP;
 
-import src.rtps.contract.iWriter;
+import src.rtps.contract.iReader;
 
-simple WriterWiMEP like iWriter
+simple ReaderWiMEP like iReader
 {
-    parameters:
-        // Other configuration parameters
-        int fragmentSize = default(1000);
-        double deadline @unit(s) = default(100ms);
+    parameters:      
+        int appID = default(-1);
         int historySize = default(1);
         
-        int numberReaders = default(0);        
+        double deadline @unit(s) = default(100ms);
+        double readerResponseDelay @unit(s) = default(0ms);
         
-        // Timing Model
-        double shaping @unit(s) = default(10us);
-        double nackSuppressionDuration @unit(s) = default(0us);
-        
-        int appID = default(-1);
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
         
-        // multicast extension
-        bool prioritized = default(true);
+        int priority = default(0);
         
-        // Display Parameters
-        @display("i=block/tx");
-        
-    gates:
-        input appIn;
+        @display("i=block/rx");
+    gates:        
+        output appOut;
         input dispatcherIn;
         output dispatcherOut;
+
 }

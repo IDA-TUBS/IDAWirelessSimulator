@@ -12,7 +12,6 @@ void Reader::initialize()
 {
     /// Initialize RTPS context
     appID = par("appID");
-    priority = par("priority");
 
     /// get unique entity ID
     rtpsParent = dynamic_cast<Rtps*>(getParentModule());
@@ -119,14 +118,6 @@ void Reader::checkSampleLiveliness()
         }
     }
 }
-
-
-
-
-
-
-
-
 
 
 void Reader::sendMessage(RtpsInetPacket* rtpsMsg)

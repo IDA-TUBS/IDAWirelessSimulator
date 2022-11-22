@@ -7,7 +7,7 @@
 
 #include <omnetpp.h>
 
-#include "writer.h"
+#include "../writer.h"
 
 using namespace omnetpp;
 using namespace inet;

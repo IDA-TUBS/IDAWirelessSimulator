@@ -7,7 +7,7 @@
 
 #include <omnetpp.h>
 
-#include "reader.h""
+#include "../reader.h"
 
 using namespace omnetpp;
 using namespace inet;
