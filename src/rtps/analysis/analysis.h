@@ -69,7 +69,7 @@ class RTPSAnalysis
      */
     void calculateViolationRate(unsigned int appId)
     {
-        violationRate = double(completeSamples.size()) / double(transmittedSamplesByAppId[appId].size());
+        violationRate = 1 - (double(completeSamples.size()) / double(transmittedSamplesByAppId[appId].size()));
     };
 
 
