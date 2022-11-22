@@ -37,5 +37,6 @@ void ReaderWiMEP::initialize()
 
 void ReaderWiMEP::finish()
 {
-
+    // analysis related code
+    RTPSAnalysis::calculateViolationRate(this->appID);
 }

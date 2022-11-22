@@ -8,6 +8,7 @@
 #include <omnetpp.h>
 #include "./../messages/RtpsInetPacket_m.h"
 #include "./../Rtps.h"
+#include "./../analysis/analysis.h"
 
 #include "endpoint.h"
 #include "changeForWriter.h"
@@ -17,7 +18,7 @@
 using namespace omnetpp;
 using namespace inet;
 
-class Reader : public cSimpleModule, protected Endpoint
+class Reader : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
 {
   public:
     /*

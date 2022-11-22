@@ -47,6 +47,9 @@ void WriterWiMEP::initialize()
 
     // set up currentSampleNumber for new writer instance
     currentSampleNumber = -1;
+
+    // analysis related code
+    RTPSAnalysis::registerAppID(this->appID);
 }
 
 void WriterWiMEP::finish()

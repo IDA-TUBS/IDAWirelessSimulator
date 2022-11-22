@@ -90,19 +90,23 @@ class WriterProxy
 
     /*
      * method returning the current (oldest) cache change
+     *
+     * @return ChangeForWriter object
      */
     ChangeForWriter* getCurrentChange()
     {
         return history.front();
-    }
+    };
 
     /*
      * method returning the latest cache change
+     *
+     * @return ChangeForWriter object
      */
     ChangeForWriter* getLatestChange()
     {
         return history.back();
-    }
+    };
 
     /*
      * Method for returning history size
@@ -110,10 +114,13 @@ class WriterProxy
     unsigned int getSize()
     {
         return history.size();
-    }
+    };
 
     /*
      * method cache change with corresponding sequence number
+     *
+     * @param sequenceNumber seq number of sample that shall be retrieved
+     * @return ChangeForWriter object
      */
     ChangeForWriter* getChange(unsigned int sequenceNumber)
     {
@@ -129,7 +136,7 @@ class WriterProxy
         }
 
         return tmp;
-    }
+    };
 };
 
 #endif // RTPS_WRITERPROXY_H_

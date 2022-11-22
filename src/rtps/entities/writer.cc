@@ -24,7 +24,6 @@ void Writer::initialize()
     const char *destAddrs = par("destAddresses");
     destinationAddresses = cStringTokenizer(destAddrs).asVector();
 
-
     // writer parametrization
     deadline = par("deadline");
     fragmentSize = par("fragmentSize");
@@ -34,7 +33,6 @@ void Writer::initialize()
     shaping = par("shaping");
     enableSeparateHBs = par("enableSeparateHBs");
     hbPeriod = par("hbPeriod");
-
 
     // reader proxy initialization
     for(int i = 0; i < numReaders; i++) {
@@ -46,6 +44,9 @@ void Writer::initialize()
 
     // set up currentSampleNumber for new writer instance
     currentSampleNumber = -1;
+
+    // analysis related code
+    RTPSAnalysis::registerAppID(this->appID);
 }
 
 void Writer::finish()
@@ -71,7 +72,6 @@ void Writer::handleMessage(cMessage *msg)
 
 		// first check existing samples for deadline expiry
 		checkSampleLiveliness();
-
 		addSampleToCache(sample);
 
 		sendMessage();
@@ -85,6 +85,8 @@ void Writer::handleMessage(cMessage *msg)
             scheduleAt(simTime() + hbPeriod, hbTimer);
 		}
 		delete msg;
+
+
     }
     else if(dynamic_cast<RtpsInetPacket*>(msg)!=NULL)
     {
@@ -126,6 +128,9 @@ bool Writer::addSampleToCache(Sample* sample)
     {
         rp->addChange(*change);
     }
+
+    // analysis related code
+    RTPSAnalysis::addSample(this->appID, change);
 
     return true;
 }

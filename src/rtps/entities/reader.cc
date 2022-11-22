@@ -33,7 +33,8 @@ void Reader::initialize()
 
 void Reader::finish()
 {
-
+    // analysis related code
+    RTPSAnalysis::calculateViolationRate(this->appID);
 }
 
 void Reader::handleMessage(cMessage *msg)
@@ -63,7 +64,14 @@ void Reader::handleMessage(cMessage *msg)
             unsigned int fn = rtpsMsg->getFragmentStartingNum();
             writerProxy->updateFragmentStatus(RECEIVED, change->sequenceNumber, fn);
 
-            writerProxy->checkSampleCompleteness(change->sequenceNumber);
+            bool complete = writerProxy->checkSampleCompleteness(change->sequenceNumber);
+
+            // analysis related code
+            if(complete)
+            {
+                RTPSAnalysis::recordSampleLatency(writerProxy->getChange(change->sequenceNumber));
+            }
+
         }
 
         if(rtpsMsg->getHeartBeatFragSet())
