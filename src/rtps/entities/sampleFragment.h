@@ -33,6 +33,8 @@ class SampleFragment
     bool acked;
     /// flag fragment as received - relevant for reader
     bool received;
+    /// flag fragment as timeouted - relevant for W2RP writer
+    bool timeout;
 
 
   public:
@@ -117,6 +119,15 @@ class SampleFragment
         this->received = b;
     };
 
+    /*
+     * set status of flag 'timeout'
+     *
+     * @param b set 'timeout' to this boolean value
+     */
+    void setTimeout(bool b)
+    {
+        this->timeout = b;
+    };
 };
 
 

@@ -17,7 +17,8 @@ enum fragmentStates{
     SENT,
     ACKED,
     NACKED,
-    RECEIVED
+    RECEIVED,
+    TIMEOUT // added for W2RP
 };
 
 class SampleFragment;

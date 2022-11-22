@@ -119,7 +119,7 @@ class Writer : public cSimpleModule, protected Endpoint
      *
      * @param nackFrag message containing the ack/nack bitmap
      */
-    void handleNackFrag(RtpsInetPacket* nackFrag);
+    virtual void handleNackFrag(RtpsInetPacket* nackFrag);
 
     /*
      * Method for enabling or disabling scheduling of new events in case of an empty send queue

@@ -29,6 +29,7 @@ void WriterWiMEP::initialize()
     sizeCache = par("historySize");
 
     shaping = par("shaping");
+    timeout = par("timeout");
 
     // always disable sending of separate HB messages
     enableSeparateHBs = false;
@@ -53,6 +54,21 @@ void WriterWiMEP::finish()
 
 }
 
+
+void WriterWiMEP::handleMessage(cMessage *msg)
+{
+    if (dynamic_cast<Timeout*>(msg)!=NULL) {
+        Timeout *timeoutMsg = check_and_cast<Timeout*>(msg);
+        handleTimeout(timeoutMsg);
+        delete msg;
+    }
+    else
+    {
+        Writer::handleMessage(msg);
+    }
+}
+
+
 void WriterWiMEP::handleDiscovery()
 {
     // setup reader priorities
@@ -61,6 +77,32 @@ void WriterWiMEP::handleDiscovery()
         rp->setPriority(rtpsParent->getReaderPriority(rp->getReaderId()));
     }
 }
+
+void WriterWiMEP::handleTimeout(Timeout *timeoutMsg)
+{
+    unsigned int readerID = timeoutMsg->getId();
+    int sequenceNumber = timeoutMsg->getSequenceNumber();
+}
+
+void WriterWiMEP::handleNackFrag(RtpsInetPacket* nackFrag) {
+    // First find the history cache corresponding to the reader, sending the NackFrag msg
+    unsigned int readerID = nackFrag->getReaderId();
+    // the app's reader IDs are in the range of [appID * maxNumberReader + 1, (appID + 1) * maxNumberReader - 1]
+    // reader entity ID mapped to entityId - thisappID * (maxNumberReader + 1) - 1
+    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders() + 1) - 1];
+
+    // only handle NackFrag if sample still in history, if already complete or expired just ignore NackFrag
+    if(rp->processNack(nackFrag))
+    {
+        unsigned int sequenceNumber = nackFrag->getWriterSN();
+        bool complete = rp->checkSampleCompleteness(sequenceNumber);
+    }
+}
+
+
+
+
+
 
 ReaderProxy* WriterWiMEP::selectReader()
 {
@@ -156,6 +198,8 @@ bool WriterWiMEP::sendMessage()
         for(auto rp: matchedReaders)
         {
             rp->updateFragmentStatus(SENT, sf->baseChange->sequenceNumber, sf->fragmentStartingNum);
+
+            // TODO check for timeout situation: reader has no fragments in state 'UNSENT' left
         }
 
         // construct RtpsInetPacket from fragment and send out to dispatcher

@@ -6,6 +6,7 @@
 #define RTPS_ENTITIES_WRITERMULTICAST_H__
 
 #include <omnetpp.h>
+#include "./../../messages/Timeout_m.h"
 
 #include "../writer.h"
 
@@ -41,6 +42,8 @@ class WriterWiMEP : public Writer
     // same as Writer
     /// enabling and disabling of prioritization mechanism
     bool prioritized;
+    /// timeout duration
+    simtime_t timeout;
 
     // ===========================
     // ==== protocol entities ====
@@ -51,8 +54,9 @@ class WriterWiMEP : public Writer
     // =======================
     // ==== self messages ====
     // =======================
-
     // same as Writer
+    /// event used for timeouts
+    cMessage *timeoutEvent;
 
     // ==============
     // ==== misc ====
@@ -70,9 +74,30 @@ class WriterWiMEP : public Writer
     bool sendMessage() override;
 
     /*
+     * Overwritten method, trigger either on arrival of a new sample (from app) or by self-messages
+     *
+     * @param msg each incoming (external or self) message is interpreted as a stimulus
+     */
+    virtual void handleMessage(cMessage *msg) override;
+
+    /*
      * Handle some writer configuration that would normally be done during discovery
      */
     virtual void handleDiscovery() override;
+
+    /*
+     * Method for handling of timeouts
+     *
+     * @param timeoutMsg timeout message containing the reader ID and the sequence number that is affected by the timeout
+     */
+    void handleTimeout(Timeout *timeoutMsg);
+
+    /*
+     * Method for reacting to NackFrags received from readers as defined by WiMEP
+     *
+     * @param nackFrag message containing the ack/nack bitmap
+     */
+    void handleNackFrag(RtpsInetPacket* nackFrag) override;
 
     /*
      * Method for selecting a reader for the next transmission
