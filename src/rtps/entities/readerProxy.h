@@ -34,12 +34,16 @@ class ReaderProxy
     /// the reader's priority
     unsigned int priority;
 
+    /// flag signaling a timeout is active - used for WiMEP
+    bool timeoutActive;
+
     /*
      * default constructor
      */
     ReaderProxy(unsigned int id, unsigned int historySize):
         readerID(id),
-        historySize(historySize)
+        historySize(historySize),
+        timeoutActive(false)
     {};
 
     /*
@@ -47,7 +51,8 @@ class ReaderProxy
      */
     ReaderProxy(unsigned int id, unsigned int historySize, CacheChange &change):
         readerID(id),
-        historySize(historySize)
+        historySize(historySize),
+        timeoutActive(false)
     {
         this->addChange(change);
     };
@@ -136,6 +141,21 @@ class ReaderProxy
      * @return list of fragments
      */
     std::vector<SampleFragment*> getUnsentFragments(unsigned int sequenceNumber);
+
+    /*
+     * determine whether a timeout is needed to ensure safe and complete sample transmission
+     *
+     * @param sequenceNumber seq number of sample that shall be checked
+     * @return true if a timeout needs to be triggered, else returns false
+     */
+    bool checkForTimeout(unsigned int sequenceNumber);
+
+    /*
+     * WiMEP function, used for resetting fragment states to 'UNSENT' if not acked yet
+     *
+     * @param sequenceNumber seq number of sample that shall be updated
+     */
+    void resetTimeoutedFragments(unsigned int sequenceNumber);
 
 };
 

@@ -146,6 +146,13 @@ class ChangeForReader: public CacheChange
     unsigned int sentCount();
 
     /*
+     * determine number of fragments that are in state "UNSENT"
+     *
+     * @return number of fragments
+     */
+    unsigned int unsentCount();
+
+    /*
      * method for updating the fragment status
      *
      * @param statues new fragment status
@@ -160,6 +167,11 @@ class ChangeForReader: public CacheChange
      * @return list of fragments
      */
     std::vector<SampleFragment*> getUnsentFragments();
+
+    /*
+     * reset all sent but unacknowledged fragments to state 'UNSENT', used by WiMEP
+     */
+    void resetSentFragments();
 
 };
 

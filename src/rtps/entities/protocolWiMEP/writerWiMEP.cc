@@ -82,6 +82,10 @@ void WriterWiMEP::handleTimeout(Timeout *timeoutMsg)
 {
     unsigned int readerID = timeoutMsg->getId();
     int sequenceNumber = timeoutMsg->getSequenceNumber();
+    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders() + 1) - 1];
+
+    rp->timeoutActive = false;
+    rp->resetTimeoutedFragments(sequenceNumber);
 }
 
 void WriterWiMEP::handleNackFrag(RtpsInetPacket* nackFrag) {
@@ -199,7 +203,17 @@ bool WriterWiMEP::sendMessage()
         {
             rp->updateFragmentStatus(SENT, sf->baseChange->sequenceNumber, sf->fragmentStartingNum);
 
-            // TODO check for timeout situation: reader has no fragments in state 'UNSENT' left
+            // check for timeout situation: reader has no fragments in state 'UNSENT' left
+            if(rp->checkForTimeout(sf->baseChange->sequenceNumber) && !(rp->timeoutActive))
+            {
+                rp->timeoutActive = true;
+                // trigger timeout
+                auto nextTimeout = new Timeout("timeoutEvent");
+                nextTimeout->setId(rp->getReaderId());
+                nextTimeout->setSequenceNumber(sf->baseChange->sequenceNumber);
+
+                scheduleAt(simTime() + timeout, nextTimeout);
+            }
         }
 
         // construct RtpsInetPacket from fragment and send out to dispatcher
@@ -230,7 +244,6 @@ bool WriterWiMEP::sendMessage()
 
     return true;
 }
-
 
 
 void WriterWiMEP::fillSendQueueWithSample(unsigned int sequenceNumber)

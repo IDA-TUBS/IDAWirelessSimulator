@@ -28,7 +28,7 @@ simple WriterWiMEP like iWriter
         int numberReaders = default(0);        
         
         // Timing Model
-        double shaping @unit(s) = default(10us);
+        double shaping @unit(s) = default(1000us);
         double nackSuppressionDuration @unit(s) = default(0us);
         double timeout @unit(s) = default(2500us);
         

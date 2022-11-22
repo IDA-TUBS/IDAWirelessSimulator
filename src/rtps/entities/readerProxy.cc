@@ -142,7 +142,52 @@ bool ReaderProxy::checkSampleCompleteness(unsigned int sequenceNumber)
     }
     if(complete)
     {
-        // TODO remove sample from history? maybe just remove if expired or all readers completed reception of a given sample
+        // remove sample from history? maybe just remove if expired or all readers completed reception of a given sample
+        // done elsewhere
     }
     return complete;
+}
+
+
+bool ReaderProxy::checkForTimeout(unsigned int sequenceNumber)
+{
+    // access change with the given sequence number
+    ChangeForReader* change = nullptr;
+    for (auto cfr: history)
+    {
+        if (cfr->sequenceNumber == sequenceNumber)
+        {
+            change = cfr;
+            break;
+        }
+    }
+
+    if(change)
+    {
+        // timeout necessary if no unsent fragments remain but change has not been acknowledged in its entirety yet
+        if(!(change->complete) && (change->unsentCount() == 0) && (change->ackCount() != change->numberFragments))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void ReaderProxy::resetTimeoutedFragments(unsigned int sequenceNumber)
+{
+    // access change with the given sequence number
+    ChangeForReader* change = nullptr;
+    for (auto cfr: history)
+    {
+        if (cfr->sequenceNumber == sequenceNumber)
+        {
+            change = cfr;
+            break;
+        }
+    }
+
+    if(change && !(change->complete))
+    {
+        change->resetSentFragments();
+    }
 }

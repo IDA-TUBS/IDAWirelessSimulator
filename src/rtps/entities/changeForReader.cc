@@ -52,6 +52,21 @@ unsigned int ChangeForReader::sentCount()
     return sent;
 }
 
+unsigned int ChangeForReader::unsentCount()
+{
+    // count unsent fragments
+    unsigned int unsent = 0;
+    for(unsigned int i = 0; i < numberFragments; i++)
+    {
+        auto frag = sampleFragmentArray[i];
+        if(!(frag->sent))
+        {
+            unsent++;
+        }
+    }
+    return unsent;
+}
+
 bool ChangeForReader::setFragmentStatus(fragmentStates status, unsigned int fragmentNumber)
 {
     auto frag = sampleFragmentArray[fragmentNumber];
@@ -61,13 +76,11 @@ bool ChangeForReader::setFragmentStatus(fragmentStates status, unsigned int frag
         case UNSENT:
             frag->sent = false;
             frag->acked = false;
-            frag->timeout = false;
             break;
         case SENT:
             lastSentFN = fragmentNumber;
             frag->sent = true;
             frag->acked = false;
-            frag->timeout = false;
             if(fragmentNumber > highestFNSend)
             {
                 highestFNSend = fragmentNumber;
@@ -76,17 +89,10 @@ bool ChangeForReader::setFragmentStatus(fragmentStates status, unsigned int frag
         case ACKED:
             frag->sent = true;
             frag->acked = true;
-            frag->timeout = false;
             break;
         case NACKED:
             frag->sent = false;
             frag->acked = false;
-            frag->timeout = false;
-            break;
-        case TIMEOUT:
-            frag->sent = false;
-            frag->acked = false;
-            frag->timeout = true;
             break;
         default:
             break;
@@ -108,4 +114,17 @@ std::vector<SampleFragment*> ChangeForReader::getUnsentFragments()
         }
     }
     return unsentFragments;
+}
+
+
+void ChangeForReader::resetSentFragments()
+{
+    for(unsigned int i = 0; i < numberFragments; i++)
+    {
+        auto frag = sampleFragmentArray[i];
+        if((frag->sent) && !(frag->acked))
+        {
+            this->setFragmentStatus(UNSENT, frag->fragmentStartingNum);
+        }
+    }
 }
