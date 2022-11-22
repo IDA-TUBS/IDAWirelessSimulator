@@ -18,9 +18,6 @@ void Reader::initialize()
     rtpsParent = dynamic_cast<Rtps*>(getParentModule());
     entityId = rtpsParent->getNextEntityId(appID, false);
 
-    // register priority at global RTPS class
-    rtpsParent->setReaderPriority(entityId, priority);
-
     // process destination addresses
     const char *destAddrs = par("destAddresses");
     destinationAddresses = cStringTokenizer(destAddrs).asVector();

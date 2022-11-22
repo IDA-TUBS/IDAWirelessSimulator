@@ -2,8 +2,8 @@
  *
  */
 
-#ifndef RTPS_ENTITIES_READER_H_1
-#define RTPS_ENTITIES_READER_H_1
+#ifndef RTPS_ENTITIES_READER_H_
+#define RTPS_ENTITIES_READER_H_
 
 #include <omnetpp.h>
 #include "./../messages/RtpsInetPacket_m.h"
@@ -17,7 +17,7 @@
 using namespace omnetpp;
 using namespace inet;
 
-class Reader : public cSimpleModule, Endpoint
+class Reader : public cSimpleModule, protected Endpoint
 {
   public:
     /*
@@ -33,7 +33,7 @@ class Reader : public cSimpleModule, Endpoint
         delete writerProxy;
     };
 
-  private:
+  protected:
     /// Sample latency deadline
     simtime_t deadline;
 
@@ -102,4 +102,4 @@ class Reader : public cSimpleModule, Endpoint
 };
 
 
-#endif /* RTPS_ENTITIES_READER_H_1 */
+#endif /* RTPS_ENTITIES_READER_H_ */

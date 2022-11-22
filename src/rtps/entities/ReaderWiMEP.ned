@@ -17,7 +17,7 @@ package src.rtps.entities;
 
 import src.rtps.contract.iReader;
 
-simple Reader like iReader
+simple ReaderWiMEP like iReader
 {
     parameters:      
         int appID = default(-1);
@@ -27,6 +27,8 @@ simple Reader like iReader
         double readerResponseDelay @unit(s) = default(0ms);
         
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
+        
+        int priority = default(0);
         
         @display("i=block/rx");
     gates:        
