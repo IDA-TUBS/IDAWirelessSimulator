@@ -18,6 +18,7 @@
 #include "inet/linklayer/common/UserPriorityTag_m.h"
 
 #include <sstream>
+#include <cstdlib>
 
 using namespace inet;
 
@@ -48,6 +49,7 @@ void CsmaCaMacModified::initialize(int stage)
 
         // ---- Added parameters ----
         bitErrorRate = par("bitErrorRate");
+        dependentSignalPaths = par("dependentSignalPaths");
         // --------------------------
 
 
@@ -643,10 +645,18 @@ bool CsmaCaMacModified::isForUs(Packet *frame)
 
 bool CsmaCaMacModified::isFcsOk(Packet *frame)
 {
-
+    if(dependentSignalPaths)
+    {
+        // if there are dependent signal paths, prime the RNG with the same value at each reader
+        // to achieve that each reader generates the same random value, and, if the BER is the
+        // same at each reader, all readers either drop or receive a message
+        double timestamp = simTime().dbl();
+        std::srand((int)timestamp);
+    }
     // ----------------- PER calculation from bit error rate and packet length ----------------------
     double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength());
-    if (uniform(0, 1) < packet_loss_prob) {
+    double rd = ((double)rand()/(double)RAND_MAX);
+    if (rd < packet_loss_prob) {
         return false;
     }
     // ----------------------------------------------------------------------------------------------

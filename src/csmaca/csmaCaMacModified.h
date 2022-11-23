@@ -118,6 +118,7 @@ class CsmaCaMacModified : public CsmaCaMac
     bool ta_enable;
     double ta;
 
+    bool dependentSignalPaths;
 
 
   protected:
