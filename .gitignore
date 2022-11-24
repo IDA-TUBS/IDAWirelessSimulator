@@ -9,13 +9,15 @@ idaWirelessSimulator_dbg
 src/idaWirelessSimulator
 src/idaWirelessSimulator_dbg
 ./*/results
+./*/output
 simulations/idaWirelessSimulator
 simulations/idaWirelessSimulator_dbg
 *.sca
 *.vec
 *.vci
-./*/output
 gitignore
+
+.pydevproject
 
 
 # ---> C++
