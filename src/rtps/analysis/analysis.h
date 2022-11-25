@@ -37,9 +37,12 @@ class RTPSAnalysis
     };
 
     /*
-     * empty default destructor
+     * default destructor
      */
-    ~RTPSAnalysis() {};
+    ~RTPSAnalysis()
+    {
+        transmittedSamplesByAppId.clear();
+    };
 
     /*
      * record successful sample transmission
@@ -60,6 +63,20 @@ class RTPSAnalysis
         sampleLatenciesVector.record(latency);
         completeSamples.push_back(change->sequenceNumber);
     };
+
+    /*
+     * if the cOutVector is empty, it will not occur in the exported
+     * to solve this issue add a noticeable identifier (NaN) to the list
+     * to be able to identify those situations
+     */
+    void finishSampleLatencyRecording()
+    {
+        if(sampleLatenciesVector.getValuesReceived() == 0)
+        {
+            double latency = std::nan("1");
+            sampleLatenciesVector.record(latency);
+        }
+    }
 
     /*
      * calculate deadline violation rate based on received samples and the

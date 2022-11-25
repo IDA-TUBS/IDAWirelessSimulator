@@ -36,6 +36,7 @@ void Reader::finish()
     // analysis related code
     RTPSAnalysis::calculateViolationRate(this->appID);
     recordScalar("deadlineViolationRate", this->violationRate);
+    RTPSAnalysis::finishSampleLatencyRecording();
 }
 
 void Reader::handleMessage(cMessage *msg)

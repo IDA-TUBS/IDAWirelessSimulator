@@ -55,14 +55,15 @@ class VectorParser(object):
         dataFrame = dataFrame.merge(parameterVector, left_on='run', right_index=True, how='outer') #TODO convert the index here! after merging...
 
         synonymMap = {parameterTypes[i]: parameterSynonyms[i] for i in range(len(parameterTypes))}
-        print(synonymMap)
-        dataFrame.rename(columns=synonymMap, errors="raise")
+        dataFrame = dataFrame.rename(columns=synonymMap, errors="raise")
+
+        dataFrame['vecvalue'] = dataFrame['vecvalue'].replace([np.nan], 0)
 
         # filter for specific modules
         if len(moduleNames) != 0:
             for moduleName in moduleNames:
                 dataFrame = dataFrame[dataFrame['module'].str.contains(moduleName)]
-
+                
         del dataFrame["vectime"]
 
         return dataFrame

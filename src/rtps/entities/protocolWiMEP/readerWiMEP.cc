@@ -40,4 +40,5 @@ void ReaderWiMEP::finish()
     // analysis related code
     RTPSAnalysis::calculateViolationRate(this->appID);
     recordScalar("deadlineViolationRate", this->violationRate);
+    RTPSAnalysis::finishSampleLatencyRecording();
 }
