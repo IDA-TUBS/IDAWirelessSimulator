@@ -10,6 +10,7 @@ src/idaWirelessSimulator
 src/idaWirelessSimulator_dbg
 ./*/results
 ./*/output
+./*/output/
 simulations/idaWirelessSimulator
 simulations/idaWirelessSimulator_dbg
 *.sca
