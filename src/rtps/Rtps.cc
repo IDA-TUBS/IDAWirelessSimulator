@@ -17,7 +17,10 @@ bool Rtps::init = true;
 
 Rtps::~Rtps()
 {
-   // cancelAndDelete(selfMsg);
+   init = true;
+
+   Rtps::entityIdPerApp.clear();
+   Rtps::mapIdToPriority.clear();
 }
 
 void Rtps::initialize()
