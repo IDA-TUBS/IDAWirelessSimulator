@@ -81,10 +81,10 @@ void CsmaCaMacModified::initialize(int stage)
         if(ta_enable){
             cwMin = ta;
             cwMax = ta;
+            cwMulticast = ta;
         }
         // -------------------------------------------------------------------
 
-        cwMulticast = par("cwMulticast");
         retryLimit = par("retryLimit");
 
 
