@@ -4,6 +4,10 @@
 
 #include "writerWiMEP.h"
 
+#include <random>
+#include <algorithm>
+#include <chrono>
+
 using namespace omnetpp;
 
 Define_Module(WriterWiMEP);
@@ -136,7 +140,24 @@ ReaderProxy* WriterWiMEP::selectReader()
     }
     else
     {
-        // TODO
+        // non-prioritized reader selection - in random order
+        std::vector<int> v;
+        for(int i = 0; i < numReaders; i++) {
+            v.push_back(i);
+        }
+        unsigned seed = std::chrono::system_clock::now()
+                                .time_since_epoch()
+                                .count();
+        auto rng = std::default_random_engine { seed };
+        std::shuffle(std::begin(v), std::end(v), rng);
+
+        for (auto i: v) {
+            auto rp = matchedReaders[i];
+            if(!(rp->checkSampleCompleteness(currentSampleNumber)))
+            {
+                nextReader = rp;
+            }
+        }
     }
     return nextReader;
 }

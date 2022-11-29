@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*- 
 import sys
 import os
+import re
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import pandas as pd
 from matplotlib import cm
 
@@ -22,20 +24,21 @@ def combineViolationRates(series):
 
 def keep(series):
     series.reset_index(inplace=True, drop=True)
-    print(series, len(series))
     return series[0] #lambda x: x
+
+def createList(series):
+    return list(series)
+
+def createListFromLists(series):
+    return list(series)
 
 
 def plotViolationRateTri(data, combined=True):
     # plot violation rate over shaping and arbitration time
 
-    print(data)
-
     fragmentSize = data['fragmentSize'][0]
     sampleSize = data['sampleSize'][0]
     shapingTime = data['shapingTime'][0]
-
-    print(sampleSize, fragmentSize)
 
     # remove type, shapingTime, sample size and fragment size from data
     del data['fragmentSize']
@@ -107,5 +110,267 @@ def plotViolationRateTri(data, combined=True):
 
         plt.show()
     else:
-        # TODO
+        # TODO draw a single plott per reader
         i = 0
+
+
+
+
+def plotViolationRatesMulticast(data, suffix=''):
+
+    fragmentSize = data['fragmentSize'][0]
+    sampleSize = data['sampleSize'][0]
+    shapingTime = data['shapingTime'][0]
+
+    del data['fragmentSize']
+    del data['sampleSize']
+    del data['shapingTime']
+    del data['type']
+    # and other unnecessary data
+    del data['attrvalue']
+    del data['attrname']
+    del data['name']
+    del data["Unnamed: 0"]
+
+    # calculate frame error rate
+    s_frag = fragmentSize * 8
+    s_frame = s_frag + (64 + 20 + 28 + 36) * 8
+
+    tmp = set(data['module'])
+    moduleNumbers = []
+    moduleFERs = []
+    for s in tmp:
+        moduleNumbers.append(s[s.find("[")+1:s.find("]")])
+    moduleNumbers.append("")
+
+    for module in moduleNumbers:
+        s = "bitErrorRate" + module
+        moduleFERs.append("frameErrorRate" + module)
+        ber = data[s]
+        list_fer = []
+        for x in ber:
+            if (x not in list_fer):
+                list_fer.append(round(1 - (1-x)**(s_frame),1) * 100)
+        data[s] = round(1 - (1-data[s])**(s_frame),1) * 100
+
+        data["arbitrationTime"] = data["arbitrationTime"] * 9
+
+        renameMap = {s: "frameErrorRate"+module}
+        data = data.rename(renameMap, axis=1, errors="raise")
+    renameMap = {"value": "violationRate"}
+    data = data.rename(renameMap, axis=1, errors="raise")
+
+    # simplify data by combining relevant data points (each run)
+    column_map = {}
+    cols = []
+    for col in data.columns:        
+        cols.append(col)
+        if "frameErrorRate" in col:
+            column_map[col] = keep
+        elif "violationRate" in col:
+            column_map[col] = createListFromLists
+
+
+    #data = data.groupby(cols, as_index=False).agg(column_map)
+    data = data.groupby(['run']).agg(column_map)
+
+    data['fers'] = data[moduleFERs].values.tolist()
+    for f in moduleFERs:
+        del data[f]
+
+
+
+
+    fig = None
+    ax = None
+    fig, ax = plt.subplots(figsize=(8, 2))
+
+    pos = 0
+    colors = ['darkblue', 'red', 'lightgreen', 'orange', 'yellow']
+
+    xTicks = []
+    xLabels = []
+    for index, row in data.iterrows():
+        fers = row['fers']
+        fers = fers[:len(fers)-1]
+
+        violationRates = row['violationRate']
+
+        pos0 = pos
+
+        j = 0
+        for rate in violationRates:
+            bar = plt.bar(pos, rate, width = 0.6, color=colors[j], edgecolor='black')
+            j = j + 1
+            pos = pos +1
+
+        pos = pos + 1
+
+        if(len(fers) % 2 == 0):
+            offset = 0.5
+        else:
+            offset = 1
+
+        xTicks.append(pos0 + (pos-pos0)/2 - offset)
+        xLabels.append(str(fers))
+    
+    ax.set_xticks(xTicks)
+    ax.set_xticklabels(xLabels)
+    ax.set_xlabel('Reader FER combinations (%)')
+
+    ax.set_yticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+    ax.set_yticklabels(['0','10','20','30','40','50','60','70','80','90','100'])
+    ax.set_ylabel('Observed Deadline\nViolation Rate (%)')
+
+    i = 0
+    customSymbols = []
+    customText = []
+    for num in moduleNumbers[:len(moduleNumbers)-1]:
+        customSymbols.append(Patch(facecolor=colors[i], edgecolor='black'))
+        customText.append("reader " + str(i))
+        i = i + 1
+    ax.legend(customSymbols, customText, ncol=len(customSymbols), bbox_to_anchor=(0.01,0.99), loc='upper left')
+
+
+    if(not os.path.exists("figures")):
+        os.makedirs("figures")
+    plt.savefig("figures/violationRates" + suffix + ".pdf" ,bbox_inches='tight')
+
+    # plt.show()
+
+
+
+
+def plotLatenciesMulticast(data, suffix=''):
+    fragmentSize = data['fragmentSize'][0]
+    sampleSize = data['sampleSize'][0]
+    shapingTime = data['shapingTime'][0]
+
+    del data['fragmentSize']
+    del data['sampleSize']
+    del data['shapingTime']
+    del data['type']
+    # and other unnecessary data
+    del data['attrvalue']
+    del data['attrname']
+    del data['name']
+    del data["Unnamed: 0"]
+
+    # calculate frame error rate
+    s_frag = fragmentSize * 8
+    s_frame = s_frag + (64 + 20 + 28 + 36) * 8
+
+    tmp = set(data['module'])
+    moduleNumbers = []
+    moduleFERs = []
+    for s in tmp:
+        moduleNumbers.append(s[s.find("[")+1:s.find("]")])
+    moduleNumbers.append("")
+
+    for module in moduleNumbers:
+        s = "bitErrorRate" + module
+        moduleFERs.append("frameErrorRate" + module)
+        ber = data[s]
+        list_fer = []
+        for x in ber:
+            if (x not in list_fer):
+                list_fer.append(round(1 - (1-x)**(s_frame),1) * 100)
+        data[s] = round(1 - (1-data[s])**(s_frame),1) * 100
+
+        data["arbitrationTime"] = data["arbitrationTime"] * 9
+
+        renameMap = {s: "frameErrorRate"+module}
+        data = data.rename(renameMap, axis=1, errors="raise")
+    renameMap = {"vecvalue": "latencies"}
+    data = data.rename(renameMap, axis=1, errors="raise")
+
+    latenciesCol = []
+    slist = data[['latencies']].values.tolist()
+    for s in slist:    
+        tmp = s[0]
+        tmp = tmp.replace('[','').replace(']','').replace('\n', ' ').replace('[','').strip().split(' ')
+        tmp = [x for x in tmp if len(x) > 0]
+        latencies = list(map(float, tmp))
+        latenciesCol.append(latencies)
+
+    data['latencies'] = latenciesCol
+
+    # simplify data by combining relevant data points (each run)
+    column_map = {}
+    cols = []
+    for col in data.columns:        
+        cols.append(col)
+        if "frameErrorRate" in col:
+            column_map[col] = keep
+        elif "latencies" in col:
+            column_map[col] = createList
+
+
+    #data = data.groupby(cols, as_index=False).agg(column_map)
+    data = data.groupby(['run']).agg(column_map)
+
+
+    data['fers'] = data[moduleFERs].values.tolist()
+    for f in moduleFERs:
+        del data[f]
+
+
+    fig = None
+    ax = None
+    fig, ax = plt.subplots(figsize=(8, 2))
+
+    pos = 0
+    colors = ['darkblue', 'red', 'lightgreen', 'orange', 'yellow']
+
+    xTicks = []
+    xLabels = []
+    for index, row in data.iterrows():
+        fers = row['fers']
+        fers = fers[:len(fers)-1]
+
+        readerLatencies = row['latencies']
+
+        pos0 = pos
+        bp = plt.boxplot(readerLatencies, positions = [pos + i for i in range(0,len(readerLatencies))], showfliers=False, patch_artist=True)
+        for patch, color in zip(bp['boxes'], colors):
+            patch.set_facecolor(color)
+
+        pos = pos + len(readerLatencies) + 1
+
+        if(len(fers) % 2 == 0):
+            offset = 0.5
+        else:
+            offset = 1
+
+        xTicks.append(pos0 + (pos-pos0)/2 - offset)
+        xLabels.append(str(fers))
+    
+    ax.set_xticks(xTicks)
+    ax.set_xticklabels(xLabels)
+    ax.set_xlabel('Reader FER combinations (%)')
+
+    ax.set_ylabel('Sample Latency (s)')
+
+    i = 0
+    customSymbols = []
+    customText = []
+    for num in moduleNumbers[:len(moduleNumbers)-1]:
+        customSymbols.append(Patch(facecolor=colors[i], edgecolor='black'))
+        customText.append("reader " + str(i))
+        i = i + 1
+    ax.legend(customSymbols, customText, ncol=len(customSymbols), bbox_to_anchor=(0.01,0.99), loc='upper left')
+
+
+    if(not os.path.exists("figures")):
+        os.makedirs("figures")
+    plt.savefig("figures/latencies" + suffix + ".pdf" ,bbox_inches='tight')
+
+
+
+
+
+
+
+
+def plotLatencies(data):
+    i = 0

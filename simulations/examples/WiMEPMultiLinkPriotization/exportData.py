@@ -39,10 +39,10 @@ parameterTypes = ["multiLink.sender.rtpsAppWriter[*].sampleSize",
 parameterSynonyms = ["sampleSize",
                     "shapingTime",
                     "fragmentSize",
-                    "bitErrorRateSender",
-                    "bitErrorRateReceiver0",
-                    "bitErrorRateReceiver1",
-                    "bitErrorRateReceiver2",
+                    "bitErrorRate",
+                    "bitErrorRate0",
+                    "bitErrorRate1",
+                    "bitErrorRate2",
                     "arbitrationTime"]
 
 

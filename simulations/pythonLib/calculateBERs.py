@@ -3,10 +3,10 @@
  
 import numpy as np
 
-fers = [0.05*x for x in range(0,21)]
+fers = [0.1*x for x in range(0,11)]
 # fers = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
-s_frag = 1000 * 8
+s_frag = 800 * 8
 s_frame = s_frag + (64 + 20 + 28 + 36) * 8
 print(fers)
 
