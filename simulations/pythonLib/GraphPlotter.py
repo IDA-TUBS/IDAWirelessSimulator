@@ -21,7 +21,9 @@ def combineViolationRates(series):
     return sum(series) / len(series)
 
 def keep(series):
-    return series #lambda x: x
+    series.reset_index(inplace=True, drop=True)
+    print(series, len(series))
+    return series[0] #lambda x: x
 
 
 def plotViolationRateTri(data, combined=True):
@@ -71,13 +73,18 @@ def plotViolationRateTri(data, combined=True):
         column_map = {}
         cols = []
         for col in data.columns:
+            if col == "Unnamed: 0":
+                continue            
             cols.append(col)
             if col == "violationRate":
                 column_map[col] = combineViolationRates
             else:
                 column_map[col] = keep
 
-        data = data.groupby(cols, as_index=False).agg(column_map)
+        #data = data.groupby(cols, as_index=False).agg(column_map)
+        data = data.groupby(['run']).agg(column_map)        
+
+        # data.to_csv("./output/tmp.csv")
 
         fig = plt.figure(figsize=(8,3))
         ax = plt.axes(projection='3d')
@@ -97,6 +104,8 @@ def plotViolationRateTri(data, combined=True):
         if(not os.path.exists("figures")):
             os.makedirs("figures")
         plt.savefig("figures/violationRate.pdf" ,bbox_inches='tight')
+
+        plt.show()
     else:
         # TODO
         i = 0

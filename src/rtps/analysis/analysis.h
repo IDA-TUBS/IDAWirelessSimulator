@@ -42,6 +42,7 @@ class RTPSAnalysis
     ~RTPSAnalysis()
     {
         transmittedSamplesByAppId.clear();
+        completeSamples.clear();
     };
 
     /*
@@ -86,6 +87,8 @@ class RTPSAnalysis
      */
     void calculateViolationRate(unsigned int appId)
     {
+//        EV << "sent by writer: " << transmittedSamplesByAppId[appId].size() << "\n";
+//        EV << "num received: " << completeSamples.size() << "\n";
         violationRate = 1 - (double(completeSamples.size()) / double(transmittedSamplesByAppId[appId].size()));
     };
 
