@@ -15,6 +15,9 @@
 typedef std::vector<unsigned int> sampleVector;
 typedef std::map<unsigned int, sampleVector> sampleVectorMap;
 
+typedef std::vector<unsigned int> fragmentVector;
+typedef std::map<unsigned int, fragmentVector> fragmentVectorMap;
+
 class RTPSAnalysis
 {
   public:
@@ -22,11 +25,19 @@ class RTPSAnalysis
     cOutVector sampleLatenciesVector;
     /// Vector for storing the sequence numbers successfully received in time at the reader
     std::vector<unsigned int> completeSamples;
+    /// Vector for storing a fragment trace
+    std::vector<unsigned int> fragmentTrace;
     /// variable for storing the deadline violation rate at a reader
     double violationRate;
+    /// variable for storing the frame error rate at a reader
+    double frameErrorRate;
+
 
     /// Vector storing a list of all sample sequence numbers transmitted by a writer based on the appID
     static sampleVectorMap transmittedSamplesByAppId;
+
+    /// Vector storing a list of all fragment numbers transmitted by a writer based on the appID
+    static fragmentVectorMap transmittedFragmentsByAppId;
 
     /*
      * empty default constructor
@@ -66,6 +77,17 @@ class RTPSAnalysis
     };
 
     /*
+     * record successful fragment transmission
+     * stores fragment number
+     *
+     * @param fragmentNumber fragment number
+     */
+    void recordFragmentReception(unsigned int fragmentNumber)
+    {
+        fragmentTrace.push_back(fragmentNumber);
+    };
+
+    /*
      * if the cOutVector is empty, it will not occur in the exported
      * to solve this issue add a noticeable identifier (NaN) to the list
      * to be able to identify those situations
@@ -92,6 +114,18 @@ class RTPSAnalysis
         violationRate = 1 - (double(completeSamples.size()) / double(transmittedSamplesByAppId[appId].size()));
     };
 
+    /*
+     * calculate frame error rate based on received fragments and the
+     * number of fragments transmitted via the given appId
+     *
+     * @param appId unique application identifier
+     */
+    void calculateFER(unsigned int appId)
+    {
+
+        frameErrorRate = 1 - (double(fragmentTrace.size()) / double(transmittedFragmentsByAppId[appId].size()));
+    };
+
 
     /*
      * register appId at the analysis class to prepare vector for storing sample
@@ -105,6 +139,8 @@ class RTPSAnalysis
         transmittedSamplesByAppId.insert(sampleVectorMap::value_type(appId, sampleVector()));
         // or
 //        transmittedSamplesByAppId[appId] = sampleVector();
+
+        transmittedFragmentsByAppId.insert(sampleVectorMap::value_type(appId, sampleVector()));
     };
 
     /*
@@ -117,6 +153,18 @@ class RTPSAnalysis
     void addSample(unsigned int appId, CacheChange* change)
     {
         transmittedSamplesByAppId[appId].push_back(change->sequenceNumber);
+    };
+
+    /*
+     * method for writer to call if a new fragment is being transmitted
+     * stores sequence number based on appId
+     *
+     * @param appId unique application identifier
+     * @param sf pointer to relevant new SampleFragment object
+     */
+    void addFragment(unsigned int appId, SampleFragment* sf)
+    {
+        transmittedFragmentsByAppId[appId].push_back(sf->fragmentStartingNum);
     };
 
 };

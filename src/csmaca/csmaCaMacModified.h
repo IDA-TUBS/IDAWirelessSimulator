@@ -104,6 +104,8 @@ class CsmaCaMacModified : public CsmaCaMac
     long numReceivedBroadcast;
     //@}
 
+    std::vector<simtime_t> arbitrationTimes;
+
 
   public:
     /**

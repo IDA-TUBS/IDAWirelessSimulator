@@ -39,9 +39,10 @@ void ReaderWiMEP::finish()
 {
     // analysis related code
     RTPSAnalysis::calculateViolationRate(this->appID);
+    RTPSAnalysis::calculateFER(this->appID);
     recordScalar("deadlineViolationRate", this->violationRate);
     RTPSAnalysis::finishSampleLatencyRecording();
 
-
     EV << "violation rate: "  << this->violationRate << "\n";
+    EV << "FER:  "  << this->frameErrorRate << "\n";
 }

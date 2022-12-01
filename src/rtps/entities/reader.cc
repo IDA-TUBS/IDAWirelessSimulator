@@ -35,10 +35,12 @@ void Reader::finish()
 {
     // analysis related code
     RTPSAnalysis::calculateViolationRate(this->appID);
+    RTPSAnalysis::calculateFER(this->appID);
     recordScalar("deadlineViolationRate", this->violationRate);
     RTPSAnalysis::finishSampleLatencyRecording();
 
     EV << "violation rate: "  << this->violationRate << "\n";
+    EV << "FER:  "  << this->frameErrorRate << "\n";
 }
 
 void Reader::handleMessage(cMessage *msg)
@@ -71,6 +73,7 @@ void Reader::handleMessage(cMessage *msg)
             bool complete = writerProxy->checkSampleCompleteness(change->sequenceNumber);
 
             // analysis related code
+            RTPSAnalysis::recordFragmentReception(fn);
             if(complete)
             {
                 RTPSAnalysis::recordSampleLatency(writerProxy->getChange(change->sequenceNumber));

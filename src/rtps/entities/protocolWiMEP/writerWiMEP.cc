@@ -269,6 +269,9 @@ bool WriterWiMEP::sendMessage()
         addHBFrag(msg, matchedReaders[0]->getCurrentChange()->highestFNSend);
 
         send(msg , gate("dispatcherOut"));
+
+        // analysis related code:
+        RTPSAnalysis::addFragment(this->appID, sf);
     }
     else
     {

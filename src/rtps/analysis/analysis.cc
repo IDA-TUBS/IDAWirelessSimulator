@@ -7,3 +7,5 @@
 #include "analysis.h"
 
 sampleVectorMap RTPSAnalysis::transmittedSamplesByAppId;
+
+sampleVectorMap RTPSAnalysis::transmittedFragmentsByAppId;

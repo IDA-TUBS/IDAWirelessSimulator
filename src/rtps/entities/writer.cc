@@ -358,6 +358,9 @@ bool Writer::sendMessage()
 
         auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID);
         send(msg , gate("dispatcherOut"));
+
+        // analysis related code:
+        RTPSAnalysis::addFragment(this->appID, sf);
     }
     else
     {

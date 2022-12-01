@@ -17,6 +17,8 @@
 #include "inet/linklayer/common/UserPriority.h"
 #include "inet/linklayer/common/UserPriorityTag_m.h"
 
+#include "./../rtps/messages/RtpsInetPacket_m.h"
+
 #include <sstream>
 #include <cstdlib>
 
@@ -139,6 +141,21 @@ void CsmaCaMacModified::initialize(int stage)
 
 void CsmaCaMacModified::finish()
 {
+    long maxTa = -1;
+    long minTa = LONG_MAX;
+    unsigned long totalTa = 0;
+    for(auto t : arbitrationTimes){
+        totalTa += t.inUnit(SIMTIME_US);
+        if (t.inUnit(SIMTIME_US) > maxTa) {
+            maxTa = t.inUnit(SIMTIME_US);
+        }
+        if (t.inUnit(SIMTIME_US) < minTa) {
+            minTa = t.inUnit(SIMTIME_US);
+        }
+    }
+    unsigned long averageTa = totalTa / arbitrationTimes.size();
+    EV << "average t_a: " << averageTa << " us\n ta_min: " << minTa << " us\n  ta_max: " << maxTa << "us" << endl;
+
     recordScalar("numRetry", numRetry);
     recordScalar("numSentWithoutRetry", numSentWithoutRetry);
     recordScalar("numGivenUp", numGivenUp);
@@ -532,6 +549,10 @@ void CsmaCaMacModified::sendDataFrame(Packet *frameToSend)
 {
     EV << "sending Data frame " << frameToSend->getName() << endl;
     radio->setRadioMode(IRadio::RADIO_MODE_TRANSMITTER);
+
+    auto *rtpsPacket = check_and_cast<RtpsInetPacket*>(frameToSend);
+    simtime_t arbitrationTime = simTime() - rtpsPacket->getWriterSendTime();
+    arbitrationTimes.push_back(arbitrationTime);
 
     sendDown(frameToSend->dup());
 }
