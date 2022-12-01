@@ -356,9 +356,10 @@ bool Writer::sendMessage()
         }
         std::string addr = destinationAddresses[0];
 
-        auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID);
+        auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID, fragmentCounter);
         send(msg , gate("dispatcherOut"));
 
+        fragmentCounter++;
         // analysis related code:
         RTPSAnalysis::addFragment(this->appID, sf);
     }

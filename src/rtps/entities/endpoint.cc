@@ -27,7 +27,7 @@ cModule* Endpoint::getAnalysisModule(cModule* parent){
 }
 
 
-RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize, std::string addr, unsigned int appId)
+RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize, std::string addr, unsigned int appId, unsigned int fragmentCounter)
 {
     RtpsInetPacket* rtpsMsg = new RtpsInetPacket();
     rtpsMsg->setPayloadSize(0);
@@ -60,6 +60,8 @@ RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragme
 
     // used for analysis at the MAC layer:
     rtpsMsg->setWriterSendTime(simTime());
+
+    rtpsMsg->setSentFragments(fragmentCounter);
 
     calculateRtpsMsgSize(rtpsMsg);
     return rtpsMsg;

@@ -264,12 +264,13 @@ bool WriterWiMEP::sendMessage()
         }
         std::string addr = destinationAddresses[0];
 
-        auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID);
+        auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID, fragmentCounter);
         // TODO append HBFrag to the message
         addHBFrag(msg, matchedReaders[0]->getCurrentChange()->highestFNSend);
 
         send(msg , gate("dispatcherOut"));
 
+        fragmentCounter++;
         // analysis related code:
         RTPSAnalysis::addFragment(this->appID, sf);
     }

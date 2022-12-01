@@ -26,6 +26,7 @@ public:
     /// entity kind of instance
     unsigned int entityKind;
 
+
     /*
      * empty default constructor
      */
@@ -59,9 +60,10 @@ public:
      * @param fragmentSize actual size of the fragment
      * @param addr destination address
      * @param appId application id used for stream differentiation
+     * @param fragmentCounter total number of fragments send by the writer, used for determining errors in case dependent signal paths
      * @return sample fragment packaged in as an RtpsInetPacket
      */
-    RtpsInetPacket* createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize, std::string addr, unsigned int appId);
+    RtpsInetPacket* createRtpsMsgFromFragment(SampleFragment* sampleFragment, unsigned int entityID, unsigned int fragmentSize, std::string addr, unsigned int appId, unsigned int fragmentCounter);
 
     /*
      * Method for adding a HBFrag to an already existing data frag msg

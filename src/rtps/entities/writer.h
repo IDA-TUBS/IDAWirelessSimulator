@@ -100,6 +100,8 @@ class Writer : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
     Rtps* rtpsParent;
     /// variable storing the sequence number of the sample that is currently being transmitted
     int currentSampleNumber;
+    /// counter for total number of fragments sent
+    int fragmentCounter;
 
 
   protected:

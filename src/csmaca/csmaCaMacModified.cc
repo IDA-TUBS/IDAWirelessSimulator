@@ -671,8 +671,11 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
         // if there are dependent signal paths, prime the RNG with the same value at each reader
         // to achieve that each reader generates the same random value, and, if the BER is the
         // same at each reader, all readers either drop or receive a message
-        double timestamp = simTime().dbl();
-        std::srand((int)timestamp);
+//        double timestamp = simTime().dbl();
+//        std::srand((int)timestamp);
+
+        auto *rtpsMsg = check_and_cast<RtpsInetPacket*>(frame);
+        std::srand(rtpsMsg->getSentFragments());
     }
     // ----------------- PER calculation from bit error rate and packet length ----------------------
     double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength());
