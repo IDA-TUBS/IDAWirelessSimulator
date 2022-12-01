@@ -94,6 +94,12 @@ bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)
             continue;
         }
 
+        if(this->nackSuppressionEnabled && (currentFragment->sendTime + this->nackSuppressionDuration > simTime()))
+        {
+            // do not process Nacks if NackGuard hasn't expired yet
+            continue;
+        }
+
         if(currentFragment->sent){
             this->updateFragmentStatus(NACKED, sequenceNumber, i);
         }

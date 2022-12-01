@@ -58,9 +58,11 @@ class Writer : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
     simtime_t shaping;
     /// heartbeat period
     simtime_t hbPeriod;
-    /// nack suppression duration // TODO implement properly
+    /// nack suppression duration
     simtime_t nackSuppressionDuration;
 
+    /// flag for enabling or disabling NACK suppression
+    bool enableNackSuppression;
     /// flag for enabling or disabling separate HB messages
     bool enableSeparateHBs;
 

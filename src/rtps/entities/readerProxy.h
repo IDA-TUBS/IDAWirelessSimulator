@@ -30,6 +30,11 @@ class ReaderProxy
     /// max size of history
     unsigned int historySize;
 
+    /// enabling NACK suppresion
+    bool nackSuppressionEnabled;
+    /// NACK suppression duration
+    simtime_t nackSuppressionDuration;
+
   public:
     /// the reader's priority
     unsigned int priority;
@@ -43,6 +48,18 @@ class ReaderProxy
     ReaderProxy(unsigned int id, unsigned int historySize):
         readerID(id),
         historySize(historySize),
+        nackSuppressionEnabled(false),
+        timeoutActive(false)
+    {};
+
+    /*
+     * overtloaded constructor, enable NACK suppression
+     */
+    ReaderProxy(unsigned int id, unsigned int historySize, simtime_t nackSuppressionDuration):
+        readerID(id),
+        historySize(historySize),
+        nackSuppressionEnabled(true),
+        nackSuppressionDuration(nackSuppressionDuration),
         timeoutActive(false)
     {};
 
@@ -52,6 +69,20 @@ class ReaderProxy
     ReaderProxy(unsigned int id, unsigned int historySize, CacheChange &change):
         readerID(id),
         historySize(historySize),
+        nackSuppressionEnabled(false),
+        timeoutActive(false)
+    {
+        this->addChange(change);
+    };
+
+    /*
+     * overloaded constructor, enable NACK suppression and add first change to history
+     */
+    ReaderProxy(unsigned int id, unsigned int historySize, simtime_t nackSuppressionDuration, CacheChange &change):
+        readerID(id),
+        historySize(historySize),
+        nackSuppressionEnabled(true),
+        nackSuppressionDuration(nackSuppressionDuration),
         timeoutActive(false)
     {
         this->addChange(change);

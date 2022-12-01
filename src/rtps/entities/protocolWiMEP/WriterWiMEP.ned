@@ -32,6 +32,9 @@ simple WriterWiMEP like iWriter
         double nackSuppressionDuration @unit(s) = default(0us);
         double timeout @unit(s) = default(2500us);
         
+        // enabling or disabling NACK Suppression
+        bool enableNackSuppression = default(false);
+        
         int appID = default(-1);
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
         

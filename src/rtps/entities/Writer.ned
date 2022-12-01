@@ -32,6 +32,8 @@ simple Writer like iWriter
         double hbPeriod @unit(s) = default(2000us);
         double nackSuppressionDuration @unit(s) = default(0us);
         
+        // enabling or disabling NACK Suppression
+        bool enableNackSuppression = default(false);
         // enabling or disabling separate HBs
         bool enableSeparateHBs = default(true);
         

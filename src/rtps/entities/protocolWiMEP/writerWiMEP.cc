@@ -34,6 +34,8 @@ void WriterWiMEP::initialize()
 
     shaping = par("shaping");
     timeout = par("timeout");
+    enableNackSuppression = par("enableNackSuppression");
+    nackSuppressionDuration = par("nackSuppressionDuration");
 
     // always disable sending of separate HB messages
     enableSeparateHBs = false;
@@ -45,7 +47,16 @@ void WriterWiMEP::initialize()
     for(int i = 0; i < numReaders; i++) {
         // the app's reader IDs are in the range of [appID * maxNumberReader + 1, (appID + 1) * maxNumberReader - 1]
         unsigned int readerId = this->appID * rtpsParent->getMaxNumberOfReaders() + i + 1;
-        auto rp = new ReaderProxy(readerId, this->sizeCache);
+
+        ReaderProxy* rp = nullptr;
+        if(enableNackSuppression)
+        {
+            rp = new ReaderProxy(readerId, this->sizeCache, nackSuppressionDuration);
+        }
+        else
+        {
+            rp = new ReaderProxy(readerId, this->sizeCache);
+        }
         matchedReaders.push_back(rp);
     }
 
