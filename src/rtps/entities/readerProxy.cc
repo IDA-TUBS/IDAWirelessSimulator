@@ -76,6 +76,7 @@ bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)
         return false;
     }
 
+    // Note: we use NackFrags not AckNacks, hence there is no windowing limitation!
     // Iterate through the addressed bitmap region and update the reader's history cache
     for(int i = nackFrag->getFragmentNumberStateBase(); i < nackFrag->getFragmentNumberStateBase() + nackFrag->getFragmentNumberStateNbrBits();i++)
     {

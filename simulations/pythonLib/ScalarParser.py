@@ -56,6 +56,10 @@ class ScalarParser(object):
         print(synonymMap)
         dataFrame = dataFrame.rename(columns=synonymMap, errors="raise")
 
+        dataFrame = dataFrame[dataFrame['type'] == 'scalar']
+        
+        
+
         # filter for specific modules
         if len(moduleNames) != 0:
             for moduleName in moduleNames:

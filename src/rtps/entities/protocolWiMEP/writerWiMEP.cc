@@ -265,7 +265,7 @@ bool WriterWiMEP::sendMessage()
         std::string addr = destinationAddresses[0];
 
         auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID, fragmentCounter);
-        // TODO append HBFrag to the message
+        // append HBFrag to the message
         addHBFrag(msg, matchedReaders[0]->getCurrentChange()->highestFNSend);
 
         send(msg , gate("dispatcherOut"));

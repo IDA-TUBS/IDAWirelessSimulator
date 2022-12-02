@@ -4,9 +4,10 @@ import sys
 import os
 import re
 
+
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
-import pandas as pd
 from matplotlib import cm
 
 
@@ -61,6 +62,7 @@ def plotViolationRateTri(data, combined=True):
         # calculate frame error rate
         s_frag = fragmentSize * 8
         s_frame = s_frag + (64 + 20 + 28 + 36) * 8
+
         ber = data["bitErrorRate"]
         list_fer = []
         for x in ber:
@@ -68,7 +70,7 @@ def plotViolationRateTri(data, combined=True):
                 list_fer.append(round(1 - (1-x)**(s_frame),1) * 100)
         data["bitErrorRate"] = round(1 - (1-data["bitErrorRate"])**(s_frame),1) * 100
 
-        data["arbitrationTime"] = data["arbitrationTime"] * 9
+        data["arbitrationTime"] = (data["arbitrationTime"] * 9) / 2
 
         renameMap = {"value": "violationRate", "bitErrorRate": "frameErrorRate"}
         data = data.rename(renameMap, axis=1, errors="raise")
@@ -91,7 +93,10 @@ def plotViolationRateTri(data, combined=True):
 
         fig = plt.figure(figsize=(8,3))
         ax = plt.axes(projection='3d')
-        surf = ax.plot_trisurf(data['arbitrationTime'], data['frameErrorRate'], data['violationRate'], cmap=cm.get_cmap('plasma'), linewidth=0.2)
+        surf = ax.plot_trisurf(data['arbitrationTime'], data['frameErrorRate'], data['violationRate'],
+                                antialiased = True,
+                                cmap=cm.get_cmap('plasma'),
+                                linewidth=0.2)
 
         z_vector_ticks  = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
         z_vector_labels  = ["0", "20", "40", "60", "80", "100"]
