@@ -62,7 +62,8 @@ void Writer::initialize()
 
 void Writer::finish()
 {
-
+    RTPSAnalysis::calculateCombinedViolationRate();
+    EV << "Total application deadline violation rate: " << this->combinedViolationRate << endl;
 }
 
 
@@ -183,6 +184,14 @@ void Writer::checkSampleLiveliness()
     {
         for (auto rp: matchedReaders)
         {
+            if(!(rp->checkSampleCompleteness(sequenceNumber)))
+            {
+                RTPSAnalysis::incrementIncompleteCounter();
+            }
+            else
+            {
+                RTPSAnalysis::incrementCompleteCounter();
+            }
             rp->removeChange(sequenceNumber);
         }
     }
@@ -240,6 +249,7 @@ void Writer::removeCompleteSamples()
             for(auto rp: matchedReaders)
             {
                 rp->removeChange(change->sequenceNumber);
+                RTPSAnalysis::incrementCompleteCounter();
             }
             historyCache.pop_front();
             // remove all queued fragments of that sample from the send queue

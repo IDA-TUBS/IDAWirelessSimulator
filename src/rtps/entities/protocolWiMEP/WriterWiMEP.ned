@@ -40,6 +40,7 @@ simple WriterWiMEP like iWriter
         
         // multicast extension
         bool prioritized = default(true);
+        string prioMode = default("FIXED"); // options: "FIXED"/"ADAPTIVE" 
         
         // Display Parameters
         @display("i=block/tx");

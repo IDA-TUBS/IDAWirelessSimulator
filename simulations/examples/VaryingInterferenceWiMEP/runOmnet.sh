@@ -16,4 +16,5 @@ ${PATH_SIM}idaWirelessSimulator -u Cmdenv \
 
 sh scaveResults.sh
 python3 exportData.py
+python3 plotData.py
 

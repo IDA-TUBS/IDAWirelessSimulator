@@ -98,6 +98,15 @@ def plotViolationRateTri(data, combined=True):
                                 cmap=cm.get_cmap('plasma'),
                                 linewidth=0.2)
 
+
+        # ax.set(xticklabels=x_vector_labels, xticks=x_vector_ticks)
+        plt.xticks(rotation = 60, rotation_mode="anchor")
+
+        y_vector_ticks  = [0, 20, 40, 60, 80]
+        y_vector_labels  = ["0", "20", "40", "60", "80"]
+        ax.set(yticklabels=y_vector_labels, yticks=y_vector_ticks)
+        plt.yticks(rotation = -30, rotation_mode="anchor")
+
         z_vector_ticks  = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
         z_vector_labels  = ["0", "20", "40", "60", "80", "100"]
         ax.set(zticklabels=z_vector_labels, zticks=z_vector_ticks)
@@ -113,7 +122,7 @@ def plotViolationRateTri(data, combined=True):
             os.makedirs("figures")
         plt.savefig("figures/violationRate.pdf" ,bbox_inches='tight')
 
-        plt.show()
+        # plt.show()
     else:
         # TODO draw a single plott per reader
         i = 0

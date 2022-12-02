@@ -22,9 +22,6 @@ class SampleFragment;
 class ReaderProxy
 {
   private:
-    /// entity of corresponding reader
-    unsigned int readerID;
-
     /// history story all samples
     std::list<ChangeForReader*> history;
     /// max size of history
@@ -36,6 +33,8 @@ class ReaderProxy
     simtime_t nackSuppressionDuration;
 
   public:
+    /// entity of corresponding reader
+    unsigned int readerID;
     /// the reader's priority
     unsigned int priority;
 

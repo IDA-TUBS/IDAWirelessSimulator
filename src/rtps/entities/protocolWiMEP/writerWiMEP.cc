@@ -42,6 +42,27 @@ void WriterWiMEP::initialize()
 
     // multicast extension
     prioritized = par("prioritized");
+    if(prioritized)
+    {
+        const char* mode = par("prioMode");
+
+        if(std::strcmp(mode, "FIXED") == 0)
+        {
+            prioMode = FIXED;
+        }
+        else if(std::strcmp(mode, "ADAPTIVE") == 0)
+        {
+            prioMode = ADAPTIVE;
+        }
+        else
+        {
+            throw cRuntimeError("Invalid parameter 'prioMode': select from options [FIXED, ADAPTIVE]");
+        }
+    }
+    else
+    {
+        prioMode = NONE;
+    }
 
     // reader proxy initialization
     for(int i = 0; i < numReaders; i++) {
@@ -71,7 +92,8 @@ void WriterWiMEP::initialize()
 
 void WriterWiMEP::finish()
 {
-
+    RTPSAnalysis::calculateCombinedViolationRate();
+    EV << "Total application deadline violation rate: " << this->combinedViolationRate << endl;
 }
 
 
@@ -127,25 +149,53 @@ void WriterWiMEP::handleNackFrag(RtpsInetPacket* nackFrag) {
 
 
 
-
-
-
 ReaderProxy* WriterWiMEP::selectReader()
 {
     ReaderProxy *nextReader = nullptr;
-    unsigned int highestPriority = std::numeric_limits<unsigned int>::max();
     // check whether prioritization mechanism shall be used
     if(prioritized)
     {
+        unsigned int highestPriority = std::numeric_limits<unsigned int>::max();
+        unsigned int leastNacks = std::numeric_limits<unsigned int>::max();
+        unsigned int mostNacks = 0;
         // find the highest priority reader that still hasn't received the current sample completely
         for(auto rp: matchedReaders)
         {
-            // note: if everything is working correctly currentSampleNumber will be also
-            // be the sequence number of the first element in the reader proxy's history
-            if(rp->priority < highestPriority && !(rp->checkSampleCompleteness(currentSampleNumber)))
+            // TODO if needed insert checking for deadline violation condition here:
+            // check whether the remaining slot suffice for transmitting sending all
+            // remaining fragments: N_f,rem >= N_f,missing
+
+            if(this->prioMode == FIXED)
             {
-                nextReader = rp;
-                highestPriority = rp->priority;
+                // Prio Mode 1: Using fixed priorities
+
+                // note: if everything is working correctly currentSampleNumber will be also
+                // be the sequence number of the first element in the reader proxy's history
+                if((rp->priority < highestPriority) && !(rp->checkSampleCompleteness(currentSampleNumber)))
+                {
+                    nextReader = rp;
+                    highestPriority = rp->priority;
+                }
+            }
+            else if(this->prioMode == ADAPTIVE)
+            {
+                // Prio Mode 2: Use adaptive prioritization based on packet delivery rate (PDR)
+
+//                // select the reader with the least amount of negatively acknowledged fragments
+//                if((rp->getUnsentFragments(currentSampleNumber).size() < leastNacks) && !(rp->checkSampleCompleteness(currentSampleNumber)))
+//                {
+//                    leastNacks = rp->getUnsentFragments(currentSampleNumber).size();
+//                    nextReader = rp;
+//                }
+
+                // select the reader with the most negatively acknowledged fragments
+                // works best for equal FERs at each reader
+                if((rp->getUnsentFragments(currentSampleNumber).size() > mostNacks) && !(rp->checkSampleCompleteness(currentSampleNumber)))
+                {
+                    mostNacks = rp->getUnsentFragments(currentSampleNumber).size();
+                    nextReader = rp;
+                }
+
             }
         }
     }
@@ -170,6 +220,7 @@ ReaderProxy* WriterWiMEP::selectReader()
             }
         }
     }
+
     return nextReader;
 }
 

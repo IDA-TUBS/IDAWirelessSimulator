@@ -25,7 +25,7 @@ class RTPSAnalysis
     cOutVector sampleLatenciesVector;
     /// Vector for storing the sequence numbers successfully received in time at the reader
     std::vector<unsigned int> completeSamples;
-    /// Vector for storing a fragment trace
+    /// Vector for storing a fragment trace at the reader
     std::vector<unsigned int> fragmentTrace;
     /// variable for storing the deadline violation rate at a reader
     double violationRate;
@@ -33,9 +33,14 @@ class RTPSAnalysis
     double frameErrorRate;
 
 
+    /// count samples (at all readers) marked as complete prior to the deadline elapsing
+    unsigned int counterCompleteSamples;
+    /// count samples (at all readers) that violated their respective deadline
+    unsigned int counterIncompleteSamples;
+    /// combined deadline violation rate as 'measured' at the writer, includes all readers in case of multicast
+    double combinedViolationRate;
     /// Vector storing a list of all sample sequence numbers transmitted by a writer based on the appID
     static sampleVectorMap transmittedSamplesByAppId;
-
     /// Vector storing a list of all fragment numbers transmitted by a writer based on the appID
     static fragmentVectorMap transmittedFragmentsByAppId;
 
@@ -126,6 +131,29 @@ class RTPSAnalysis
         frameErrorRate = 1 - (double(fragmentTrace.size()) / double(transmittedFragmentsByAppId[appId].size()));
     };
 
+    /*
+     * calculate deadline violation rate as perceived by the writer
+     */
+    void calculateCombinedViolationRate()
+    {
+        combinedViolationRate = double(counterIncompleteSamples) / (double(counterIncompleteSamples) + double(counterCompleteSamples));
+    };
+
+    /*
+     * increment the counter used for tracking number of sample perceived as complete by the writer
+     */
+    void incrementCompleteCounter()
+    {
+        counterCompleteSamples++;
+    }
+
+    /*
+     * increment the counter used for tracking number of sample perceived as incomplete by the writer
+     */
+    void incrementIncompleteCounter()
+    {
+        counterIncompleteSamples++;
+    }
 
     /*
      * register appId at the analysis class to prepare vector for storing sample

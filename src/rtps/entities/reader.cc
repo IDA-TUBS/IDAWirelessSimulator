@@ -39,8 +39,8 @@ void Reader::finish()
     recordScalar("deadlineViolationRate", this->violationRate);
     RTPSAnalysis::finishSampleLatencyRecording();
 
-    EV << "violation rate: "  << this->violationRate << "\n";
-    EV << "FER:  "  << this->frameErrorRate << "\n";
+    EV << "violation rate: "  << this->violationRate << endl;
+    EV << "FER:  "  << this->frameErrorRate << endl;
 }
 
 void Reader::handleMessage(cMessage *msg)

@@ -13,6 +13,13 @@
 using namespace omnetpp;
 using namespace inet;
 
+typedef enum
+{
+    NONE,
+    FIXED,
+    ADAPTIVE
+} PrioritizationMode;
+
 class WriterWiMEP : public Writer
 {
   public:
@@ -42,6 +49,8 @@ class WriterWiMEP : public Writer
     // same as Writer
     /// enabling and disabling of prioritization mechanism
     bool prioritized;
+    /// priotization mode
+    PrioritizationMode prioMode;
     /// timeout duration
     simtime_t timeout;
 
@@ -65,7 +74,6 @@ class WriterWiMEP : public Writer
     // same as Writer
     /// Counter for active timeouts
     unsigned int activeTimeouts;
-
 
   protected:
     /*

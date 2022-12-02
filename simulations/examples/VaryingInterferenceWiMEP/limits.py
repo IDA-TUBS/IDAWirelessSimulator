@@ -14,7 +14,7 @@ if __name__ == '__main__':
     S_s = 412344
     S_f = 11454
     N_f = S_s/S_f
-    n = 3
+    n = 2
 
     results = []
 
@@ -92,6 +92,6 @@ if __name__ == '__main__':
     # ax2.set_yticklabels(['0', '', '500', '', '1000', '', '1500'])
     
     
-    plt.show()
+    # plt.show()
     
     fig.savefig("figures/limits_ta_fer_n_" + str(n) +".pdf", bbox_inches='tight')
