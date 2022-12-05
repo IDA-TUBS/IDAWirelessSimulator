@@ -50,13 +50,17 @@ void WriterWiMEP::initialize()
         {
             prioMode = FIXED;
         }
-        else if(std::strcmp(mode, "ADAPTIVE") == 0)
+        else if(std::strcmp(mode, "ADAPTIVE_LOW_PDR") == 0)
         {
-            prioMode = ADAPTIVE;
+            prioMode = ADAPTIVE_LOW_PDR;
+        }
+        else if(std::strcmp(mode, "ADAPTIVE_HIGH_PDR") == 0)
+        {
+            prioMode = ADAPTIVE_HIGH_PDR;
         }
         else
         {
-            throw cRuntimeError("Invalid parameter 'prioMode': select from options [FIXED, ADAPTIVE]");
+            throw cRuntimeError("Invalid parameter 'prioMode': select from options [FIXED, ADAPTIVE_LOW_PDR, ADAPTIVE_HIGH_PDR]");
         }
     }
     else
@@ -155,8 +159,11 @@ ReaderProxy* WriterWiMEP::selectReader()
     // check whether prioritization mechanism shall be used
     if(prioritized)
     {
+        // for mode 1:
         unsigned int highestPriority = std::numeric_limits<unsigned int>::max();
+        // for mode 2:
         unsigned int leastNacks = std::numeric_limits<unsigned int>::max();
+        // for mode 3:
         unsigned int mostNacks = 0;
         // find the highest priority reader that still hasn't received the current sample completely
         for(auto rp: matchedReaders)
@@ -177,17 +184,9 @@ ReaderProxy* WriterWiMEP::selectReader()
                     highestPriority = rp->priority;
                 }
             }
-            else if(this->prioMode == ADAPTIVE)
+            else if(this->prioMode == ADAPTIVE_LOW_PDR)
             {
                 // Prio Mode 2: Use adaptive prioritization based on packet delivery rate (PDR)
-
-//                // select the reader with the least amount of negatively acknowledged fragments
-//                if((rp->getUnsentFragments(currentSampleNumber).size() < leastNacks) && !(rp->checkSampleCompleteness(currentSampleNumber)))
-//                {
-//                    leastNacks = rp->getUnsentFragments(currentSampleNumber).size();
-//                    nextReader = rp;
-//                }
-
                 // select the reader with the most negatively acknowledged fragments
                 // works best for equal FERs at each reader
                 if((rp->getUnsentFragments(currentSampleNumber).size() > mostNacks) && !(rp->checkSampleCompleteness(currentSampleNumber)))
@@ -197,13 +196,24 @@ ReaderProxy* WriterWiMEP::selectReader()
                 }
 
             }
+            else if(this->prioMode == ADAPTIVE_HIGH_PDR)
+            {
+                // Prio Mode 3: Use adaptive prioritization based on packet delivery rate (PDR)
+                // select the reader with the least amount of negatively acknowledged fragments
+                if((rp->getUnsentFragments(currentSampleNumber).size() < leastNacks) && !(rp->checkSampleCompleteness(currentSampleNumber)))
+                {
+                    leastNacks = rp->getUnsentFragments(currentSampleNumber).size();
+                    nextReader = rp;
+                }
+            }
         }
     }
     else
     {
         // non-prioritized reader selection - in random order
         std::vector<int> v;
-        for(int i = 0; i < numReaders; i++) {
+        for(int i = 0; i < numReaders; i++)
+        {
             v.push_back(i);
         }
         unsigned seed = std::chrono::system_clock::now()
@@ -212,7 +222,8 @@ ReaderProxy* WriterWiMEP::selectReader()
         auto rng = std::default_random_engine { seed };
         std::shuffle(std::begin(v), std::end(v), rng);
 
-        for (auto i: v) {
+        for (auto i: v)
+        {
             auto rp = matchedReaders[i];
             if(!(rp->checkSampleCompleteness(currentSampleNumber)))
             {
@@ -238,7 +249,8 @@ bool WriterWiMEP::sendMessage()
     // function the same as for generic RTPS Writer, but adds HeartbeatFrag to each transmitted fragment
 
     // Check if the writer is currently allowed to send
-    if(sendEvent->isScheduled()){
+    if(sendEvent->isScheduled())
+    {
         return false;
     }
 

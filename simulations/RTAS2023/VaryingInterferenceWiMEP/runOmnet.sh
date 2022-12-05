@@ -1,7 +1,7 @@
 rm -r ./results
 
 PATH_SIM="/home/alexb/Documents/Code/IDAWirelessSimulator/"
-SIM_PATH="examples/VaryingInterferenceWiMEP/"
+SIM_PATH="RTSA2023/VaryingInterferenceWiMEP/"
 SIM_NAME="VaryingInterferenceWiMEP.ini"
 
 PATH_INET="/home/alexb/Documents/Code/ws_omnet/inet4.4/"

@@ -17,7 +17,8 @@ typedef enum
 {
     NONE,
     FIXED,
-    ADAPTIVE
+    ADAPTIVE_LOW_PDR,
+    ADAPTIVE_HIGH_PDR
 } PrioritizationMode;
 
 class WriterWiMEP : public Writer
