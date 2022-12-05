@@ -55,6 +55,10 @@ module CsmaCaMacModified extends CsmaCaMac like IMacProtocol
         double ta = default(84.0);
         bool ta_enable = default(false);
         
+        bool burstErrors = default(false);
+        double geBurstParamP = default(0.0515509);
+        double geBurstParamR = default(0.946863);
+        
         bool dependentSignalPaths = default(false);
 
         @class(CsmaCaMacModified);

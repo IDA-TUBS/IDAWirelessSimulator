@@ -52,6 +52,17 @@ void CsmaCaMacModified::initialize(int stage)
         // ---- Added parameters ----
         bitErrorRate = par("bitErrorRate");
         dependentSignalPaths = par("dependentSignalPaths");
+
+        burstErrors = par("burstErrors");
+        if(burstErrors)
+        {
+            // enforce dependent signal paths in case of burst errors
+            dependentSignalPaths = true;
+
+            geBurstParamP = par("geBurstParamP");
+            geBurstParamR = par("geBurstParamR");
+            prevErrorState = GOOD;
+        }
         // --------------------------
 
 
@@ -666,48 +677,91 @@ bool CsmaCaMacModified::isForUs(Packet *frame)
 
 bool CsmaCaMacModified::isFcsOk(Packet *frame)
 {
-    if(dependentSignalPaths)
+    if(burstErrors)
     {
-        // if there are dependent signal paths, prime the RNG with the same value at each reader
-        // to achieve that each reader generates the same random value, and, if the BER is the
-        // same at each reader, all readers either drop or receive a message
-//        double timestamp = simTime().dbl();
-//        std::srand((int)timestamp);
+        // burst errors, here described using the Gilbert-Elliot model
 
+        // enforced dependent signal paths:
         auto *rtpsMsg = check_and_cast<RtpsInetPacket*>(frame);
         std::srand(rtpsMsg->getSentFragments());
-    }
-    // ----------------- PER calculation from bit error rate and packet length ----------------------
-    double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength());
-    double rd = ((double)rand()/(double)RAND_MAX);
-    if (rd < packet_loss_prob) {
-        return false;
-    }
-    // ----------------------------------------------------------------------------------------------
 
+        // calc random double value in [0,1]
+        double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength());
+        double rd = ((double)rand()/(double)RAND_MAX);
 
-    if (frame->hasBitError() || !frame->peekData()->isCorrect())
-        return false;
-    else {
-        const auto& trailer = frame->peekAtBack<CsmaCaMacTrailer>(B(4));
-        switch (trailer->getFcsMode()) {
-            case FCS_DECLARED_INCORRECT:
-                return false;
-            case FCS_DECLARED_CORRECT:
+        //
+        if(prevErrorState == GOOD)
+        {
+            if(rd > geBurstParamP)
+            {
+                // stay in 'GOOD' state
                 return true;
-            case FCS_COMPUTED: {
-                const auto& fcsBytes = frame->peekDataAt<BytesChunk>(B(0), frame->getDataLength() - trailer->getChunkLength());
-                auto bufferLength = B(fcsBytes->getChunkLength()).get();
-                auto buffer = new uint8_t[bufferLength];
-                fcsBytes->copyToBuffer(buffer, bufferLength);
-                auto computedFcs = ethernetCRC(buffer, bufferLength);
-                delete[] buffer;
-                return computedFcs == trailer->getFcs();
             }
-            default:
-                throw cRuntimeError("Unknown FCS mode");
+            else
+            {
+                // burst error starts
+                prevErrorState = BAD;
+                return false;
+            }
+        }
+        else if (prevErrorState == BAD)
+        {
+            if(rd > geBurstParamR)
+            {
+                // stay in 'BAD' state
+                return false;
+            }
+            else
+            {
+                // burst error starts
+                prevErrorState = GOOD;
+                return true;
+            }
+        }
+
+    }
+    else
+    {
+        // "normal" uniformly distributed bit and frame errors
+        if(dependentSignalPaths)
+        {
+            auto *rtpsMsg = check_and_cast<RtpsInetPacket*>(frame);
+            std::srand(rtpsMsg->getSentFragments());
+        }
+        // ----------------- PER calculation from bit error rate and packet length ----------------------
+        double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength());
+        double rd = ((double)rand()/(double)RAND_MAX);
+        if (rd < packet_loss_prob) {
+            return false;
+        }
+        // ----------------------------------------------------------------------------------------------
+
+
+        if (frame->hasBitError() || !frame->peekData()->isCorrect())
+            return false;
+        else {
+            const auto& trailer = frame->peekAtBack<CsmaCaMacTrailer>(B(4));
+            switch (trailer->getFcsMode()) {
+                case FCS_DECLARED_INCORRECT:
+                    return false;
+                case FCS_DECLARED_CORRECT:
+                    return true;
+                case FCS_COMPUTED: {
+                    const auto& fcsBytes = frame->peekDataAt<BytesChunk>(B(0), frame->getDataLength() - trailer->getChunkLength());
+                    auto bufferLength = B(fcsBytes->getChunkLength()).get();
+                    auto buffer = new uint8_t[bufferLength];
+                    fcsBytes->copyToBuffer(buffer, bufferLength);
+                    auto computedFcs = ethernetCRC(buffer, bufferLength);
+                    delete[] buffer;
+                    return computedFcs == trailer->getFcs();
+                }
+                default:
+                    throw cRuntimeError("Unknown FCS mode");
+            }
         }
     }
+
+
 }
 
 uint32_t CsmaCaMacModified::computeFcs(const Ptr<const BytesChunk>& bytes)

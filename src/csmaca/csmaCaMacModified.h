@@ -20,6 +20,12 @@
 
 using namespace inet;
 
+typedef enum
+{
+    GOOD,
+    BAD
+} ErrorState;
+
 class CsmaCaMacModified : public CsmaCaMac
 {
   protected:
@@ -121,6 +127,10 @@ class CsmaCaMacModified : public CsmaCaMac
     double ta;
 
     bool dependentSignalPaths;
+    bool burstErrors;
+    double geBurstParamP;
+    double geBurstParamR;
+    ErrorState prevErrorState;
 
 
   protected:
