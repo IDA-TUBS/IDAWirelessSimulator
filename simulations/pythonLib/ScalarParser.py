@@ -22,7 +22,7 @@ class ScalarParser(object):
         scalarNames = scaTypes
 
         parameterSynonyms = parSynonyms
-        vectorSynonyms = scaSynonyms
+        scalarSynonyms = scaSynonyms
 
         # Load the omnetp data as a vector frame file
         dataFrame = pd.read_csv(fileName, converters = {
@@ -36,7 +36,6 @@ class ScalarParser(object):
         #	- type column == 'param'
         #       - attrname in parameter_types
         parameterVector = dataFrame[(dataFrame.type == 'config') & (dataFrame.attrname.isin(parameterTypes))]
-        print(parameterVector)
 
         # Shrink the file to the relevant columns: run, attrname and values - e.g.: | run1 | ber.n | 1e-5 | ... |
         parameterVector = parameterVector.loc[parameterVector.type=='config', ['run', 'attrname', 'attrvalue']]
@@ -53,19 +52,14 @@ class ScalarParser(object):
         dataFrame = dataFrame.merge(parameterVector, left_on='run', right_index=True, how='outer') #TODO convert the index here! after merging...
 
         synonymMap = {parameterTypes[i]: parameterSynonyms[i] for i in range(len(parameterTypes))}
-        print(synonymMap)
         dataFrame = dataFrame.rename(columns=synonymMap, errors="raise")
 
         dataFrame = dataFrame[dataFrame['type'] == 'scalar']
-        
-        
 
         # filter for specific modules
         if len(moduleNames) != 0:
             for moduleName in moduleNames:
                 dataFrame = dataFrame[dataFrame['module'].str.contains(moduleName)]
-
-        print(dataFrame)
 
         return dataFrame
 

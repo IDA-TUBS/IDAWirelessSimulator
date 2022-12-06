@@ -8,4 +8,4 @@
 
 sampleVectorMap RTPSAnalysis::transmittedSamplesByAppId;
 
-sampleVectorMap RTPSAnalysis::transmittedFragmentsByAppId;
+fragmentVectorMap RTPSAnalysis::transmittedFragmentsByAppId;

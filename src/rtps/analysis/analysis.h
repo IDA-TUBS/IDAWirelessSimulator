@@ -140,6 +140,21 @@ class RTPSAnalysis
     };
 
     /*
+     * depending on the sample period it can happen that there are still valid
+     * samples that have not been transmitted to all readers remaining. In that
+     * case, a deadline violation would be recorded even if not happening. Here,
+     * we correct for such scenarios
+     *
+     * @param appID unique application identifier
+     */
+    void handleIncompleteButValidSamples(unsigned int appId)
+    {
+
+        // remove the last samples from the analysis vector to account for still valid samples
+        transmittedSamplesByAppId[appId].resize(transmittedSamplesByAppId[appId].size() - 1);
+    }
+
+    /*
      * increment the counter used for tracking number of sample perceived as complete by the writer
      */
     void incrementCompleteCounter()

@@ -132,6 +132,8 @@ class CsmaCaMacModified : public CsmaCaMac
     double geBurstParamR;
     ErrorState prevErrorState;
 
+    cOutVector errorTrace;
+
 
   protected:
     /**

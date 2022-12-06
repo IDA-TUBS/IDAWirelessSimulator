@@ -62,6 +62,7 @@ void CsmaCaMacModified::initialize(int stage)
             geBurstParamP = par("geBurstParamP");
             geBurstParamR = par("geBurstParamR");
             prevErrorState = GOOD;
+            errorTrace.setName("errorTrace");
         }
         // --------------------------
 
@@ -695,11 +696,13 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
             if(rd > geBurstParamP)
             {
                 // stay in 'GOOD' state
+                errorTrace.record(0);
                 return true;
             }
             else
             {
                 // burst error starts
+                errorTrace.record(1);;
                 prevErrorState = BAD;
                 return false;
             }
@@ -709,11 +712,13 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
             if(rd > geBurstParamR)
             {
                 // stay in 'BAD' state
+                errorTrace.record(1);
                 return false;
             }
             else
             {
                 // burst error starts
+                errorTrace.record(0);
                 prevErrorState = GOOD;
                 return true;
             }

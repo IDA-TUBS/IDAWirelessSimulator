@@ -143,7 +143,6 @@ bool Writer::addSampleToCache(Sample* sample)
 
     // analysis related code
     RTPSAnalysis::addSample(this->appID, change);
-
     return true;
 }
 
@@ -159,10 +158,9 @@ void Writer::checkSampleLiveliness()
     std::vector<unsigned int> deprecatedSNs;
     std::vector<CacheChange*> toDelete;
     // check liveliness of samples in history cache, if deadline expired remove sample from cache and ReaderProxies
+    auto* change = historyCache.front();
     while(1)
     {
-        auto* change = historyCache.front();
-
         if(!change->isValid(this->deadline))
         {
             deprecatedSNs.push_back(change->sequenceNumber);
@@ -174,10 +172,10 @@ void Writer::checkSampleLiveliness()
                 break;
             }
         }
-        if(change == historyCache.back())
-        {
-            break;
-        }
+        // assumption here: samples put into history cache in the right order AND
+        // all samples have the same deadline, hence any sample in the history
+        // following the first valid sample is also still valid!
+        break;
     }
 
     for (unsigned int sequenceNumber: deprecatedSNs)
@@ -233,6 +231,11 @@ void Writer::removeCompleteSamples()
     {
         auto* change = historyCache.front();
 
+        if(!change)
+        {
+            break;
+        }
+
         bool completed = true;
         for(auto rp: matchedReaders)
         {
@@ -267,11 +270,18 @@ void Writer::removeCompleteSamples()
             }
             delete change;
         }
-
-        if(historyCache.size() == 0 || change == historyCache.back())
+        else
         {
+            // assumption here: samples put into history cache in the right order AND
+            // a consecutive sample will only be transmitted after a previous sample is
+            // either complete or its deadline expired. Hence, there is no need to check
+            // further samples for completeness if there is any incomplete sample
             break;
         }
+//        if(historyCache.size() == 0 || change == historyCache.back())
+//        {
+//            break;
+//        }
     }
 }
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import os
+import sys
+
 import random
 import matplotlib.pyplot as plt
 
@@ -60,11 +63,38 @@ def determineBurstCharacteristics(sequence):
     return burstLengths, distances
 
 
+
+
+def analyseSequence(sequence):
+    burstLengths, distances = determineBurstCharacteristics(sequence)
+
+    print(calcFER(sequence))
+    print("average burst length", str(sum(burstLengths)/len(burstLengths)))
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4))
+    fig.suptitle('Packet Burst Error Characteristics')
+
+    ax1.hist(burstLengths, 100)
+    ax1.set_xlabel('Burst Length')
+    ax1.set_ylabel('Frequency')
+    ax2.hist(distances, 100)
+    ax2.set_xlabel('Inter Burst Distance')
+
+    if(not os.path.exists("figures")):
+        os.makedirs("figures")
+    plt.savefig("figures/burstCharacteristics.pdf" ,bbox_inches='tight')
+    plt.savefig("figures/burstCharacteristics.png" ,bbox_inches='tight')
+    plt.show()
+
+
+
+
+
 if __name__ == '__main__':
     sequences = []
 
     p = 0.18
-    r = 0.50
+    r = 0.40
   
     sequence = buildSequence(100000, p, r)
 

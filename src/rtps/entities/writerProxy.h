@@ -81,7 +81,7 @@ class WriterProxy
     bool updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber);
 
     /*
-     * method for updating the fragment status based on NackFrag information
+     * method for evaluating completeness of samples
      *
      * @param sequenceNumber seq number of sample that shall be checked
      * @return true if complete, else returns false
