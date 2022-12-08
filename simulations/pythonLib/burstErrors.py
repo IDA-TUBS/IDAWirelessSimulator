@@ -94,7 +94,7 @@ if __name__ == '__main__':
     sequences = []
 
     p = 0.18
-    r = 0.40
+    r = 0.50
   
     sequence = buildSequence(100000, p, r)
 

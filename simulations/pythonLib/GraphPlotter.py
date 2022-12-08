@@ -3,7 +3,7 @@
 import sys
 import os
 import re
-
+import math
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -386,5 +386,79 @@ def plotLatenciesMulticast(data, suffix=''):
 
 
 
-def plotLatencies(data):
-    i = 0
+def plotLatencyAndSlack(data):    
+    fragmentSize = data['fragmentSize'][0]
+    sampleSize = data['sampleSize'][0]
+    shapingTime = data['shapingTime'][0]
+
+    del data['fragmentSize']
+    del data['sampleSize']
+    del data['shapingTime']
+    del data['type']
+    # and other unnecessary data
+    del data['attrvalue']
+    del data['attrname']
+    del data['name']
+    del data["Unnamed: 0"]
+
+    tmp = set(data['module'])
+    moduleNumbers = []
+    moduleFERs = []
+    for s in tmp:
+        moduleNumbers.append(s[s.find("[")+1:s.find("]")])
+    moduleNumbers.append("")
+
+    runs = []
+    for run in data['run']:
+        if run not in runs:
+            print(run)
+            runs.append(run)
+    
+    
+    for run in runs:
+        tmp = data[data['run'] == run]
+        tmp = tmp.reset_index(drop=True)
+
+        samplePeriod = tmp['samplePeriod'][0]
+        deadline = tmp['sampleDeadline'][0]
+        # print(deadline)
+
+        for index, row in tmp.iterrows():
+            s = row['vecvalue']
+            tmp = s.replace('[','').replace(']','').replace('\n', ' ').replace('[','').strip().split(' ')
+            tmp = [x for x in tmp if len(x) > 0]
+            latencies = list(map(float, tmp))
+            latencies = [x * 1000 for x in latencies]
+
+            minLatency = math.floor(min(latencies))
+            maxLatency = math.ceil(max(latencies))
+            diff = maxLatency - minLatency
+            steps = 5
+            stepSize = round(diff/steps)
+
+            yticks = [(minLatency + (stepSize * x)) for x in range(0,2*steps) if (minLatency + (stepSize * x)) <= maxLatency + stepSize]
+
+            s = row['vectime']
+            tmp = s.replace('[','').replace(']','').replace('\n', ' ').replace('[','').strip().split(' ')
+            tmp = [x for x in tmp if len(x) > 0]
+            times = list(map(float, tmp))
+
+            
+
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4), gridspec_kw={'width_ratios': [7, 1]})
+            # fig.suptitle('Sample Latencies')
+
+            ax1.plot(times, latencies)
+            ax1.set_xlabel('Time (s)')
+            ax1.set_ylabel('Latency (ms)')
+            ax1.set_yticks(yticks)
+
+            ax2.boxplot(latencies)
+            ax2.set_xticklabels([" "])
+            ax2.set_ylabel('Latency (ms)')
+            ax2.set_yticks(yticks)
+
+            plt.savefig("figures/latencies_Deadline" + deadline + "_reader" + str(index) + ".pdf" ,bbox_inches='tight')
+            plt.savefig("figures/latencies_Deadline" + deadline + "_reader" + str(index) + ".png" ,bbox_inches='tight')
+        
+    # plt.show()

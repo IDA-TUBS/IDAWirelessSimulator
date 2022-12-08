@@ -75,6 +75,10 @@ class RTPSAnalysis
             return;
         }
         simtime_t tmp = simTime() - change->arrivalTime;
+        unsigned int sn = change->sequenceNumber;
+        simtime_t x = simTime();
+        double t = x.dbl();
+        double arrivalTime = change->arrivalTime.dbl();
         double latency = tmp.dbl();
 
         sampleLatenciesVector.record(latency);

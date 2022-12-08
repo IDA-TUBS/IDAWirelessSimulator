@@ -28,20 +28,22 @@ args = parser.parse_args()
 
 
 # General Configuration
-parameterTypes = ["multiLink.sender.rtpsAppWriter[*].sampleSize",
+parameterTypes = ["multiLink.sender.rtpsAppWriter[*].samplePeriod",
+                    "multiLink.sender.rtpsAppWriter[*].sampleSize",
                     "multiLink.sender.rtps.writer[0].shaping",                    
                     "multiLink.sender.rtps.writer[0].fragmentSize",
                     "multiLink.sender.rtps.writer[0].deadline",
                     "multiLink.**.wlan[0].mac.ta",
                     "multiLink.**.wlan[0].mac.geBurstParamP",
                     "multiLink.**.wlan[0].mac.geBurstParamR"]
-parameterSynonyms = ["sampleSize",
+parameterSynonyms = ["samplePeriod",
+                    "sampleSize",
                     "shapingTime",
                     "fragmentSize",
                     "sampleDeadline",
                     "arbitrationTime",
                     "gilbertElliotP",
-                    "gilbertElliotP"]
+                    "gilbertElliotR"]
 
 
 
@@ -59,7 +61,7 @@ vectorSynonyms = ["sampleLatencies"]
 vecFile = './output/vector_file.csv'
 
 moduleNames = ["receivers"]
-df = vectorParser.processVectors(parameterTypes, parameterSynonyms, vectorNames, vectorSynonyms, moduleNames, vecFile)
+df = vectorParser.processVectors(parameterTypes, parameterSynonyms, vectorNames, vectorSynonyms, moduleNames, vecFile, keepTime=True)
 df.to_csv("./output/sampleLatencies" + args.suffix + ".csv")
 
 
@@ -76,13 +78,13 @@ df.to_csv("./output/sampleLatencies" + args.suffix + ".csv")
 
 
 
-scalarParser = ScalarParser.ScalarParser()
+# scalarParser = ScalarParser.ScalarParser()
 
-scalarNames = ["deadlineViolationRate"]
-scalarSynonyms = ["deadlineViolationRate"]
+# scalarNames = ["deadlineViolationRate"]
+# scalarSynonyms = ["deadlineViolationRate"]
 
-scaFile = './output/histogram_file.csv'
+# scaFile = './output/histogram_file.csv'
 
-moduleNames = ["receivers"]
-df = scalarParser.processVectors(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
-df.to_csv("./output/violationRates" + args.suffix + ".csv")
+# moduleNames = ["receivers"]
+# df = scalarParser.processScalars(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
+# df.to_csv("./output/violationRates" + args.suffix + ".csv")

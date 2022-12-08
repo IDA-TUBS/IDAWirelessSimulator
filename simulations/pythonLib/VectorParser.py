@@ -15,7 +15,7 @@ class VectorParser(object):
     def parseNpArray(self, s):
         return np.fromstring(s, sep=' ') if s else None
 
-    def processVectors(self, parTypes, parSynonyms, vecTypes, vecSynonyms, moduleNames, fileName):
+    def processVectors(self, parTypes, parSynonyms, vecTypes, vecSynonyms, moduleNames, fileName, keepTime = False):
 
         #Configuration
         parameterTypes = parTypes
@@ -63,8 +63,9 @@ class VectorParser(object):
         if len(moduleNames) != 0:
             for moduleName in moduleNames:
                 dataFrame = dataFrame[dataFrame['module'].str.contains(moduleName)]
-                
-        del dataFrame["vectime"]
+        
+        if(not keepTime):
+            del dataFrame["vectime"]
 
         return dataFrame
 

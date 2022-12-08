@@ -63,7 +63,7 @@ void Reader::handleMessage(cMessage *msg)
 
             // if DataFrag, update cache
             // create new change
-            auto change = new CacheChange(rtpsMsg->getWriterSN(), rtpsMsg->getSampleSize(), rtpsMsg->getFragmentSize(), rtpsMsg->getArrivalTime());
+            auto change = new CacheChange(rtpsMsg->getWriterSN(), rtpsMsg->getSampleSize(), rtpsMsg->getFragmentSize(), rtpsMsg->getPublisherSendTime());
             writerProxy->addChange(*change); // only adds change if new, else WriterProxy does nothing here
 
             // mark fragment as received

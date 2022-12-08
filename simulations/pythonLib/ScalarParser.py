@@ -15,7 +15,7 @@ class ScalarParser(object):
     def parseNpArray(self, s):
         return np.fromstring(s, sep=' ') if s else None
 
-    def processVectors(self, parTypes, parSynonyms, scaTypes, scaSynonyms, moduleNames, fileName):
+    def processScalars(self, parTypes, parSynonyms, scaTypes, scaSynonyms, moduleNames, fileName):
 
         #Configuration
         parameterTypes = parTypes

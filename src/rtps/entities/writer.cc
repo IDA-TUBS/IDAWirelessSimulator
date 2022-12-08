@@ -82,6 +82,10 @@ void Writer::handleMessage(cMessage *msg)
 		// Received new sample from application
 		Sample *sample = check_and_cast<Sample*>(msg);
 
+		simtime_t x = simTime();
+        double t = x.dbl();
+        unsigned int sn = sample->getSequenceNumber();
+
 		// first check existing samples for deadline expiry
 		checkSampleLiveliness();
 		addSampleToCache(sample);

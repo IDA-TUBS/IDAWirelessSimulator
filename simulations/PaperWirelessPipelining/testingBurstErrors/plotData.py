@@ -15,7 +15,9 @@ p_file = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == '__main__':
 
-    # data = GraphPlotter.csvToPanda("output/errorTrace.csv")
+    data = GraphPlotter.csvToPanda("output/sampleLatencies.csv")
+
+    GraphPlotter.plotLatencyAndSlack(data)
  
     # seq = [int(x) for x in errorSequence.split(" ")]    
     # burstErrors.analyseSequence(seq)
