@@ -44,7 +44,7 @@ network singleLink
             @display("p=580,275");
         }
 		
-		vehicle: <default("RtpsHost")> like INetworkNode {
+	vehicle: <default("RtpsHost")> like INetworkNode {
             parameters:
                 @display("p=453.6,367.92;i=misc/car3");
                 numWlanInterfaces = 1;

@@ -159,7 +159,7 @@ class ChangeForReader: public CacheChange
      * @param fragmentNumber fragment whose fragment shall be updated
      * @return true if operation successful, else returns false
      */
-    virtual bool setFragmentStatus(fragmentStates status, unsigned int fragmentNumber);
+    virtual bool setFragmentStatus(fragmentStates status, unsigned int fragmentNumber, simtime_t sentTimestemp = 0.0);
 
     /*
      * gather all fragments of a given change that are currently in state unsent (and not acknowledged!)

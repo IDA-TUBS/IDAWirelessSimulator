@@ -506,16 +506,11 @@ void CsmaCaMacModified::generateBackoffPeriod()
     else
         cw = std::min(cwMax, (cwMin + 1) * (1 << retryCounter) - 1);
     int slots = intrand(cw + 1);
-    EV << "generated backoff slot number: " << slots << " , cw: " << cw << endl;
 
     // ---- New code ----
-        backoffPeriod = slots * slotTime;
-        //EV << "cw value is: " << cw << "\n";
-        backoffPeriod = double(intrand((cw-2)*90+1))*(slotTime/90.0);
-        EV << "backoff period is: " << backoffPeriod << "\n";
+    backoffPeriod = double(intrand((cw-2)*90+1))*(slotTime/90.0);
     // ------------------
 
-//    backoffPeriod = slots * slotTime;
     ASSERT(backoffPeriod >= 0);
     EV << "backoff period set to " << backoffPeriod << endl;
 }

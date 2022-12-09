@@ -67,7 +67,7 @@ unsigned int ChangeForReader::unsentCount()
     return unsent;
 }
 
-bool ChangeForReader::setFragmentStatus(fragmentStates status, unsigned int fragmentNumber)
+bool ChangeForReader::setFragmentStatus(fragmentStates status, unsigned int fragmentNumber, simtime_t sentTimestamp)
 {
     auto frag = sampleFragmentArray[fragmentNumber];
 
@@ -79,6 +79,7 @@ bool ChangeForReader::setFragmentStatus(fragmentStates status, unsigned int frag
             break;
         case SENT:
             lastSentFN = fragmentNumber;
+            frag->sendTime = sentTimestamp;
             frag->sent = true;
             frag->acked = false;
             if(fragmentNumber > highestFNSend)

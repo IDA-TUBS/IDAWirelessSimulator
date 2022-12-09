@@ -368,8 +368,10 @@ bool Writer::sendMessage()
 
         auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID, fragmentCounter);
         send(msg , gate("dispatcherOut"));
-
+        sf->sendTime = simTime(); // TODO Wurde nirgends anders aufgerufen. Vllt. besser im Adapter?
         fragmentCounter++;
+
+
         // analysis related code:
         RTPSAnalysis::addFragment(this->appID, sf);
     }

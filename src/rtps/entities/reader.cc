@@ -37,6 +37,7 @@ void Reader::finish()
     RTPSAnalysis::calculateViolationRate(this->appID);
     RTPSAnalysis::calculateFER(this->appID);
     recordScalar("deadlineViolationRate", this->violationRate);
+    sampleViolationRateVector.record(this->violationRate);
     RTPSAnalysis::finishSampleLatencyRecording();
 
     EV << "violation rate: "  << this->violationRate << endl;
