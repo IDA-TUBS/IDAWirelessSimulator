@@ -26,7 +26,7 @@ simple WriterW2RP like iWriter
         double deadline @unit(s) = default(100ms);
         int historySize = default(1);
         
-        int numberReaders = default(0);        
+        int numberReaders = default(1);        
         
         // Timing Model
         double shaping @unit(s) = default(1000us);

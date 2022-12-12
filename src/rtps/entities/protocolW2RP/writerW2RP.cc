@@ -31,7 +31,7 @@ void WriterW2RP::initialize()
     // writer parametrization
     deadline = par("deadline");
     fragmentSize = par("fragmentSize");
-    numReaders = par("numberReaders");
+    numReaders = 1;
     sizeCache = par("historySize");
 
     shaping = par("shaping");
@@ -47,7 +47,8 @@ void WriterW2RP::initialize()
     timeout = par("timeout");
 
     // reader proxy initialization
-    for(int i = 0; i < numReaders; i++) {
+    for(int i = 0; i < numReaders; i++)
+    {
         // the app's reader IDs are in the range of [appID * maxNumberReader + 1, (appID + 1) * maxNumberReader - 1]
         unsigned int readerId = this->appID * rtpsParent->getMaxNumberOfReaders() + i + 1;
 
@@ -82,10 +83,10 @@ void WriterW2RP::finish()
 void WriterW2RP::handleMessage(cMessage *msg)
 {
     if(msg == timeoutEvent)
-        {
-            sendMessage();
-
-        } else
+    {
+        sendMessage();
+    }
+    else
     {
         Writer::handleMessage(msg);
     }
@@ -109,7 +110,6 @@ void WriterW2RP::handleNackFrag(RtpsInetPacket* nackFrag) {
     {
         unsigned int sequenceNumber = nackFrag->getWriterSN();
         bool complete = rp->checkSampleCompleteness(sequenceNumber);
-//        if(cf
     }
 }
 
@@ -118,28 +118,13 @@ void WriterW2RP::handleNackFrag(RtpsInetPacket* nackFrag) {
 ReaderProxy* WriterW2RP::selectReader()
 {
     ReaderProxy *nextReader = nullptr;
-    // check whether prioritization mechanism shall be used
 
-        // non-prioritized reader selection - in random order
-        std::vector<int> v;
-        for(int i = 0; i < numReaders; i++)
-        {
-            v.push_back(i);
-        }
-        unsigned seed = std::chrono::system_clock::now()
-                                .time_since_epoch()
-                                .count();
-    auto rng = std::default_random_engine { seed };
-    std::shuffle(std::begin(v), std::end(v), rng);
-
-    for (auto i: v)
+    // unicast only: just select the first reader proxy
+    auto rp = matchedReaders.front();
+    if(!(rp->checkSampleCompleteness(currentSampleNumber)))
     {
-        auto rp = matchedReaders[i];
-        if(!(rp->checkSampleCompleteness(currentSampleNumber)))
-         {
-           nextReader = rp;
-        }     }
-
+       nextReader = rp;
+    }
 
     return nextReader;
 }
@@ -147,12 +132,9 @@ ReaderProxy* WriterW2RP::selectReader()
 
 SampleFragment* WriterW2RP::selectNextFragment(ReaderProxy* rp)
 {
-//    EV << "Select next fragment at time: " << simTime() << "\n";
-    // TODO Implement prioritization method
-
     // find the unacknowledged fragment and return that fragment for transmission
     SampleFragment *tmp = nullptr;
-    SampleFragment *tmp_proxy = nullptr;
+    SampleFragment *tmpProxy = nullptr;
     SampleFragment **fragments = rp->getCurrentChange()->getFragmentArray();
 
     for (int i = 0; i < rp->getCurrentChange()->numberFragments; i++)
@@ -160,56 +142,42 @@ SampleFragment* WriterW2RP::selectNextFragment(ReaderProxy* rp)
         SampleFragment* sf = fragments[i];
         SampleFragment* baseFragment = (sf->baseChange->getFragmentArray())[sf->fragmentStartingNum];
 
-//        EV << "NAKCED FN: " << sf->sent << "\n";
-//        EV << "NAKCED FN: " << baseFragment->sent << "\n\n";
-        //        EV <<"FN: " << baseFragment->fragmentStartingNum << "; sendCounter: " << baseFragment->sendCounter << "; Send Timestamp: " << baseFragment->sendTime << "\n";
-        //        EV <<"FN: " << sf->fragmentStartingNum << "; sendCounter: " << sf->sendCounter << "; Send Timestamp: " << sf->sendTime << "\n";
-
-
-//        EV << "Status frag " << sf->fragmentStartingNum << "; sent: " << sf->sent << "; acked: " << sf->acked << "; sent timestamp: " << baseFragment->sendTime << "\n";
-
         // Ignore ACKed fragments
-        if (sf->acked) {
+        if (sf->acked)
+        {
             continue;
         }
 
-
-//        bool send = sf->sent | baseFragment->sent;
-//        bool acked = sf->acked | baseFragment->acked;
-//        simtime_t = max(sf->sendTime,baseFragment->sendTime);
-
         // Priority 1: Unsent fragments
-        if(baseFragment->sendCounter == 0){
+        if(baseFragment->sendCounter == 0)
+        {
             tmp = baseFragment;
-            tmp_proxy = sf;
+            tmpProxy = sf;
             break;
         }
 
         // Priority 2: NACKed fragments
-        if(baseFragment->sendCounter > 0 && !sf->sent){
-
+        if(baseFragment->sendCounter > 0 && !sf->sent)
+        {
             // Start with the first one
             if(tmp == nullptr){
                 tmp = baseFragment;
-                tmp_proxy = sf;
-//                EV << "(1) FN: " << baseFragment->fragmentStartingNum << ": Prio 2\n";
+                tmpProxy = sf;
                 continue;
             }
-
             // Choose the earliest fragment of this class
-            if(tmp->sendTime > baseFragment->sendTime){
-//                EV << "(2) FN: " << baseFragment->fragmentStartingNum << ": Prio 2\n";
+            if(tmp->sendTime > baseFragment->sendTime)
+            {
                 tmp = baseFragment;
-                tmp_proxy = sf;
+                tmpProxy = sf;
             }
         }
     }
 
-    if(tmp_proxy != nullptr){
-        return tmp_proxy;
+    if(tmpProxy != nullptr)
+    {
+        return tmpProxy;
     }
-
-    EV << "Check timeout condition\n";
 
     // Timeout condition
     for (int i = 0; i < rp->getCurrentChange()->numberFragments; i++)
@@ -218,28 +186,31 @@ SampleFragment* WriterW2RP::selectNextFragment(ReaderProxy* rp)
         SampleFragment* baseFragment = (sf->baseChange->getFragmentArray())[sf->fragmentStartingNum];
 
         // Ignore ACKed fragments
-        if (sf->acked) {
+        if (sf->acked)
+        {
             continue;
         }
 
-        if(simTime() - baseFragment->sendTime < this->timeout && sf->sent != 0){
+        if(simTime() - baseFragment->sendTime < this->timeout && sf->sent != 0)
+        {
             continue;
         }
 
-        if(tmp == nullptr){
+        if(tmp == nullptr)
+        {
             tmp = baseFragment;
-            tmp_proxy = sf;
+            tmpProxy = sf;
             continue;
         }
 
-        if(tmp->sendTime > baseFragment->sendTime){
+        if(tmp->sendTime > baseFragment->sendTime)
+        {
             tmp = baseFragment;
-            tmp_proxy = sf;
+            tmpProxy = sf;
         }
-
     }
 
-    return tmp_proxy;
+    return tmpProxy;
 
 }
 
@@ -247,7 +218,8 @@ SampleFragment* WriterW2RP::selectNextFragment(ReaderProxy* rp)
 bool WriterW2RP::sendMessage() // TODO ist diese methode identisch mit der aus dem writer? Dann bitte ersetzen durch den entsprechenden aufruf + timeout aufruf wenn nötig (wenn kein fragment zurück  gegeben wurde...)
 {
     // Check if the writer is currently allowed to send
-    if(sendEvent->isScheduled()){
+    if(sendEvent->isScheduled())
+    {
         return false;
     }
 
@@ -311,8 +283,6 @@ bool WriterW2RP::sendMessage() // TODO ist diese methode identisch mit der aus d
         sf->sendTime = simTime(); // TODO Wurde nirgends anders aufgerufen. Vllt. besser im Adapter?
         fragmentCounter++;
 
-//        EV << "FN: " << sf->fragmentStartingNum << "; time: " << simTime() << "\n";
-
         // analysis related code:
         RTPSAnalysis::addFragment(this->appID, sf);
     }
@@ -325,20 +295,9 @@ bool WriterW2RP::sendMessage() // TODO ist diese methode identisch mit der aus d
         }
     }
 
-
-
     // Schedule the next event
     simtime_t timeToSend = simTime() + shaping;
     scheduleAt(timeToSend, sendEvent);
-
-
-
-
-
-
-
-
-
 
 
     if(!sendEvent->isScheduled()){
@@ -402,17 +361,20 @@ void WriterW2RP::scheduleTimeout()
             SampleFragment* baseFragment = (sf->baseChange->getFragmentArray())[sf->fragmentStartingNum];
 
             // Ignore ACKed
-            if (sf->acked || !sf->sent) {
+            if (sf->acked || !sf->sent)
+            {
                 continue;
             }
 
             // Check, that the timeout for the fragment did not already expire
-            if(baseFragment->sendTime + this->timeout <= simTime()){
+            if(baseFragment->sendTime + this->timeout <= simTime())
+            {
                 continue;
             }
 
             // Get the smalles timeout
-            if(tmp == nullptr){
+            if(tmp == nullptr)
+            {
                 tmp = baseFragment;
                 tmp_proxy = sf;
                 continue;
@@ -424,16 +386,15 @@ void WriterW2RP::scheduleTimeout()
                 tmp = baseFragment;
                 tmp_proxy = sf;
             }
-
         }
 
-        if(tmp == nullptr){
+        if(tmp == nullptr)
+        {
             return;
         }
 
-//        EV << "Status frag " << tmp->fragmentStartingNum << "; sent: " << tmp_proxy->sent << "; acked: " << tmp_proxy->acked << "; sent timestamp: " << tmp->sendTime << "\n";
-
-        if(timeoutEvent->isScheduled()){
+        if(timeoutEvent->isScheduled())
+        {
             cancelEvent(timeoutEvent);
         }
 

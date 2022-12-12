@@ -402,7 +402,7 @@ def plotViolationRateTriPointPerLineData(data, frameSize, combined=True):
         print(str(row['bitErrorRate']) + "   " + str(row['arbitrationTime']) + "   " + str(row['sampleViolationRateVector']))
 
     fig = plt.figure(figsize=(10,3))
-    ax = fig.gca(projection='3d')
+    ax = plt.axes(projection='3d')
     surf = ax.plot_trisurf(data['arbitrationTime'],data['bitErrorRate'],  data['sampleViolationRateVector'],cmap="viridis" , linewidth=0.2)
     
 
