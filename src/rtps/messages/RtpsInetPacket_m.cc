@@ -219,8 +219,8 @@ void RtpsInetPacket::copy(const RtpsInetPacket& other)
     }
     this->GeneralFragmentSize = other.GeneralFragmentSize;
     this->publisherSendTime = other.publisherSendTime;
-    this->writerSendTime = other.writerSendTime;
-    this->readerReceiveTime = other.readerReceiveTime;
+    this->sendTime = other.sendTime;
+    this->receiveTime = other.receiveTime;
     this->fragCount = other.fragCount;
     this->sentFragments = other.sentFragments;
 }
@@ -264,8 +264,8 @@ void RtpsInetPacket::parsimPack(omnetpp::cCommBuffer *b) const
     doParsimArrayPacking(b,this->fragmentNumberBitmap,256);
     doParsimPacking(b,this->GeneralFragmentSize);
     doParsimPacking(b,this->publisherSendTime);
-    doParsimPacking(b,this->writerSendTime);
-    doParsimPacking(b,this->readerReceiveTime);
+    doParsimPacking(b,this->sendTime);
+    doParsimPacking(b,this->receiveTime);
     doParsimPacking(b,this->fragCount);
     doParsimPacking(b,this->sentFragments);
 }
@@ -309,8 +309,8 @@ void RtpsInetPacket::parsimUnpack(omnetpp::cCommBuffer *b)
     doParsimArrayUnpacking(b,this->fragmentNumberBitmap,256);
     doParsimUnpacking(b,this->GeneralFragmentSize);
     doParsimUnpacking(b,this->publisherSendTime);
-    doParsimUnpacking(b,this->writerSendTime);
-    doParsimUnpacking(b,this->readerReceiveTime);
+    doParsimUnpacking(b,this->sendTime);
+    doParsimUnpacking(b,this->receiveTime);
     doParsimUnpacking(b,this->fragCount);
     doParsimUnpacking(b,this->sentFragments);
 }
@@ -689,24 +689,24 @@ void RtpsInetPacket::setPublisherSendTime(::omnetpp::simtime_t publisherSendTime
     this->publisherSendTime = publisherSendTime;
 }
 
-::omnetpp::simtime_t RtpsInetPacket::getWriterSendTime() const
+::omnetpp::simtime_t RtpsInetPacket::getSendTime() const
 {
-    return this->writerSendTime;
+    return this->sendTime;
 }
 
-void RtpsInetPacket::setWriterSendTime(::omnetpp::simtime_t writerSendTime)
+void RtpsInetPacket::setSendTime(::omnetpp::simtime_t sendTime)
 {
-    this->writerSendTime = writerSendTime;
+    this->sendTime = sendTime;
 }
 
-::omnetpp::simtime_t RtpsInetPacket::getReaderReceiveTime() const
+::omnetpp::simtime_t RtpsInetPacket::getReceiveTime() const
 {
-    return this->readerReceiveTime;
+    return this->receiveTime;
 }
 
-void RtpsInetPacket::setReaderReceiveTime(::omnetpp::simtime_t readerReceiveTime)
+void RtpsInetPacket::setReceiveTime(::omnetpp::simtime_t receiveTime)
 {
-    this->readerReceiveTime = readerReceiveTime;
+    this->receiveTime = receiveTime;
 }
 
 int RtpsInetPacket::getFragCount() const
@@ -770,8 +770,8 @@ class RtpsInetPacketDescriptor : public omnetpp::cClassDescriptor
         FIELD_fragmentNumberBitmap,
         FIELD_GeneralFragmentSize,
         FIELD_publisherSendTime,
-        FIELD_writerSendTime,
-        FIELD_readerReceiveTime,
+        FIELD_sendTime,
+        FIELD_receiveTime,
         FIELD_fragCount,
         FIELD_sentFragments,
     };
@@ -888,8 +888,8 @@ unsigned int RtpsInetPacketDescriptor::getFieldTypeFlags(int field) const
         FD_ISARRAY | FD_ISEDITABLE,    // FIELD_fragmentNumberBitmap
         FD_ISEDITABLE,    // FIELD_GeneralFragmentSize
         FD_ISEDITABLE,    // FIELD_publisherSendTime
-        FD_ISEDITABLE,    // FIELD_writerSendTime
-        FD_ISEDITABLE,    // FIELD_readerReceiveTime
+        FD_ISEDITABLE,    // FIELD_sendTime
+        FD_ISEDITABLE,    // FIELD_receiveTime
         FD_ISEDITABLE,    // FIELD_fragCount
         FD_ISEDITABLE,    // FIELD_sentFragments
     };
@@ -941,8 +941,8 @@ const char *RtpsInetPacketDescriptor::getFieldName(int field) const
         "fragmentNumberBitmap",
         "GeneralFragmentSize",
         "publisherSendTime",
-        "writerSendTime",
-        "readerReceiveTime",
+        "sendTime",
+        "receiveTime",
         "fragCount",
         "sentFragments",
     };
@@ -989,8 +989,8 @@ int RtpsInetPacketDescriptor::findField(const char *fieldName) const
     if (strcmp(fieldName, "fragmentNumberBitmap") == 0) return baseIndex + 33;
     if (strcmp(fieldName, "GeneralFragmentSize") == 0) return baseIndex + 34;
     if (strcmp(fieldName, "publisherSendTime") == 0) return baseIndex + 35;
-    if (strcmp(fieldName, "writerSendTime") == 0) return baseIndex + 36;
-    if (strcmp(fieldName, "readerReceiveTime") == 0) return baseIndex + 37;
+    if (strcmp(fieldName, "sendTime") == 0) return baseIndex + 36;
+    if (strcmp(fieldName, "receiveTime") == 0) return baseIndex + 37;
     if (strcmp(fieldName, "fragCount") == 0) return baseIndex + 38;
     if (strcmp(fieldName, "sentFragments") == 0) return baseIndex + 39;
     return base ? base->findField(fieldName) : -1;
@@ -1041,8 +1041,8 @@ const char *RtpsInetPacketDescriptor::getFieldTypeString(int field) const
         "bool",    // FIELD_fragmentNumberBitmap
         "int",    // FIELD_GeneralFragmentSize
         "omnetpp::simtime_t",    // FIELD_publisherSendTime
-        "omnetpp::simtime_t",    // FIELD_writerSendTime
-        "omnetpp::simtime_t",    // FIELD_readerReceiveTime
+        "omnetpp::simtime_t",    // FIELD_sendTime
+        "omnetpp::simtime_t",    // FIELD_receiveTime
         "int",    // FIELD_fragCount
         "int",    // FIELD_sentFragments
     };
@@ -1167,8 +1167,8 @@ std::string RtpsInetPacketDescriptor::getFieldValueAsString(omnetpp::any_ptr obj
         case FIELD_fragmentNumberBitmap: return bool2string(pp->getFragmentNumberBitmap(i));
         case FIELD_GeneralFragmentSize: return long2string(pp->getGeneralFragmentSize());
         case FIELD_publisherSendTime: return simtime2string(pp->getPublisherSendTime());
-        case FIELD_writerSendTime: return simtime2string(pp->getWriterSendTime());
-        case FIELD_readerReceiveTime: return simtime2string(pp->getReaderReceiveTime());
+        case FIELD_sendTime: return simtime2string(pp->getSendTime());
+        case FIELD_receiveTime: return simtime2string(pp->getReceiveTime());
         case FIELD_fragCount: return long2string(pp->getFragCount());
         case FIELD_sentFragments: return long2string(pp->getSentFragments());
         default: return "";
@@ -1223,8 +1223,8 @@ void RtpsInetPacketDescriptor::setFieldValueAsString(omnetpp::any_ptr object, in
         case FIELD_fragmentNumberBitmap: pp->setFragmentNumberBitmap(i,string2bool(value)); break;
         case FIELD_GeneralFragmentSize: pp->setGeneralFragmentSize(string2long(value)); break;
         case FIELD_publisherSendTime: pp->setPublisherSendTime(string2simtime(value)); break;
-        case FIELD_writerSendTime: pp->setWriterSendTime(string2simtime(value)); break;
-        case FIELD_readerReceiveTime: pp->setReaderReceiveTime(string2simtime(value)); break;
+        case FIELD_sendTime: pp->setSendTime(string2simtime(value)); break;
+        case FIELD_receiveTime: pp->setReceiveTime(string2simtime(value)); break;
         case FIELD_fragCount: pp->setFragCount(string2long(value)); break;
         case FIELD_sentFragments: pp->setSentFragments(string2long(value)); break;
         default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'RtpsInetPacket'", field);
@@ -1277,8 +1277,8 @@ omnetpp::cValue RtpsInetPacketDescriptor::getFieldValue(omnetpp::any_ptr object,
         case FIELD_fragmentNumberBitmap: return pp->getFragmentNumberBitmap(i);
         case FIELD_GeneralFragmentSize: return pp->getGeneralFragmentSize();
         case FIELD_publisherSendTime: return pp->getPublisherSendTime().dbl();
-        case FIELD_writerSendTime: return pp->getWriterSendTime().dbl();
-        case FIELD_readerReceiveTime: return pp->getReaderReceiveTime().dbl();
+        case FIELD_sendTime: return pp->getSendTime().dbl();
+        case FIELD_receiveTime: return pp->getReceiveTime().dbl();
         case FIELD_fragCount: return pp->getFragCount();
         case FIELD_sentFragments: return pp->getSentFragments();
         default: throw omnetpp::cRuntimeError("Cannot return field %d of class 'RtpsInetPacket' as cValue -- field index out of range?", field);
@@ -1333,8 +1333,8 @@ void RtpsInetPacketDescriptor::setFieldValue(omnetpp::any_ptr object, int field,
         case FIELD_fragmentNumberBitmap: pp->setFragmentNumberBitmap(i,value.boolValue()); break;
         case FIELD_GeneralFragmentSize: pp->setGeneralFragmentSize(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_publisherSendTime: pp->setPublisherSendTime(value.doubleValue()); break;
-        case FIELD_writerSendTime: pp->setWriterSendTime(value.doubleValue()); break;
-        case FIELD_readerReceiveTime: pp->setReaderReceiveTime(value.doubleValue()); break;
+        case FIELD_sendTime: pp->setSendTime(value.doubleValue()); break;
+        case FIELD_receiveTime: pp->setReceiveTime(value.doubleValue()); break;
         case FIELD_fragCount: pp->setFragCount(omnetpp::checked_int_cast<int>(value.intValue())); break;
         case FIELD_sentFragments: pp->setSentFragments(omnetpp::checked_int_cast<int>(value.intValue())); break;
         default: throw omnetpp::cRuntimeError("Cannot set field %d of class 'RtpsInetPacket'", field);

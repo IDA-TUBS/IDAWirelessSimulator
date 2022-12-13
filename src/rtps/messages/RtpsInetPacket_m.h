@@ -110,8 +110,8 @@ namespace inet {
  *     simtime_t publisherSendTime;
  * 
  *     // Raw transmission time over the network (reader_receive_time - writer_send_time)
- *     simtime_t writerSendTime;
- *     simtime_t readerReceiveTime;
+ *     simtime_t sendTime;
+ *     simtime_t receiveTime;
  * 
  *         // Efficency
  *     int fragCount;
@@ -159,8 +159,8 @@ class RtpsInetPacket : public ::inet::Packet
     bool fragmentNumberBitmap[256];
     int GeneralFragmentSize = 0;
     ::omnetpp::simtime_t publisherSendTime = SIMTIME_ZERO;
-    ::omnetpp::simtime_t writerSendTime = SIMTIME_ZERO;
-    ::omnetpp::simtime_t readerReceiveTime = SIMTIME_ZERO;
+    ::omnetpp::simtime_t sendTime = SIMTIME_ZERO;
+    ::omnetpp::simtime_t receiveTime = SIMTIME_ZERO;
     int fragCount = 0;
     int sentFragments = 0;
 
@@ -289,11 +289,11 @@ class RtpsInetPacket : public ::inet::Packet
     virtual ::omnetpp::simtime_t getPublisherSendTime() const;
     virtual void setPublisherSendTime(::omnetpp::simtime_t publisherSendTime);
 
-    virtual ::omnetpp::simtime_t getWriterSendTime() const;
-    virtual void setWriterSendTime(::omnetpp::simtime_t writerSendTime);
+    virtual ::omnetpp::simtime_t getSendTime() const;
+    virtual void setSendTime(::omnetpp::simtime_t sendTime);
 
-    virtual ::omnetpp::simtime_t getReaderReceiveTime() const;
-    virtual void setReaderReceiveTime(::omnetpp::simtime_t readerReceiveTime);
+    virtual ::omnetpp::simtime_t getReceiveTime() const;
+    virtual void setReceiveTime(::omnetpp::simtime_t receiveTime);
 
     virtual int getFragCount() const;
     virtual void setFragCount(int fragCount);

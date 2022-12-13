@@ -248,6 +248,9 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
     }
     nackFrag->setWriterSN(sequenceNumber);
 
+    // used for analysis at the MAC layer:
+    nackFrag->setSendTime(simTime());
+
     // Finally, calculate the overall rtps message size
     nackFrag->setInfoDestinationSet(false);
     calculateRtpsMsgSize(nackFrag);

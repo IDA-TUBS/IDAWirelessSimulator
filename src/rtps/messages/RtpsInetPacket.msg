@@ -100,8 +100,8 @@ packet RtpsInetPacket extends Packet {
     simtime_t publisherSendTime;
     
     // Raw transmission time over the network (reader_receive_time - writer_send_time)
-    simtime_t writerSendTime;
-    simtime_t readerReceiveTime;
+    simtime_t sendTime;
+    simtime_t receiveTime;
     
         // Efficency
     int fragCount;

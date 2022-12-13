@@ -78,13 +78,13 @@ df.to_csv("./output/sampleLatencies" + args.suffix + ".csv")
 
 
 
-# scalarParser = ScalarParser.ScalarParser()
+scalarParser = ScalarParser.ScalarParser()
 
-# scalarNames = ["deadlineViolationRate"]
-# scalarSynonyms = ["deadlineViolationRate"]
+scalarNames = ["deadlineViolationRate"]
+scalarSynonyms = ["deadlineViolationRate"]
 
-# scaFile = './output/histogram_file.csv'
+scaFile = './output/histogram_file.csv'
 
-# moduleNames = ["receivers"]
-# df = scalarParser.processScalars(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
-# df.to_csv("./output/violationRates" + args.suffix + ".csv")
+moduleNames = ["receivers"]
+df = scalarParser.processScalars(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
+df.to_csv("./output/violationRates" + args.suffix + ".csv")

@@ -59,7 +59,7 @@ RtpsInetPacket* Endpoint::createRtpsMsgFromFragment(SampleFragment* sampleFragme
     rtpsMsg->setGeneralFragmentSize(fragmentSize);
 
     // used for analysis at the MAC layer:
-    rtpsMsg->setWriterSendTime(simTime());
+    rtpsMsg->setSendTime(simTime());
 
     rtpsMsg->setSentFragments(fragmentCounter);
 

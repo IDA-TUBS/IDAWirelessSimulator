@@ -563,7 +563,7 @@ void CsmaCaMacModified::sendDataFrame(Packet *frameToSend)
     radio->setRadioMode(IRadio::RADIO_MODE_TRANSMITTER);
 
     auto *rtpsPacket = check_and_cast<RtpsInetPacket*>(frameToSend);
-    simtime_t arbitrationTime = simTime() - rtpsPacket->getWriterSendTime();
+    simtime_t arbitrationTime = simTime() - rtpsPacket->getSendTime();
     arbitrationTimes.push_back(arbitrationTime);
 
     sendDown(frameToSend->dup());
