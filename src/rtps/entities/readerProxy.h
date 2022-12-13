@@ -138,7 +138,7 @@ class ReaderProxy
      * @param fragmentNumber fn of fragment to be updated
      * @return true if successful, else false
      */
-    bool updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber);
+    bool updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber, simtime_t sentTimestamp = 0.0);
 
     /*
      * method for updating the fragment status based on NackFrag information

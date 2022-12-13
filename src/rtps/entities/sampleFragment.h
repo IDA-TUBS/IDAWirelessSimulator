@@ -16,7 +16,7 @@ class SampleFragment
   public:
     /// fragment number
     unsigned int fragmentStartingNum;
-    /// counting how often the given fragments has been transmitted
+    /// counting how often the given fragment has been transmitted
     unsigned int sendCounter;
     /// actual fragment size (can be smaller than fragmentSize)
     unsigned int dataSize;
@@ -51,6 +51,7 @@ class SampleFragment
      */
     SampleFragment(CacheChange *baseChange, unsigned int fragStartNum, unsigned int dataSize, simtime_t sendTime):
         fragmentStartingNum(fragStartNum),
+        sendCounter(0),
         dataSize(dataSize),
         sendTime(sendTime),
         // Relevant for the Writer
@@ -68,6 +69,7 @@ class SampleFragment
      */
     SampleFragment(SampleFragment &sf):
         fragmentStartingNum(sf.fragmentStartingNum),
+        sendCounter(sf.sendCounter),
         dataSize(sf.dataSize),
         sendTime(sf.sendTime),
         sent(sf.sent),
@@ -94,6 +96,7 @@ class SampleFragment
 
             this->sendTime = simTime();
             sendCounter++;
+            EV << "set send\n";
         }
     };
 

@@ -35,7 +35,7 @@ void ReaderProxy::removeChange(unsigned int sequenceNumber)
 }
 
 
-bool ReaderProxy::updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber)
+bool ReaderProxy::updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber, simtime_t sentTimestamp)
 {
     // first find change corresponding to the given sequence number
     ChangeForReader* tmp = nullptr;
@@ -48,7 +48,7 @@ bool ReaderProxy::updateFragmentStatus (fragmentStates status, unsigned int sequ
         }
     }
 
-    return tmp->setFragmentStatus(status, fragmentNumber);
+    return tmp->setFragmentStatus(status, fragmentNumber, sentTimestamp);
 }
 
 bool ReaderProxy::processNack(RtpsInetPacket* nackFrag)

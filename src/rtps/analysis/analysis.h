@@ -23,6 +23,8 @@ class RTPSAnalysis
   public:
     /// Vector for storing sample latencies at the reader
     cOutVector sampleLatenciesVector;
+    // Vector for storing the deadline violation rate at the reader
+    cOutVector sampleViolationRateVector;
     /// Vector for storing the sequence numbers successfully received in time at the reader
     std::vector<unsigned int> completeSamples;
     /// Vector for storing a fragment trace at the reader
@@ -44,12 +46,15 @@ class RTPSAnalysis
     /// Vector storing a list of all fragment numbers transmitted by a writer based on the appID
     static fragmentVectorMap transmittedFragmentsByAppId;
 
+
+
     /*
      * empty default constructor
      */
     RTPSAnalysis()
     {
         sampleLatenciesVector.setName("sampleLatencies");
+        sampleViolationRateVector.setName("sampleViolationRateVector");
     };
 
     /*

@@ -18,6 +18,10 @@ simulations/idaWirelessSimulator_dbg
 *.vci
 gitignore
 
+profile
+
+*.anf
+
 .pydevproject
 
 

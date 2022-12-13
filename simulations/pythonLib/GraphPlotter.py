@@ -382,6 +382,55 @@ def plotLatenciesMulticast(data, suffix=''):
 
 
 
+def plotViolationRateTriPointPerLineData(data, frameSize, combined=True):
+    # plot violation rate over shaping and arbitration time
+
+    
+    slot_time = 9
+
+    data = data[~data.sampleViolationRateVector.isnull()]
+
+    # Data Adaption:
+    #data['bit_error_rate'] = np.log10(data['bit_error_rate'])
+    data['bitErrorRate'] = (1 - pow(1-data['bitErrorRate'],8*frameSize))*100
+    data = data.loc[(data['bitErrorRate'] != -10)]
+    data['arbitrationTime'] = data['arbitrationTime'] * slot_time / 2
+    
+    
+    data = data.sort_values(["bitErrorRate", "arbitrationTime"], ascending = (True, True))
+    for index, row in data.iterrows():
+        print(str(row['bitErrorRate']) + "   " + str(row['arbitrationTime']) + "   " + str(row['sampleViolationRateVector']))
+
+    fig = plt.figure(figsize=(10,3))
+    ax = plt.axes(projection='3d')
+    surf = ax.plot_trisurf(data['arbitrationTime'],data['bitErrorRate'],  data['sampleViolationRateVector'],cmap="viridis" , linewidth=0.2)
+    
+
+
+
+    # ax.set(xticklabels=x_vector_labels, xticks=x_vector_ticks)
+    plt.xticks(rotation = 60, rotation_mode="anchor")
+
+    y_vector_ticks  = [0, 20, 40, 60, 80]
+    y_vector_labels  = ["0", "20", "40", "60", "80"]
+    ax.set(yticklabels=y_vector_labels, yticks=y_vector_ticks)
+    plt.yticks(rotation = -30, rotation_mode="anchor")
+
+    z_vector_ticks  = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    z_vector_labels  = ["0", "20", "40", "60", "80", "100"]
+    ax.set(zticklabels=z_vector_labels, zticks=z_vector_ticks)
+
+    ax.set_xlabel('average arbitration time (\u03BCs)')
+    ax.set_ylabel('frame error rate (%)')
+    ax.set_zlabel('observed deadline\nviolation rate (%)')
+
+    plt.gca().invert_xaxis()
+    plt.yticks(rotation = -30, rotation_mode="anchor")
+
+    if(not os.path.exists("figures")):
+        os.makedirs("figures")
+    plt.savefig("figures/violationRate.pdf" ,bbox_inches='tight')
+
 
 
 
