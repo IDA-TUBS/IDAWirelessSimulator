@@ -13,4 +13,4 @@ if __name__ == '__main__':
 
     data = GraphPlotter.csvToPanda("output/violationRates.csv")
     
-    GraphPlotter.plotViolationRateTriPointPerLineData(data, 948, combined=True)
+    GraphPlotter.plotViolationRateTriPointPerLineData(data, 800+148, combined=True)

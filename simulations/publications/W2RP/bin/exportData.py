@@ -24,8 +24,8 @@ parameterSynonyms = ["sampleSize",
 
 
 
-vectorNames = ["sampleLatencies", "sampleViolationRateVector"]
-vectorSynonyms = ["sampleLatencies","sampleViolationRateVector"]
+vectorNames = ["sampleViolationRateVector"]
+vectorSynonyms = ["sampleViolationRateVector"]
 
 vecFile = './output/vector_file.csv'
 
