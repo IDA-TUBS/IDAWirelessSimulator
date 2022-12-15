@@ -155,7 +155,7 @@ def plotViolationRatesMulticast(data, suffix=''):
     moduleFERs = []
     for s in tmp:
         moduleNumbers.append(s[s.find("[")+1:s.find("]")])
-    moduleNumbers.append("")
+    moduleNumbers.sort()
 
     for module in moduleNumbers:
         s = "bitErrorRate" + module
@@ -173,6 +173,9 @@ def plotViolationRatesMulticast(data, suffix=''):
         data = data.rename(renameMap, axis=1, errors="raise")
     renameMap = {"value": "violationRate"}
     data = data.rename(renameMap, axis=1, errors="raise")
+
+    del data['bitErrorRate']
+
 
     # simplify data by combining relevant data points (each run)
     column_map = {}
@@ -197,7 +200,7 @@ def plotViolationRatesMulticast(data, suffix=''):
 
     fig = None
     ax = None
-    fig, ax = plt.subplots(figsize=(8, 2))
+    fig, ax = plt.subplots(figsize=(12.5, 2.75))
 
     pos = 0
     colors = ['darkblue', 'red', 'lightgreen', 'orange', 'yellow']
@@ -206,7 +209,7 @@ def plotViolationRatesMulticast(data, suffix=''):
     xLabels = []
     for index, row in data.iterrows():
         fers = row['fers']
-        fers = fers[:len(fers)-1]
+        # fers = fers[:len(fers)-1]
 
         violationRates = row['violationRate']
 
@@ -279,10 +282,11 @@ def plotLatenciesMulticast(data, suffix=''):
     moduleFERs = []
     for s in tmp:
         moduleNumbers.append(s[s.find("[")+1:s.find("]")])
-    moduleNumbers.append("")
+    # moduleNumbers = [int(x) for x in moduleNumbers]
+    moduleNumbers.sort()
 
     for module in moduleNumbers:
-        s = "bitErrorRate" + module
+        s = "bitErrorRate" + str(module)
         moduleFERs.append("frameErrorRate" + module)
         ber = data[s]
         list_fer = []
@@ -297,6 +301,8 @@ def plotLatenciesMulticast(data, suffix=''):
         data = data.rename(renameMap, axis=1, errors="raise")
     renameMap = {"vecvalue": "latencies"}
     data = data.rename(renameMap, axis=1, errors="raise")
+
+    del data['bitErrorRate']
 
     latenciesCol = []
     slist = data[['latencies']].values.tolist()
@@ -323,6 +329,7 @@ def plotLatenciesMulticast(data, suffix=''):
     #data = data.groupby(cols, as_index=False).agg(column_map)
     data = data.groupby(['run']).agg(column_map)
 
+    
 
     data['fers'] = data[moduleFERs].values.tolist()
     for f in moduleFERs:
@@ -331,7 +338,7 @@ def plotLatenciesMulticast(data, suffix=''):
 
     fig = None
     ax = None
-    fig, ax = plt.subplots(figsize=(8, 2))
+    fig, ax = plt.subplots(figsize=(12.5, 2.75))
 
     pos = 0
     colors = ['darkblue', 'red', 'lightgreen', 'orange', 'yellow']
@@ -340,7 +347,7 @@ def plotLatenciesMulticast(data, suffix=''):
     xLabels = []
     for index, row in data.iterrows():
         fers = row['fers']
-        fers = fers[:len(fers)-1]
+        # fers = fers[:len(fers)-1]
 
         readerLatencies = row['latencies']
 
