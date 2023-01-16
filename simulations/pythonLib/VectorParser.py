@@ -65,11 +65,14 @@ class VectorParser(object):
         synonymMap = {parameterTypes[i]: parameterSynonyms[i] for i in range(len(parameterTypes))}
         dataFrame = dataFrame.rename(columns=synonymMap, errors="raise")
 
+        dataFrame = dataFrame[dataFrame['module'].notna()]
         dataFrame['vecvalue'] = dataFrame['vecvalue'].replace([np.nan], 0)
+        print(dataFrame)
 
         # filter for specific modules
         if len(moduleNames) != 0:
             for moduleName in moduleNames:
+                print(dataFrame)
                 dataFrame = dataFrame[dataFrame['module'].str.contains(moduleName)]
         
         if(not keepTime):

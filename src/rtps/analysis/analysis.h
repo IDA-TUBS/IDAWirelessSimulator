@@ -25,6 +25,10 @@ class RTPSAnalysis
     cOutVector sampleLatenciesVector;
     // Vector for storing the deadline violation rate at the reader
     cOutVector sampleViolationRateVector;
+    // Vector for storing the deadline violation rate at the reader
+    cOutVector missingSamplesVector;
+    // Vector for storing the first time a sample begins being transmitted
+    cOutVector sampleTxStartVector;
     /// Vector for storing the sequence numbers successfully received in time at the reader
     std::vector<unsigned int> completeSamples;
     /// Vector for storing a fragment trace at the reader
@@ -54,6 +58,8 @@ class RTPSAnalysis
     RTPSAnalysis()
     {
         sampleLatenciesVector.setName("sampleLatencies");
+        sampleTxStartVector.setName("sampleTxStartpoints");
+        missingSamplesVector.setName("missingSamples");
         sampleViolationRateVector.setName("sampleViolationRateVector");
     };
 
@@ -64,6 +70,16 @@ class RTPSAnalysis
     {
         transmittedSamplesByAppId.clear();
         completeSamples.clear();
+    };
+
+    /*
+     * record timestamp for first tx of a new sample
+     *
+     * @param seqNum sequence number of the given sample
+     */
+    void recordSampleTxStart(unsigned int seqNum)
+    {
+        sampleTxStartVector.record(seqNum);
     };
 
     /*
@@ -88,6 +104,16 @@ class RTPSAnalysis
 
         sampleLatenciesVector.record(latency);
         completeSamples.push_back(change->sequenceNumber);
+    };
+
+    /*
+     * record sample with deadline violations
+     *
+     * @param change pointer to relevant ChangeForWriter object
+     */
+    void recordDeadlineViolation(ChangeForWriter* change)
+    {
+        missingSamplesVector.record(change->sequenceNumber);
     };
 
     /*
@@ -125,8 +151,11 @@ class RTPSAnalysis
     {
 //        EV << "sent by writer: " << transmittedSamplesByAppId[appId].size() << "\n";
 //        EV << "num received: " << completeSamples.size() << "\n";
+        EV << "[Reader] Complete Samples: " << (completeSamples.size()) << ",\Send Samples: " << (transmittedSamplesByAppId[appId].size()) << endl;
+
         violationRate = 1 - (double(completeSamples.size()) / double(transmittedSamplesByAppId[appId].size()));
     };
+
 
     /*
      * calculate frame error rate based on received fragments and the
@@ -136,7 +165,6 @@ class RTPSAnalysis
      */
     void calculateFER(unsigned int appId)
     {
-
         frameErrorRate = 1 - (double(fragmentTrace.size()) / double(transmittedFragmentsByAppId[appId].size()));
     };
 
@@ -145,6 +173,7 @@ class RTPSAnalysis
      */
     void calculateCombinedViolationRate()
     {
+        EV << "[Writer] Complete Samples: " << counterCompleteSamples << ",\tIncomplete Samples: " << counterIncompleteSamples << endl;
         combinedViolationRate = double(counterIncompleteSamples) / (double(counterIncompleteSamples) + double(counterCompleteSamples));
     };
 
@@ -158,7 +187,6 @@ class RTPSAnalysis
      */
     void handleIncompleteButValidSamples(unsigned int appId)
     {
-
         // remove the last samples from the analysis vector to account for still valid samples
         transmittedSamplesByAppId[appId].resize(transmittedSamplesByAppId[appId].size() - 1);
     }

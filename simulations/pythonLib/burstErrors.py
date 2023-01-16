@@ -3,6 +3,7 @@
 import os
 import sys
 
+import math
 import random
 import matplotlib.pyplot as plt
 
@@ -68,11 +69,18 @@ def determineBurstCharacteristics(sequence):
 def analyseSequence(sequence):
     burstLengths, distances = determineBurstCharacteristics(sequence)
 
+    burstsSorted = burstLengths
+    burstsSorted.sort()
+    percentiles = [0.5, 0.8, 0.9, 0.95, 0.99, 0.999]
+    for percentile in percentiles:
+        index = int(math.ceil(len(burstsSorted)*percentile))
+        print(percentile, 'percentile:', burstsSorted[index])
+
     print(calcFER(sequence))
     print("average burst length", str(sum(burstLengths)/len(burstLengths)))
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4))
-    fig.suptitle('Packet Burst Error Characteristics')
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 3))
+    # fig.suptitle('Packet Burst Error Characteristics')
 
     ax1.hist(burstLengths, 100)
     ax1.set_xlabel('Burst Length')
@@ -84,7 +92,7 @@ def analyseSequence(sequence):
         os.makedirs("figures")
     plt.savefig("figures/burstCharacteristics.pdf" ,bbox_inches='tight')
     plt.savefig("figures/burstCharacteristics.png" ,bbox_inches='tight')
-    plt.show()
+    # plt.show()
 
 
 

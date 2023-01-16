@@ -34,6 +34,7 @@ class ChangeForReader: public CacheChange
     /// reference (pointer) to intial CacheChange
     CacheChange *baseChange;
 
+
     /*
      * empty default constructor
      */

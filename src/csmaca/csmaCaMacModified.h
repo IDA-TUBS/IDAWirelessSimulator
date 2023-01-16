@@ -133,6 +133,8 @@ class CsmaCaMacModified : public CsmaCaMac
     ErrorState prevErrorState;
 
     cOutVector errorTrace;
+    unsigned int receptionSuccess;
+    unsigned int receptionFailure;
 
 
   protected:

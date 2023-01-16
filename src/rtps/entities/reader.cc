@@ -121,6 +121,10 @@ void Reader::checkSampleLiveliness()
 
         if(!change->isValid(this->deadline))
         {
+            if(!writerProxy->checkSampleCompleteness(change->sequenceNumber))
+            {
+                recordDeadlineViolation(change);
+            }
             deprecatedSNs.push_back(change->sequenceNumber);
             writerProxy->removeChange(change->sequenceNumber);
             if(writerProxy->getSize() == 0)

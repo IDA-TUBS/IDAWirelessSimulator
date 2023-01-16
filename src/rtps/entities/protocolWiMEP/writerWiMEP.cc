@@ -272,6 +272,10 @@ bool WriterWiMEP::sendMessage()
         currentSampleNumber = historyCache.front()->sequenceNumber;
         // priming send queue with all fragments of the new sample
         fillSendQueueWithSample(currentSampleNumber);
+
+        // Analysis related code
+        RTPSAnalysis::recordSampleTxStart(currentSampleNumber);
+
     }
 
     // differentiate two scenarios:

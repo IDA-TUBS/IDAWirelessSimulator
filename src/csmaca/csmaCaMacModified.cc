@@ -65,7 +65,8 @@ void CsmaCaMacModified::initialize(int stage)
             errorTrace.setName("errorTrace");
         }
         // --------------------------
-
+        receptionSuccess = 0;
+        receptionFailure = 0;
 
 
         fcsMode = parseFcsMode(par("fcsMode"));
@@ -166,7 +167,12 @@ void CsmaCaMacModified::finish()
         }
     }
     unsigned long averageTa = totalTa / arbitrationTimes.size();
-    EV << "average t_a: " << averageTa << " us\n ta_min: " << minTa << " us\n  ta_max: " << maxTa << "us" << endl;
+    EV << "[CSMA CA] average t_a: " << averageTa << " us\n ta_min: " << minTa << " us\n  ta_max: " << maxTa << "us" << endl;
+
+    double fer = double(receptionFailure) / (double(receptionFailure) + double(receptionSuccess));
+    EV << "[CSMA CA] average FER: " << fer << "%" << endl;
+
+
 
     recordScalar("numRetry", numRetry);
     recordScalar("numSentWithoutRetry", numSentWithoutRetry);
@@ -692,12 +698,14 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
             {
                 // stay in 'GOOD' state
                 errorTrace.record(0);
+                receptionSuccess++;
                 return true;
             }
             else
             {
                 // burst error starts
-                errorTrace.record(1);;
+                errorTrace.record(1);
+                receptionFailure++;
                 prevErrorState = BAD;
                 return false;
             }
@@ -708,6 +716,7 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
             {
                 // stay in 'BAD' state
                 errorTrace.record(1);
+                receptionFailure++;
                 return false;
             }
             else
@@ -715,6 +724,7 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
                 // burst error starts
                 errorTrace.record(0);
                 prevErrorState = GOOD;
+                receptionSuccess++;
                 return true;
             }
         }

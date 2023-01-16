@@ -6,7 +6,7 @@ import pandas as pd
 
 class ScalarParser(object):
     def __init__(self):
-        print("Initialize Vector Parser")
+        print("Initialize Scalar Parser")
 
     def parseNumber(self, s):
         try: return float(s)

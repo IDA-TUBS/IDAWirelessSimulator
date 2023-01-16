@@ -4,11 +4,16 @@ import sys
 import os
 import re
 import math
+from collections import OrderedDict
 
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
+from matplotlib.lines import Line2D
 from matplotlib import cm
+
+import itertools
 
 
 def csvToPanda(filename):
@@ -440,9 +445,55 @@ def plotViolationRateTriPointPerLineData(data, frameSize, combined=True):
 
 
 
+def plotViolationRateUnicast(data, over='sampleDeadline'):
+    i = 0
+    data = data.reset_index(drop=True)
+
+    over = data[over]
+    refs = []
+    for x in over:
+        factor = 1
+        if 'ms' in x:
+            factor = 1
+        elif 'us' in x:
+            factor = 1000
+        seq_type= type(x)
+        value = float(seq_type().join(filter(seq_type.isdigit, x)))
+        refs.append(value / factor)
+    violationRates = [x * 100 for x  in data['value']]
+    violationRates = [x if x > 0.004 else 0 for x in violationRates ]
+
+    vrDict = {refs[i]: violationRates[i] for i in range(len(refs))}
+    vrDict = OrderedDict(sorted(vrDict.items()))
+    refs = list(vrDict.keys())
+    violationRates = list(vrDict.values())
+
+    print(violationRates)
+    
+    fig, ax = plt.subplots(figsize=(8, 3))
+    ax.set_ylim([0, max(violationRates)*1.1])
+    ax.plot(refs, violationRates, clip_on=False, zorder=100)
+    ax.scatter(refs, violationRates, clip_on=False, zorder=100)
+    ax.set_xlabel('Sample Deadlines (ms)')
+
+    ax.set_ylabel('Observed Deadline\nViolation Rate (%)')    
+
+    plt.savefig("figures/violationRates.pdf"  ,bbox_inches='tight')
+    plt.savefig("figures/violationRates.png"  ,bbox_inches='tight')
+
+
+    fig, ax = plt.subplots(figsize=(4, 2))
+    ax.plot(list(refs)[3:], list(violationRates)[3:])
+    ax.scatter(list(refs)[3:], list(violationRates)[3:])
+    # ax.set_yticks([0, 0.1, 0.2, 0.3, 0.4])
+
+    plt.savefig("figures/violationRatesSmall.pdf"  ,bbox_inches='tight')
+    plt.savefig("figures/violationRatesSmall.png"  ,bbox_inches='tight')
+    # plt.show()
 
 
 def plotLatencyAndSlack(data):    
+    data = data.reset_index(drop=True)
     fragmentSize = data['fragmentSize'][0]
     sampleSize = data['sampleSize'][0]
     shapingTime = data['shapingTime'][0]
@@ -455,7 +506,8 @@ def plotLatencyAndSlack(data):
     del data['attrvalue']
     del data['attrname']
     del data['name']
-    del data["Unnamed: 0"]
+    
+    # del data["Unnamed: 0"]
 
     tmp = set(data['module'])
     moduleNumbers = []
@@ -467,7 +519,6 @@ def plotLatencyAndSlack(data):
     runs = []
     for run in data['run']:
         if run not in runs:
-            print(run)
             runs.append(run)
     
     
@@ -481,10 +532,19 @@ def plotLatencyAndSlack(data):
 
         for index, row in tmp.iterrows():
             s = row['vecvalue']
-            tmp = s.replace('[','').replace(']','').replace('\n', ' ').replace('[','').strip().split(' ')
-            tmp = [x for x in tmp if len(x) > 0]
+            if isinstance(s, str):
+                tmp = s.replace('[','').replace(']','').replace('\n', ' ').replace('[','').strip().split(' ')
+                tmp = [x for x in tmp if len(x) > 0]
+            else:
+                tmp = s
             latencies = list(map(float, tmp))
             latencies = [x * 1000 for x in latencies]
+
+            tmp = latencies.copy()
+            tmp.sort()
+            topRef = 0.999
+            val = tmp[round(len(tmp)*topRef)]
+            print(str(topRef*100), "% with latency smaller than ", str(val))
 
             minLatency = math.floor(min(latencies))
             maxLatency = math.ceil(max(latencies))
@@ -495,13 +555,16 @@ def plotLatencyAndSlack(data):
             yticks = [(minLatency + (stepSize * x)) for x in range(0,2*steps) if (minLatency + (stepSize * x)) <= maxLatency + stepSize]
 
             s = row['vectime']
-            tmp = s.replace('[','').replace(']','').replace('\n', ' ').replace('[','').strip().split(' ')
-            tmp = [x for x in tmp if len(x) > 0]
+            if isinstance(s, str):
+                tmp = s.replace('[','').replace(']','').replace('\n', ' ').replace('[','').strip().split(' ')
+                tmp = [x for x in tmp if len(x) > 0]
+            else:
+                tmp = s
             times = list(map(float, tmp))
 
             
 
-            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4), gridspec_kw={'width_ratios': [7, 1]})
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 2), gridspec_kw={'width_ratios': [7, 1]})
             # fig.suptitle('Sample Latencies')
 
             ax1.plot(times, latencies)
@@ -516,5 +579,201 @@ def plotLatencyAndSlack(data):
 
             plt.savefig("figures/latencies_Deadline" + deadline + "_reader" + str(index) + ".pdf" ,bbox_inches='tight')
             plt.savefig("figures/latencies_Deadline" + deadline + "_reader" + str(index) + ".png" ,bbox_inches='tight')
+
+    
+
+
+def plotSlack(data):  
+    # iterating the columns
+
+    data = data.reset_index(drop=True)
+    fragmentSize = data['fragmentSize'][0]
+    sampleSize = data['sampleSize'][0]
+    shapingTime = data['shapingTime'][0]
+
+    del data['fragmentSize']
+    del data['sampleSize']
+    del data['shapingTime']
+    del data['type']
+    # and other unnecessary data
+    del data['attrvalue']
+    del data['attrname']
+    del data['name']
+    
+    # del data["Unnamed: 0"]
+
+    tmp = set(data['module'])
+    moduleNumbers = []
+    moduleFERs = []
+    for s in tmp:
+        moduleNumbers.append(s[s.find("[")+1:s.find("]")])
+    moduleNumbers.append("")
+
+    runs = []
+    for run in data['run']:
+        if run not in runs:
+            runs.append(run)
+    
+    slackDict = {}
+    
+    for run in runs:
+        tmp = data[data['run'] == run]
+        tmp = tmp.reset_index(drop=True)
+
+        # print(tmp)
+
+        samplePeriod = tmp['samplePeriod'][0]
+        deadline = tmp['sampleDeadline'][0]
+
+        if "ms" in deadline:
+            d_tmp = deadline.replace("ms","")
+            d_tmp = float(d_tmp)            
+        elif "us" in deadline:
+            d_tmp = deadline.replace("us","")
+            d_tmp = float(d_tmp) / 1000
+        deadline = d_tmp
+
+        if "ms" in samplePeriod:
+            p_tmp = samplePeriod.replace("ms","")
+            p_tmp = float(p_tmp)
+        elif "us" in samplePeriod:
+            p_tmp = samplePeriod.replace("us","")
+            p_tmp = float(p_tmp) / 1000
+        samplePeriod = p_tmp
+
+        # print("--------------------\n", deadline)
+
+
         
+
+        for index, row in tmp.iterrows():
+            s = row['vecvalue']
+            if isinstance(s, str):
+                tmp = s.replace('[','').replace(']','').replace('\n', ' ').replace('[','').strip().split(' ')
+                tmp = [x for x in tmp if len(x) > 0]
+            else:
+                tmp = s
+            latencies = list(map(float, tmp))
+            latencies = [x * 1000 for x in latencies]
+
+            slackUsage = [lat - samplePeriod if lat > samplePeriod else 0 for lat in latencies]
+
+            index_max = max(range(len(slackUsage)), key=slackUsage.__getitem__)
+            trace = slackUsage[index_max: index_max+10]
+
+            i_min = min(range(len(trace)), key=trace.__getitem__)
+            # print(i_min)
+            trace = trace[:i_min+1]
+            # print(index_max, slackUsage[index_max])
+            # print("\ttrace: ", trace)
+            # print(slackUsage)
+
+            slackDict[deadline] = trace
+
+    sorted_dict = dict(sorted(slackDict.items()))
+    # print("\n\n")
+    # print(sorted_dict)
+
+    fig, ax = plt.subplots(figsize=(8, 2))
+    color = iter(plt.cm.plasma(np.linspace(0, 1, len(sorted_dict.keys()))))
+
+    customLines = []
+    for d, trace in sorted_dict.items():
+        c = next(color)
+        print(d, trace)  
+        trace = [math.ceil(x/1.4) for x in trace]
+
+        ax.plot([x for x in range(0,len(trace))], trace, color=c)
+        ax.scatter([x for x in range(0,len(trace))], trace, color=c)
+
+        customLines.append(Line2D([0], [0], color=c, lw=2))
+
+    ax.legend(customLines, [str(x) + 'ms' for x in sorted_dict.keys()], ncol=2, bbox_to_anchor=(0.99,0.99), loc='upper right')
+    ax.set_xlabel('Sample')
+    ax.set_ylabel('Slack\nUsage (slots)')
+        
+    plt.savefig("figures/slack_decay.pdf" ,bbox_inches='tight')
+    plt.savefig("figures/slack_decay.png" ,bbox_inches='tight')
     # plt.show()
+
+
+
+
+def processMissingSamples(dateError, dataMissing, dataStart=None):
+    dateError = dateError.reset_index(drop=True)
+    dataMissing = dataMissing.reset_index(drop=True)
+
+    for index, row in dataMissing.iterrows():
+        deadline = row['sampleDeadline']
+        missingSamples = row['vecvalue']
+        print(index, row['sampleDeadline'], len(row['vecvalue']))
+
+        if deadline == '66ms':
+            print(missingSamples)
+            vectimes = row['vectime']
+            intervals = []
+            for t in vectimes:
+                # intervals.append((t-0.2, t-0.1, t, t+0.005))
+                intervals.append((t-0.123, t-0.066, t, t+0.005))
+            
+            # print(intervals)
+
+            errorData = dateError.loc[dateError['sampleDeadline'] == deadline]
+            errorTrace = errorData['vecvalue'].tolist()
+            errorTs = errorData['vectime'].tolist()
+
+            j = 0
+            for interval in intervals:
+                # print(interval)
+                indices = [i for i,t in enumerate(errorTs[0]) if t > interval[0] and t < interval[3]]
+                # print(indices, "\n-------------\n")
+                transmissions = errorTrace[0][indices[0]:indices[-1]]
+                ts = errorTs[0][indices[0]:indices[-1]]
+
+                fig, ax = plt.subplots(figsize=(8, 1))
+                # ax.scatter(ts, transmissions)
+                ax.plot(ts, transmissions)
+                plt.axvline(x = interval[1], color = 'green', label = '111', linewidth=2)
+                plt.axvline(x = interval[2], color = 'red', label = '111', linewidth=2)
+
+                if dataStart is not None:
+                    startData = dataStart.loc[dataStart['sampleDeadline'] == deadline]
+                    startSNs = startData['vecvalue'].tolist()
+                    startTs = startData['vectime'].tolist()
+                    # print(startTs)
+                    sample = missingSamples[j]
+                    # indices = [i for i,sn in enumerate(startSNs[0]) if sn == sample]
+                    # print(sample, indices)
+                    plt.axvline(x = startTs[0][int(sample)+0] if startTs[0][int(sample)+0] > interval[1] else interval[1], color = 'red', linestyle=':', label = '111', linewidth=2) # TODO why +1 for 66ms deadlines
+
+                    indicesSample = [i for i,t in enumerate(errorTs[0]) if t > startTs[0][int(sample)] and t < interval[2]]
+                    transmissionsSample = errorTrace[0][indicesSample[0]:indicesSample[-1]]
+
+                    # burstsSample = []
+                    # for key, iter in itertools.groupby(transmissionsSample):
+                    #     burstsSample.append((key, len(list(iter))))
+                    # print('\n-------------------', len(transmissionsSample), burstsSample,'\n----')
+
+                ax.set_xlabel('t')
+
+                ax.set_yticks([0,1])
+                ax.set_yticklabels(["success", "error"])   
+
+                if(not os.path.exists("figures/erroneousSamples")):
+                    os.makedirs("figures/erroneousSamples")
+
+                plt.savefig("figures/erroneousSamples/trace" + str(j) + ".pdf"  ,bbox_inches='tight')
+                plt.savefig("figures/erroneousSamples/trace" + str(j) + ".png"  ,bbox_inches='tight')
+
+
+                # also analyse trace for burst error length
+                bursts = []
+                for key, iter in itertools.groupby(transmissions):
+                    bursts.append((key, len(list(iter))))
+
+                # print(len(transmissions), bursts)
+                # plt.show()
+
+                j = j + 1
+    # plt.show()
+    # quit()

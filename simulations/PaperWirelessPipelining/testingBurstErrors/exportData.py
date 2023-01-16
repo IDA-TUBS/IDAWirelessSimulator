@@ -3,6 +3,7 @@
 
 import sys
 import os.path
+import dill
 
 import argparse
 
@@ -55,6 +56,8 @@ parameterSynonyms = ["samplePeriod",
 
 vectorParser = VectorParser.VectorParser()
 
+print("export latencies")
+
 vectorNames = ["sampleLatencies"]
 vectorSynonyms = ["sampleLatencies"]
 
@@ -62,23 +65,60 @@ vecFile = './output/vector_file.csv'
 
 moduleNames = ["receivers"]
 df = vectorParser.processVectors(parameterTypes, parameterSynonyms, vectorNames, vectorSynonyms, moduleNames, vecFile, keepTime=True)
+with open("output/sampleLatencies.pkl", "wb") as dill_file:
+    dill.dump(df, dill_file)
 df.to_csv("./output/sampleLatencies" + args.suffix + ".csv")
 
 
+print("export missing samples")
 
-# vectorNames = ["errorTrace"]
-# vectorSynonyms = ["errorTrace"]
+vectorNames = ["missingSamples"]
+vectorSynonyms = ["missingSamples"]
 
-# vecFile = './output/vector_file.csv'
+vecFile = './output/vector_file.csv'
 
-# moduleNames = ["receivers"]
-# df = vectorParser.processVectors(parameterTypes, parameterSynonyms, vectorNames, vectorSynonyms, moduleNames, vecFile)
-# df.to_csv("./output/errorTrace" + args.suffix + ".csv")
+moduleNames = ["receivers"]
+df = vectorParser.processVectors(parameterTypes, parameterSynonyms, vectorNames, vectorSynonyms, moduleNames, vecFile, keepTime=True)
+with open("output/missingSamples.pkl", "wb") as dill_file:
+    dill.dump(df, dill_file)
+df.to_csv("./output/missingSamples" + args.suffix + ".csv")
+
+
+
+print("sample transmission timestamps")
+
+vectorNames = ["sampleTxStartpoints"]
+vectorSynonyms = ["sampleTxStartpoints"]
+
+vecFile = './output/vector_file.csv'
+
+moduleNames = ["sender"]
+df = vectorParser.processVectors(parameterTypes, parameterSynonyms, vectorNames, vectorSynonyms, moduleNames, vecFile, keepTime=True)
+with open("output/sampleTxStartpoints.pkl", "wb") as dill_file:
+    dill.dump(df, dill_file)
+df.to_csv("./output/sampleTxStartpoints" + args.suffix + ".csv")
+
+
+
+print("export error traces")
+
+vectorNames = ["errorTrace"]
+vectorSynonyms = ["errorTrace"]
+
+vecFile = './output/vector_file.csv'
+
+moduleNames = ["receivers"]
+df = vectorParser.processVectors(parameterTypes, parameterSynonyms, vectorNames, vectorSynonyms, moduleNames, vecFile, keepTime=True)
+with open("output/errorTrace.pkl", "wb") as dill_file:
+    dill.dump(df, dill_file)
+df.to_csv("./output/errorTrace" + args.suffix + ".csv")
 
 
 
 
 scalarParser = ScalarParser.ScalarParser()
+
+print("export violation rates")
 
 scalarNames = ["deadlineViolationRate"]
 scalarSynonyms = ["deadlineViolationRate"]
@@ -87,4 +127,6 @@ scaFile = './output/histogram_file.csv'
 
 moduleNames = ["receivers"]
 df = scalarParser.processScalars(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
+with open("output/violationRates.pkl", "wb") as dill_file:
+    dill.dump(df, dill_file)
 df.to_csv("./output/violationRates" + args.suffix + ".csv")
