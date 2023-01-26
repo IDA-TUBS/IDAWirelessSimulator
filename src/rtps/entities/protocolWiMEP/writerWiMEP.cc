@@ -128,7 +128,9 @@ void WriterWiMEP::handleTimeout(Timeout *timeoutMsg)
 {
     unsigned int readerID = timeoutMsg->getId();
     int sequenceNumber = timeoutMsg->getSequenceNumber();
-    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders() + 1) - 1];
+
+    int tmp1 = rtpsParent->getMaxNumberOfReaders();
+    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders()) - 1];
 
     rp->timeoutActive = false;
     rp->resetTimeoutedFragments(sequenceNumber);
@@ -140,8 +142,10 @@ void WriterWiMEP::handleNackFrag(RtpsInetPacket* nackFrag) {
     // First find the history cache corresponding to the reader, sending the NackFrag msg
     unsigned int readerID = nackFrag->getReaderId();
     // the app's reader IDs are in the range of [appID * maxNumberReader + 1, (appID + 1) * maxNumberReader - 1]
-    // reader entity ID mapped to entityId - thisappID * (maxNumberReader + 1) - 1
-    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders() + 1) - 1];
+    // reader entity ID mapped to entityId - thisappID * (maxNumberReader) - 1
+
+    int tmp1 = rtpsParent->getMaxNumberOfReaders();
+    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders()) - 1];
 
     // only handle NackFrag if sample still in history, if already complete or expired just ignore NackFrag
     if(rp->processNack(nackFrag))
@@ -312,6 +316,7 @@ bool WriterWiMEP::sendMessage()
             // check for timeout situation: reader has no fragments in state 'UNSENT' left
             if(rp->checkForTimeout(sf->baseChange->sequenceNumber) && !(rp->timeoutActive))
             {
+//                continue; // TODO remove
                 rp->timeoutActive = true;
                 // trigger timeout
                 auto nextTimeout = new Timeout("timeoutEvent");

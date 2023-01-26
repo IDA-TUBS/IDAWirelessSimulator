@@ -33,6 +33,8 @@ class InetAdapter :  public ApplicationBase, public UdpSocket::ICallback
     bool dontFragment = false;
     const char *packetName = nullptr;
 
+    std::vector<std::string> localAddr;
+
     /// state
     UdpSocket socket;
     cMessage *selfMsg = nullptr;

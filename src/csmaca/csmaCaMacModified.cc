@@ -88,6 +88,7 @@ void CsmaCaMacModified::initialize(int stage)
         difsTime = par("difsTime");
         cwMin = par("cwMin");
         cwMax = par("cwMax");
+        cwMulticast = par("cwMulticast");
 
         // -------------------------------------------------------------------
         // ---- New values to overwrite cwMin and cwMax to the same value ----
@@ -172,6 +173,7 @@ void CsmaCaMacModified::finish()
     double fer = double(receptionFailure) / (double(receptionFailure) + double(receptionSuccess));
     EV << "[CSMA CA] average FER: " << fer << "%" << endl;
 
+    EV << "[CSMA CA] numSent: " << numSent << ", numCollision: " << numCollision << endl;
 
 
     recordScalar("numRetry", numRetry);
@@ -182,6 +184,7 @@ void CsmaCaMacModified::finish()
     recordScalar("numReceived", numReceived);
     recordScalar("numSentBroadcast", numSentBroadcast);
     recordScalar("numReceivedBroadcast", numReceivedBroadcast);
+    recordScalar("averageTa", averageTa);
 }
 
 void CsmaCaMacModified::configureNetworkInterface()

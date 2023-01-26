@@ -133,6 +133,100 @@ def plotViolationRateTri(data, combined=True):
         i = 0
 
 
+def plotViolationRateTriParameters(data, parameters=['sampleDeadline', 'gilbertElliotR']):
+    i = 0
+
+    data = data.reset_index(drop=True)
+    fragmentSize = data['fragmentSize'][0]
+    sampleSize = data['sampleSize'][0]
+    shapingTime = data['shapingTime'][0]
+
+    # remove type, shapingTime, sample size and fragment size from data
+    del data['fragmentSize']
+    del data['sampleSize']
+    del data['shapingTime']
+    del data['type']
+    # and other unnecessary data
+    del data['attrvalue']
+    del data['attrname']
+    del data['name']
+    fig = None
+    ax = None
+
+            
+    del data['module']
+
+    # aggregate lines with the same attributes (shaping and arbitration time)
+    # into a single line with the combined deadline violation rate: sum(dvr_i)/num readers
+
+    # calculate frame error rate
+    s_frag = int(fragmentSize) * 8
+    s_frame = s_frag + (64 + 20 + 28 + 36) * 8
+
+    i = 0
+    # print(data[parameters[0]])
+    for x in data[parameters[0]]:
+        tmp = None
+        if 'ms' in x:
+            tmp = float(x.replace("ms",''))
+        elif 'us' in x:
+            tmp = float(x.replace("us",''))/1000
+        if tmp is not None:
+            # print(tmp)
+            data.loc[i, parameters[0]] = tmp
+        i = i + 1
+
+
+    renameMap = {"value": "violationRate"}
+    data = data.rename(renameMap, axis=1, errors="raise")
+
+    # data.to_csv("./output/tmp.csv")
+    print(data)
+
+    fig = plt.figure(figsize=(8,3))
+    ax = plt.axes(projection='3d')
+
+    print(data[parameters[0]])
+    print(data[parameters[1]])
+    print(data['violationRate'])
+
+    surf = ax.plot_trisurf(data[parameters[0]].values.tolist(), data[parameters[1]].values.tolist(), data['violationRate'].values.tolist(),
+                            antialiased = True,
+                            cmap=cm.get_cmap('plasma'),
+                            linewidth=0.2)
+
+
+    # ax.set(xticklabels=x_vector_labels, xticks=x_vector_ticks)
+    plt.xticks(rotation = 60, rotation_mode="anchor")
+
+    # y_vector_ticks  = [0, 20, 40, 60, 80]
+    # y_vector_labels  = ["0", "20", "40", "60", "80"]
+    # ax.set(yticklabels=y_vector_labels, yticks=y_vector_ticks)
+    plt.yticks(rotation = -30, rotation_mode="anchor")
+
+    # z_vector_ticks  = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    # z_vector_labels  = ["0", "20", "40", "60", "80", "100"]
+    # ax.set(zticklabels=z_vector_labels, zticks=z_vector_ticks)
+
+    ax.set_xlabel('Sample Deadline (ms)')
+
+    ax.set_ylabel('Gilbert-Elliot\nParameter ' + parameters[1][-1].lower())
+    ax.set_zlabel('Observed Deadline\nViolation Rate (%)')
+    
+    plt.gca().invert_xaxis()
+    if parameters[1][-1] == 'R':
+        plt.gca().invert_yaxis()
+    # plt.gca().invert_xaxis()
+    plt.yticks(rotation = -30, rotation_mode="anchor")
+
+    if(not os.path.exists("figures")):
+        os.makedirs("figures")
+    plt.savefig("figures/violationRate.pdf" ,bbox_inches='tight')
+
+    plt.show()
+
+
+
 
 
 def plotViolationRatesMulticast(data, suffix=''):
@@ -490,6 +584,146 @@ def plotViolationRateUnicast(data, over='sampleDeadline'):
     plt.savefig("figures/violationRatesSmall.pdf"  ,bbox_inches='tight')
     plt.savefig("figures/violationRatesSmall.png"  ,bbox_inches='tight')
     # plt.show()
+
+
+def plotViolationRateUnicastPerPeriod(data, over, configs):
+    i = 0
+    data = data.reset_index(drop=True)
+    vrs=[]
+
+    fig, ax = plt.subplots(figsize=(8, 2.2))
+
+    # print(data)
+
+    line_types = ['solid', 'dashed', 'dotted']
+    marker_types = ['+','x','|']#['o', 'v', '^']
+    j = 0
+    for cfg in configs:
+        print(cfg)
+        df_tmp = data.copy()
+        # print(cfg[0], df_tmp['gilbertElliotP'])
+        df_tmp = df_tmp[df_tmp['gilbertElliotP'] == str(cfg[0])]
+        df_tmp = df_tmp[df_tmp['gilbertElliotR'] == str(cfg[1])]
+
+        # print(df_tmp)
+
+        # continue
+
+        runs = []
+        for run in df_tmp['run']:
+            if run not in runs:
+                runs.append(run)
+
+        vr_simple = {}
+        vr_enhanced = {}
+
+        # print(df_tmp)
+                
+        for run in runs:
+            # print(run)
+            tmp = df_tmp[df_tmp['run'] == run]
+            tmp = tmp.reset_index(drop=True)
+
+            samplePeriod = tmp['samplePeriod'][0]
+            deadline = tmp['sampleDeadline'][0]
+
+            print(deadline, samplePeriod)
+
+            factor = 1
+            if 'ms' in deadline:
+                factor = 1
+            elif 'us' in deadline:
+                factor = 1000
+            seq_type= type(deadline)
+            deadline = float(seq_type().join(filter(seq_type.isdigit, deadline)))/factor
+
+            
+            factor = 1
+            if 'ms' in samplePeriod:
+                factor = 1
+            elif 'us' in samplePeriod:
+                factor = 1000
+            seq_type= type(samplePeriod)
+            samplePeriod = float(seq_type().join(filter(seq_type.isdigit, samplePeriod)))/factor
+
+            # print(deadline, samplePeriod)
+
+            vr = tmp['value']
+            if (deadline == samplePeriod):
+                # print('\tsimple', deadline, samplePeriod)
+                vr_simple[samplePeriod] = vr*100
+
+                if (samplePeriod == 100):
+                    vr_enhanced[samplePeriod] = vr*100
+            elif (deadline > samplePeriod ):
+                # print('\tenhanced', deadline, samplePeriod)
+                vr_enhanced[samplePeriod] = vr*100
+            # else:
+            #     print('ELSE')
+
+        vr_simple = OrderedDict(sorted(vr_simple.items()))
+        vr_enhanced = OrderedDict(sorted(vr_enhanced.items()))
+
+        # print("---------- simple ---------")
+        # print(list(vr_simple.keys()), '\n', list(vr_simple.values()))
+
+        # print("---------- enhanced ---------")
+        # print(list(vr_enhanced.keys()), '\n', list(vr_enhanced.values()))           
+
+        ax.plot(list(vr_simple.keys()), list(vr_simple.values()), clip_on=False, zorder=100, color='blue', linestyle=line_types[j])
+        ax.plot(list(vr_enhanced.keys()), list(vr_enhanced.values()), clip_on=False, zorder=100,color='red', linestyle=line_types[j])
+        ax.scatter(list(vr_simple.keys()), list(vr_simple.values()), clip_on=False, zorder=100, color='blue',  marker=marker_types[j])
+        ax.scatter(list(vr_enhanced.keys()), list(vr_enhanced.values()), clip_on=False, zorder=100,color='red',  marker=marker_types[j])
+
+        vrs.extend(list(vr_simple.values()))
+        vrs.extend(list(vr_enhanced.values()))
+        
+
+        j = j + 1
+
+    vrs = [float(x) for x  in vrs]
+    print(vrs)
+    ax.set_ylim([0, max(vrs)*1.1])     
+
+
+    customLines = []
+    customLines.append(Line2D([0], [0], color='red', lw=1, linestyle='solid',  marker=marker_types[0]))
+    customLines.append(Line2D([0], [0], color='red', lw=1, linestyle='dashed',  marker=marker_types[1]))
+    customLines.append(Line2D([0], [0], color='red', lw=1, linestyle='dotted',  marker=marker_types[2]))
+    customLines.append(Line2D([0], [0], color='blue', lw=1, linestyle='solid',  marker=marker_types[0]))
+    customLines.append(Line2D([0], [0], color='blue', lw=1, linestyle='dashed',  marker=marker_types[1]))
+    customLines.append(Line2D([0], [0], color='blue', lw=1, linestyle='dotted',  marker=marker_types[2]))
+
+    customDescription = ['E-W2RP - ' + r'$D_{S}$' + '=100ms, GE(p=0.18, r=0.5)',
+                        'E-W2RP - ' + r'$D_{S}$' + '=100ms, GE(p=0.30, r=0.5)',
+                        'E-W2RP - ' + r'$D_{S}$' + '=100ms,  GE(p=0.18, r=0.4)',
+                        'W2RP - ' + r'$D_{S}$' + '=' + r'$T_{S}$' + ', GE(p=0.18, r=0.5)',
+                        'W2RP - ' + r'$D_{S}$' + '=' + r'$T_{S}$' + ', GE(p=0.30, r=0.5)',
+                        'W2RP - ' + r'$D_{S}$' + '=' + r'$T_{S}$' + ', GE(p=0.18, r=0.4)'
+                        ]           
+
+
+
+    ax.legend(customLines, [x for x in customDescription], ncol=1, bbox_to_anchor=(0.99,0.99), loc='upper right')
+
+    ax.set_xlabel('Sample Period (ms)')
+
+    ax.set_ylabel('Observed Deadline\nViolation Rate (%)')    
+
+    plt.savefig("figures/violationRatesPeriods.pdf"  ,bbox_inches='tight')
+    plt.savefig("figures/violationRatesPeriods.png"  ,bbox_inches='tight')
+
+    plt.show()
+
+
+    # fig, ax = plt.subplots(figsize=(4, 2))
+    # ax.plot(list(refs)[3:], list(violationRates)[3:])
+    # ax.scatter(list(refs)[3:], list(violationRates)[3:])
+    # # ax.set_yticks([0, 0.1, 0.2, 0.3, 0.4])
+
+    # plt.savefig("figures/violationRatesSmall.pdf"  ,bbox_inches='tight')
+    # plt.savefig("figures/violationRatesSmall.png"  ,bbox_inches='tight')
+    # # plt.show()
 
 
 def plotLatencyAndSlack(data):    

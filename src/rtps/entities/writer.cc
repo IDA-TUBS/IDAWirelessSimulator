@@ -108,6 +108,13 @@ void Writer::handleMessage(cMessage *msg)
     {
         // Received new NackFrag
         RtpsInetPacket *rtpsMsg = check_and_cast<RtpsInetPacket*>(msg);
+
+        // first check whether appID is corresponding to the writer's appID
+        if(rtpsMsg->getAppId() != this->appID)
+        {
+            return;
+        }
+//        return; // TODO remove
         handleNackFrag(rtpsMsg);
         delete msg;
     }

@@ -54,6 +54,13 @@ void InetAdapter::handleMessageWhenUp(cMessage *msg)
     if (dynamic_cast<RtpsInetPacket*>(msg))
     {
         cGate *inGate = msg->getArrivalGate();
+
+        RtpsInetPacket *rtpsMsg = check_and_cast<RtpsInetPacket*>(msg);
+        // TODO filter incoming messages based on destination address
+//        if (rtpsMsg->getDestinationAddress() == localAddr[0] || rtpsMsg->getDestinationAddress().isMulticast())
+//        {
+//            int i = 123;
+//        }
         if(inGate->getName() == gate("udpSocketIn")->getName())
         {
             send(msg, gate("dispatcherOut"));
@@ -179,6 +186,7 @@ void InetAdapter::processStart()
 {
     socket.setOutputGate(gate("udpSocketOut"));
     const char *localAddress = par("localAddress");
+    localAddr = cStringTokenizer(localAddress).asVector();
 
     // determine unique addresses based on name of parent module
     if(strlen(localAddress) == 0){

@@ -86,6 +86,7 @@ void Reader::handleMessage(cMessage *msg)
         {
             // if HB or HBFrag
             // respond with NackFrag
+//            return; // TODO remove
             auto nackFrag = generateNackFrag(rtpsMsg);
             if(nackFrag)
             {
@@ -166,6 +167,7 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
     // Create NackFrag submessage
     nackFrag->setNackFragSet(true);
     nackFrag->setReaderId(entityId);
+    nackFrag->setAppId(this->appID);
 
     int sequenceNumber = hb->getWriterSN();
 
