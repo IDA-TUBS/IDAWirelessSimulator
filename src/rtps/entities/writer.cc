@@ -193,6 +193,10 @@ void Writer::checkSampleLiveliness()
     {
         for (auto rp: matchedReaders)
         {
+            if(!(rp->changeExists(sequenceNumber)))
+            {
+                continue;
+            }
             if(!(rp->checkSampleCompleteness(sequenceNumber)))
             {
                 RTPSAnalysis::incrementIncompleteCounter();

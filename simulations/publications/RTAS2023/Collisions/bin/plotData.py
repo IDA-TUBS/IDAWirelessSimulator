@@ -11,5 +11,5 @@ p_file = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == '__main__':
 
-    dataNoAcks = GraphPlotter.csvToPanda("output/collisions_noAcks.csv")
-    GraphPlotter.plotTaCollisions(dataNoAcks, 'Prio')
+    dataNoAcks = GraphPlotter.csvToPanda("output/collisions_noAck.csv")
+    GraphPlotter.plotTaCollisions(dataNoAcks)

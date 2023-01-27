@@ -131,6 +131,14 @@ class ReaderProxy
     void removeChange(unsigned int sequenceNumber);
 
     /*
+     * method for checking whether a Cache Change is in the history cache
+     *
+     * @param sequenceNumber sequence number of the change that has be be removed
+     * @return bool
+     */
+    bool changeExists(unsigned int sequenceNumber);
+
+    /*
      * method for altering a fragment's status (unsent, sent, acked, ...)
      *
      * @param status fragment status

@@ -13,6 +13,8 @@ from matplotlib.patches import Patch
 from matplotlib.lines import Line2D
 from matplotlib import cm
 
+import seaborn as sns
+
 import itertools
 
 
@@ -26,6 +28,9 @@ def csvToPanda(filename):
 
 
 def combineViolationRates(series):
+    return sum(series) / len(series)
+
+def averageSum(series):
     return sum(series) / len(series)
 
 def keep(series):
@@ -1011,3 +1016,73 @@ def processMissingSamples(dateError, dataMissing, dataStart=None):
                 j = j + 1
     # plt.show()
     # quit()
+
+def plotTaCollisions(data):
+
+
+    df_ta = data[data['name'] == "averageTa"]
+    df_ta = df_ta[df_ta['module'].str.contains("sender")]
+    df_ta = df_ta[["value", "numberApps"]]
+    df_ta = df_ta.reset_index(drop=True)
+    df_ta = df_ta.groupby(['numberApps']).agg({"value": averageSum})
+    df_ta = df_ta.rename(columns={'value': 'ta'})
+
+    print(df_ta)
+
+    df_sent = data[data['name'] == "numSent"]
+    df_sent = df_sent[df_sent['module'].str.contains("sender")]
+    df_sent = df_sent[["value", "numberApps"]]
+    df_sent = df_sent.reset_index(drop=True)
+    df_sent = df_sent.groupby(by='numberApps').sum()
+    df_sent = df_sent.rename(columns={'value': 'numSent'})
+
+    print(df_sent)
+
+    df_col = data[data['name'] == "numCollision"]
+    df_col = df_col[df_col['module'].str.contains("sender")]
+    df_col = df_col[["value", "numberApps"]]
+    df_col = df_col.reset_index(drop=True)
+    df_col = df_col.groupby(by='numberApps').sum()
+    df_col = df_col.rename(columns={'value': 'numCollision'})
+
+    print(df_col)
+
+    merged_df = df_ta
+    for df in [df_sent, df_col]:
+        merged_df = merged_df.merge(df, on='numberApps')
+
+
+    merged_df = merged_df.assign(percentage = lambda x: x['numCollision'] / (x['numSent']))
+
+    merged_df = merged_df.assign(load = lambda x: (x['numSent'] * 11454 * 8 + 3*x['numSent']*144*8)/ (10*400000000) )
+    print(merged_df)
+
+    fig, ax1 = plt.subplots(figsize=(8, 3))
+    sns.lineplot(x="numberApps", y="ta", data=merged_df,ax=ax1)
+    ax2 = ax1.twinx()
+    sns.lineplot(x="numberApps", y="percentage", data=merged_df,ax=ax2, color='r')
+
+    sns.lineplot(x="numberApps", y="load", data=merged_df,ax=ax2, color='g')
+
+    customLines = []
+    customLines.append(Line2D([0], [0], color='b', lw=1))
+    customLines.append(Line2D([0], [0], color='r', lw=1))
+    customLines.append(Line2D([0], [0], color='g', lw=1))
+
+    customDescription = ['average arbitration time',
+                        'percentual number of collisions',
+                        'channel load']
+    ax1.set(ylabel='time (us)')
+    ax2.set(ylabel='percentages (%)')
+
+    ax2.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    ax2.set_yticklabels(['0','20','40','60','80','100'])
+
+    ax1.legend(customLines, [x for x in customDescription], ncol=1, bbox_to_anchor=(0.01,0.99), loc='upper left')
+
+    plt.savefig("figures/collisions.pdf" ,bbox_inches='tight')
+    plt.savefig("figures/collisions.png" ,bbox_inches='tight')
+    
+    plt.show()
+
+    

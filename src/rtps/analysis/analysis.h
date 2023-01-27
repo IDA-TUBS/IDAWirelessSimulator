@@ -61,6 +61,9 @@ class RTPSAnalysis
         sampleTxStartVector.setName("sampleTxStartpoints");
         missingSamplesVector.setName("missingSamples");
         sampleViolationRateVector.setName("sampleViolationRateVector");
+
+        counterCompleteSamples = 0;
+        counterIncompleteSamples = 0;
     };
 
     /*

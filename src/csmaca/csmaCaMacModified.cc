@@ -528,6 +528,8 @@ void CsmaCaMacModified::generateBackoffPeriod()
         cw = std::min(cwMax, (cwMin + 1) * (1 << retryCounter) - 1);
     int slots = intrand(cw + 1);
 
+//    backoffPeriod = slots * slotTime;
+
     // ---- New code ----
     backoffPeriod = double(intrand((cw-2)*90+1))*(slotTime/90.0);
     // ------------------

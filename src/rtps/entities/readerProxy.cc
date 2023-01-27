@@ -34,6 +34,23 @@ void ReaderProxy::removeChange(unsigned int sequenceNumber)
     }
 }
 
+bool ReaderProxy::changeExists(unsigned int sequenceNumber)
+{
+    for (auto it = history.begin(); it != history.end();)
+    {
+        if ((*it)->sequenceNumber <= sequenceNumber)
+        {
+            return true;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+
+    return false;
+}
+
 
 bool ReaderProxy::updateFragmentStatus (fragmentStates status, unsigned int sequenceNumber, unsigned int fragmentNumber, simtime_t sentTimestamp)
 {
