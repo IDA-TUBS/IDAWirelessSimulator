@@ -20,7 +20,6 @@ package src.rtps.adapters;
 //
 simple InetAdapter
 {
-    // Legacy ??? TODO 
     int timeToLive = default(-1); // if not -1, set the TTL (IPv4) or Hop Limit (IPv6) field of sent packets to this value
     
     

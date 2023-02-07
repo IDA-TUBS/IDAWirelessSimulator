@@ -86,7 +86,6 @@ void Reader::handleMessage(cMessage *msg)
         {
             // if HB or HBFrag
             // respond with NackFrag
-//            return; // TODO remove
             auto nackFrag = generateNackFrag(rtpsMsg);
             if(nackFrag)
             {
@@ -184,7 +183,7 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* hb)
     if(!cfw)
     {
         // TODO implement properly: reader shall answer with empty bitmap - all fragments missing
-        // TODO doable by just creating the change if it does not exist yet or just respond with "empty" bitmap
+        // TODO can be done by just creating the change if it does not exist yet or just respond with "empty" bitmap
         return nullptr;
     }
     // sample fragment array

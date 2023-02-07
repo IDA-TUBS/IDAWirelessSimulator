@@ -13,7 +13,6 @@
 using namespace omnetpp;
 using namespace inet;
 
-// TODO code commentary
 
 class InetAdapter :  public ApplicationBase, public UdpSocket::ICallback
 {
@@ -42,134 +41,137 @@ class InetAdapter :  public ApplicationBase, public UdpSocket::ICallback
     int numSent = 0;
 
   public:
+    /*
+     * empty default constructor
+     */
     InetAdapter() {}
+    /*
+     * empty default destructor
+     */
     virtual ~InetAdapter();
 
   protected:
     /*
-     * TODO Code commentary
+     * return the number of init stages
      *
-     * @param
-     * @return
+     * @return number of init stages
      */
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
 
     /*
-     * TODO Code commentary
+     * initialize inet adapter, right now, only stage INITSTAGE_LOCAL supported
      *
-     * @param
+     * @param stage unique stage identifier
      */
     virtual void initialize(int stage) override;
 
     /*
-     * TODO Code commentary
+     * process any (self and incoming) message and call corresponding callbacks
      *
-     * @param
+     * @param msg message to be handled
      */
     virtual void handleMessageWhenUp(cMessage *msg) override;
 
     /*
-     * TODO Code commentary
+     * to be called at the end if not needed any more
      */
     virtual void finish() override;
 
     /*
-     * TODO Code commentary
+     * refresh packet counter if qt GUI used for executing simulation
      */
     virtual void refreshDisplay() const override;
 
 
     /*
-     * TODO Code commentary
+     * select a destination address for a given packet
      *
-     * @return
+     * @return destintion address
      */
     virtual L3Address chooseDestAddr();
 
     /*
-     * TODO Code commentary
-     *
-     * @param
+     * does not do anything right now
      */
     virtual void sendPacket();
 
     /*
-     * TODO Code commentary
+     * pass RTPS Inet packet down to UDP layer
      *
-     * @param
+     * @param packet that shall be send
      */
     virtual void sendRtpsPacket(RtpsInetPacket *packet);
 
     /*
-     * TODO Code commentary
+     * visualizer for received packets
      *
-     * @param
+     * @param msg
      */
     virtual void processPacket(Packet *msg);
 
     /*
-     * TODO Code commentary
+     * configure socket options such as multicast addresses, broadcast, tos, ...
      */
     virtual void setSocketOptions();
 
 
     /*
-     * TODO Code commentary
+     * called on start of inet adapter, further initialize destination addresses
      */
     virtual void processStart();
 
     /*
-     * TODO Code commentary
+     * does not do anything right now
      */
     virtual void processSend();
 
     /*
-     * TODO Code commentary
+     * called to close the socket
      */
     virtual void processStop();
 
 
     /*
-     * TODO Code commentary
+     * set up event for start of inet adapter
      *
-     * @param
+     * @param operation unused parameter
      */
     virtual void handleStartOperation(LifecycleOperation *operation) override;
 
     /*
-     * TODO Code commentary
+     * called to stop inet adapter
      *
-     * @param
+     * @param operation unused parameter
      */
     virtual void handleStopOperation(LifecycleOperation *operation) override;
 
     /*
-     * TODO Code commentary
+     * called in case of some crash within the inet adapter
      *
-     * @param
+     * @param operation unused parameter
      */
     virtual void handleCrashOperation(LifecycleOperation *operation) override;
 
     /*
-     * TODO Code commentary
+     * message callback // TODO actually used at all?
      *
-     * @param
-     * @param
+     * @param socket unused parameter
+     * @param packet the data that shall be processed
      */
     virtual void socketDataArrived(UdpSocket *socket, Packet *packet) override;
 
     /*
-     * TODO Code commentary
+     * return error indication
      *
-     * @param
-     * @param
+     * @param socket unused parameter
+     * @param indication
      */
     virtual void socketErrorArrived(UdpSocket *socket, Indication *indication) override;
 
     /*
-     * TODO Code commentary
+     * additional method for closing socket
      *
-     * @param
+     * @param socket unused parameter
      */
     virtual void socketClosed(UdpSocket *socket) override;
 };

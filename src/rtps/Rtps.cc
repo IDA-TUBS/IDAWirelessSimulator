@@ -37,7 +37,6 @@ void Rtps::initialize()
         {
             // reader entity IDs per App: [i*numberReadersPerApp+1, (i+1)*numberReadersPerApp -1]
             entityIdPerApp.push_back(i*numberReadersPerApp + 1);
-            // TODO test whether IDs are correct for scenarios with more than a single app!
         }
 
         for(int i = 0; i < numberApps; i++)

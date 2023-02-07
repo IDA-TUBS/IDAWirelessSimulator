@@ -22,9 +22,7 @@ import src.rtps.contract.iRtpsApp;
 import src.rtps.apps.RtpsSubscriberApp;
 import src.rtps.apps.RtpsPublisherApp;
 
-//
-// TODO auto-generated type
-//
+
 network RtpsHost extends TransportLayerNodeBase
 {
     parameters:

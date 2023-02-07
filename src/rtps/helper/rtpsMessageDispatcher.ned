@@ -15,9 +15,7 @@
 
 package src.rtps.helper;
 
-//
-// TODO auto-generated type
-//
+
 simple RtpsMessageDispatcher
 {
     @display("i=block/routing");

@@ -31,6 +31,7 @@ def combineViolationRates(series):
     return sum(series) / len(series)
 
 def averageSum(series):
+    # print(sum(series), len(series))
     return sum(series) / len(series)
 
 def keep(series):
@@ -591,6 +592,8 @@ def plotViolationRateUnicast(data, over='sampleDeadline'):
     # plt.show()
 
 
+
+
 def plotViolationRateUnicastPerPeriod(data, over, configs):
     i = 0
     data = data.reset_index(drop=True)
@@ -1017,7 +1020,31 @@ def processMissingSamples(dateError, dataMissing, dataStart=None):
     # plt.show()
     # quit()
 
-def plotTaCollisions(data):
+def plotAppViolationRates(data, over='numberApps'):
+
+   
+    df_vr = data[data['name'] == "appViolationRate"]
+    df_vr = df_vr[df_vr['module'].str.contains("sender")]
+    df_vr = df_vr[["value", "numberApps"]]
+    df_vr = df_vr.reset_index(drop=True)
+
+    df_vr = df_vr.groupby(['numberApps']).agg({"value": averageSum})
+    df_vr = df_vr.rename(columns={'value': 'violationRate'})
+
+    print(df_vr)
+
+    fig, ax = plt.subplots(figsize=(8, 3))
+    sns.lineplot(x="numberApps", y="violationRate", data=df_vr,ax=ax)
+
+    plt.savefig("figures/appViolationRates.pdf" ,bbox_inches='tight')
+    plt.savefig("figures/appViolationRates.png" ,bbox_inches='tight')
+
+    plt.show()
+
+
+
+
+def plotTaCollisions(data, dataReader):
 
 
     df_ta = data[data['name'] == "averageTa"]
@@ -1038,11 +1065,18 @@ def plotTaCollisions(data):
 
     print(df_sent)
 
-    df_col = data[data['name'] == "numCollision"]
-    df_col = df_col[df_col['module'].str.contains("sender")]
+    # df_col = data[data['name'] == "numCollision"]
+    # df_col = df_col[df_col['module'].str.contains("sender")]
+    # df_col = df_col[["value", "numberApps"]]
+    # df_col = df_col.reset_index(drop=True)
+    # df_col = df_col.groupby(by='numberApps').sum()
+    # df_col = df_col.rename(columns={'value': 'numCollision'})
+
+    df_col = dataReader[dataReader['name'] == "numCollision"]
+    df_col = df_col[df_col['module'].str.contains("receivers")]
     df_col = df_col[["value", "numberApps"]]
     df_col = df_col.reset_index(drop=True)
-    df_col = df_col.groupby(by='numberApps').sum()
+    df_col = df_col.groupby(['numberApps']).agg({"value": averageSum})
     df_col = df_col.rename(columns={'value': 'numCollision'})
 
     print(df_col)
@@ -1083,6 +1117,239 @@ def plotTaCollisions(data):
     plt.savefig("figures/collisions.pdf" ,bbox_inches='tight')
     plt.savefig("figures/collisions.png" ,bbox_inches='tight')
     
-    plt.show()
+    # plt.show()
+
+def plotTaCollisionsCombined(datas, dataReaders, nmax=10, ferOffset=0):
+  
+    fig, axs = plt.subplots(2, figsize=(12, 4))
+    axs2 = axs[0].twinx()
+    i = 0
+    line_types = ['solid', 'dashed', 'dotted']
+    marker_types = ['+','x','|']#['o', 'v', '^']
+    color = iter(plt.cm.plasma(np.linspace(0, 1, 3)))
+    colors = []
+    for j in range(0,3):
+        colors.append(next(color))
+    
+    for data in datas:
+        print("------------\nEXPERIMENT ", i, "\n------------")
+        
+        df_ta = data[data['name'] == "averageTa"]
+        df_ta = df_ta[df_ta['module'].str.contains("sender")]
+        df_ta = df_ta[["value", "numberApps"]]
+        df_ta = df_ta.reset_index(drop=True)
+        df_ta = df_ta.groupby(['numberApps']).agg({"value": averageSum})
+        df_ta = df_ta.rename(columns={'value': 'ta'})
+
+        # print(df_ta)
+
+        df_sent = data[data['name'] == "numSent"]
+        df_sent = df_sent[df_sent['module'].str.contains("sender")]
+        df_sent = df_sent[["value", "numberApps"]]
+        df_sent = df_sent.reset_index(drop=True)
+        df_sent = df_sent.groupby(by='numberApps').sum()
+        df_sent = df_sent.rename(columns={'value': 'numSent'})
+
+        # print(df_sent)
+
+        dataReader = dataReaders[i]
+        df_col = dataReader[dataReader['name'] == "numCollision"]
+        df_col = df_col[df_col['module'].str.contains("receivers")]
+        df_col = df_col[["value", "numberApps"]]
+        df_col = df_col.reset_index(drop=True)
+        df_col = df_col.groupby(['numberApps']).agg({"value": averageSum})
+        df_col = df_col.rename(columns={'value': 'numCollision'})
+
+        # print(df_col)
+
+          
+
+        merged_df = df_ta
+        for df in [df_sent, df_col]:
+            merged_df = merged_df.merge(df, on='numberApps')
+
+
+        merged_df = merged_df.assign(percentage = lambda x: (x['numCollision'] / (x['numSent'])) * 100)
+        if ferOffset > 0:
+            merged_df['percentage'] = merged_df['percentage'].apply(lambda x: x+ferOffset)
+        merged_df = merged_df.assign(load = lambda x: ((x['numSent'] * 11454 * 8 + 3*x['numSent']*144*8)/ (10*400000000)) * 100)
+        merged_df = merged_df.reset_index()
+
+        merged_df = merged_df[merged_df['numberApps'] <= nmax]
+        # print(merged_df)
+
+
+        axs[0].plot(list(merged_df['numberApps']), list(merged_df['ta']), clip_on=False, zorder=100, color=colors[0], linestyle=line_types[i])
+        axs2.plot(list(merged_df['numberApps']), list(merged_df['percentage']), clip_on=False, zorder=100,color=colors[1], linestyle=line_types[i])
+        # ax1.scatter(list(merged_df['numberApps']), list(merged_df['ta']), clip_on=False, zorder=100, color=colors[0],  marker=marker_types[i])
+        # ax2.scatter(list(merged_df['numberApps']), list(merged_df['percentage']), clip_on=False, zorder=100,color=colors[1],  marker=marker_types[i])
+        
+            
+        # sns.lineplot(x="numberApps", y="ta", data=merged_df,ax=ax1, color=colors[0], linestyle=line_types[i])
+        # sns.lineplot(x="numberApps", y="percentage", data=merged_df,ax=ax2, color=colors[1], linestyle=line_types[i])
+
+        i = i + 1  
+
+        # sns.lineplot(x="numberApps", y="load", data=merged_df,ax=ax2, color='g')
+
+    axs[0].set_ylim([0, 1500])
+    axs[0].set_ybound(lower=0.0, upper=1500)
+
+    axs2.set_ylim([0, 30])
+    axs2.set_ybound(lower=0.0, upper=30)
+
+    customLines = []
+    customLines.append(Line2D([0], [0], color='black', lw=1, linestyle=line_types[0]))
+    customLines.append(Line2D([0], [0], color='black', lw=1, linestyle=line_types[1]))
+    customLines.append(Line2D([0], [0], color='black', lw=1, linestyle=line_types[2]))
+
+    customDescription = ['$t_{f}^{sh}$ = 700us',
+                        '$t_{f}^{sh}$ = 1000us',
+                        '$t_{f}^{sh}$ = 1300us']
+
+    axs[0].set(ylabel='average\narbitration time (us)')
+    axs[0].yaxis.label.set_color(colors[0])
+    axs2.set(ylabel='FER collisions (%)')
+    axs2.yaxis.label.set_color(colors[1])
+
+    axs[0].set_xticks([x for x in range(1, nmax+1)])
+    # axs[0].set(xlabel='number of applications (writers)')
+
+    axs2.set_yticks([0, 10, 20, 30, 40])
+
+    # ax2.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    # ax2.set_yticklabels(['0','20','40','60','80','100'])
+
+    axs[0].legend(customLines, [x for x in customDescription], ncol=1, bbox_to_anchor=(0.01,0.99), loc='upper left')
+
+    # plt.savefig("figures/collisions_combined.pdf" ,bbox_inches='tight')
+    # plt.savefig("figures/collisions_combined.png" ,bbox_inches='tight')
+    
+    # plt.show()
+
+    return fig, axs
+
+def plotUtilCombined(datas, dataReaders, fig = None, axs = None, nmax=10):
+    fig = fig
+    axs = axs
+    # axs22 = axs[1].twinx()
+    i = 0
+    line_types = ['solid', 'dashed', 'dotted']
+    marker_types = ['+','x','|']#['o', 'v', '^']
+    color = iter(plt.cm.plasma(np.linspace(0, 1, 3)))
+    colors = []
+    for j in range(0,3):
+        colors.append(next(color))
+
+    merged_dfs = []
+    
+    for data in datas:
+        print("------------\nEXPERIMENT ", i, "\n------------")
+        
+        df_ta = data[data['name'] == "averageTa"]
+        df_ta = df_ta[df_ta['module'].str.contains("sender")]
+        df_ta = df_ta[["value", "numberApps"]]
+        df_ta = df_ta.reset_index(drop=True)
+        df_ta = df_ta.groupby(['numberApps']).agg({"value": averageSum})
+        df_ta = df_ta.rename(columns={'value': 'ta'})
+
+        df_sent = data[data['name'] == "numSent"]
+        df_sent = df_sent[df_sent['module'].str.contains("sender")]
+        df_sent = df_sent[["value", "numberApps"]]
+        df_sent = df_sent.reset_index(drop=True)
+        df_sent = df_sent.groupby(by='numberApps').sum()
+        df_sent = df_sent.rename(columns={'value': 'numSent'})
+
+        dataReader = dataReaders[i]
+        df_col = dataReader[dataReader['name'] == "numCollision"]
+        df_col = df_col[df_col['module'].str.contains("receivers")]
+        df_col = df_col[["value", "numberApps"]]
+        df_col = df_col.reset_index(drop=True)
+        df_col = df_col.groupby(['numberApps']).agg({"value": averageSum})
+        df_col = df_col.rename(columns={'value': 'numCollision'})          
+
+        merged_df = df_ta
+        for df in [df_sent, df_col]:
+            merged_df = merged_df.merge(df, on='numberApps')
+
+        merged_df = merged_df.assign(percentage = lambda x: (x['numCollision'] / (x['numSent'])) * 100)
+        merged_df = merged_df.assign(load = lambda x: ((x['numSent'] * 11454 * 8 + 3*x['numSent']*144*8)/ (10*400000000)) * 100)
+        merged_df = merged_df.reset_index()
+        merged_df = merged_df[merged_df['numberApps'] <= nmax]
+        print(merged_df)
+
+        
+
+        # axs22.plot(list(merged_df['numberApps']), list(merged_df['load']), clip_on=False, zorder=100, color='g', linestyle=line_types[i])
+
+
+        
+        df_vr = data[data['name'] == "appViolationRate"]
+        df_vr = df_vr[df_vr['module'].str.contains("sender")]
+        df_vr = df_vr[["value", "numberApps"]]
+        df_vr = df_vr.reset_index(drop=True)
+
+        df_vr = df_vr.groupby(['numberApps']).agg({"value": averageSum})
+        df_vr['value'] = df_vr['value'].apply(lambda x: x * 100)
+        df_vr = df_vr.rename(columns={'value': 'violationRate'})
+        df_vr = df_vr.reset_index()
+
+        df_vr = df_vr[df_vr['numberApps'] <= nmax]
+
+        axs[1].plot(list(df_vr['numberApps']), list(df_vr['violationRate']), clip_on=False, zorder=100, color='r', linestyle=line_types[i])
+        print(merged_df['load'])
+        merged_dfs.append(merged_df)
+        # ax2.plot(list(merged_df['numberApps']), list(merged_df['load']), clip_on=False, zorder=100, color='g', linestyle=line_types[i])
+        i = i + 1
+
+    # axs[1].set_ylim([0, 100])
+    # axs[1].set_ybound(lower=0.0, upper=100)
+
+    axs[1].set_ylim([0, 100])
+    axs[1].set_ybound(lower=0.0, upper=100)
+
+    customLines = []
+    customLines.append(Line2D([0], [0], color='black', lw=1, linestyle=line_types[0]))
+    customLines.append(Line2D([0], [0], color='black', lw=1, linestyle=line_types[1]))
+    customLines.append(Line2D([0], [0], color='black', lw=1, linestyle=line_types[2]))
+
+    customDescription = ['$t_{f}^{sh}$ = 700us',
+                        '$t_{f}^{sh}$ = 1000us',
+                        '$t_{f}^{sh}$ = 1300us']
+
+    # axs22.set(ylabel='channel load (%)')
+    axs[1].set(xlabel='number of applications (writers)')
+    # axs22.yaxis.label.set_color('g')
+    axs[1].set(ylabel='observed deadline\nviolation rate (%)')
+    axs[1].yaxis.label.set_color('r')
 
     
+
+    axs[0].set_xticks([x for x in range(1, nmax+1)])
+
+    # axs22.set_yticks([0, 20, 40, 60, 80, 100])
+    axs[1].set_yticks([0, 20, 40, 60, 80, 100])
+    # ax2.set_yticklabels(['0','20','40','60','80','100'])
+
+    axs[1].legend(customLines, [x for x in customDescription], ncol=1, bbox_to_anchor=(0.01,0.99), loc='upper left')
+
+    plt.savefig("figures/util_col_vr_combined.pdf" ,bbox_inches='tight')
+    # plt.savefig("figures/util_combined.png" ,bbox_inches='tight')
+    
+
+
+    fig2, ax2 = plt.subplots(figsize=(6, 4))
+    i = 0
+    for merged_df in merged_dfs:         
+        ax2.plot(list(merged_df['numberApps']), list(merged_df['load']), clip_on=False, zorder=100, color='g', linestyle=line_types[i])
+        i = i + 1
+
+    ax2.set_yticks([0, 20, 40, 60, 80, 100])
+
+    ax2.set(xlabel='number of applications (writers)')
+    ax2.set(ylabel='channel utilization (%)')
+    ax2.yaxis.label.set_color('g')
+    ax2.legend(customLines, [x for x in customDescription], ncol=1, bbox_to_anchor=(0.01,0.99), loc='upper left')
+    plt.savefig("figures/util.pdf" ,bbox_inches='tight')
+
+    plt.show()

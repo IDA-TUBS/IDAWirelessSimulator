@@ -23,9 +23,6 @@ import src.rtps.entities.Reader;
 import src.rtps.helper.RtpsMessageDispatcher;
 
 
-//
-// TODO auto-generated type
-//
 module Rtps
 {
     parameters:

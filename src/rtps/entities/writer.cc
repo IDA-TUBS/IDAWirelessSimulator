@@ -64,6 +64,7 @@ void Writer::finish()
 {
     RTPSAnalysis::calculateCombinedViolationRate();
     EV << "Total application deadline violation rate: " << this->combinedViolationRate << endl;
+    recordScalar("appViolationRate", this->combinedViolationRate);
 }
 
 

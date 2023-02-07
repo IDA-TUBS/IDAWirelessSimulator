@@ -98,6 +98,7 @@ void WriterWiMEP::finish()
 {
     RTPSAnalysis::calculateCombinedViolationRate();
     EV << "Total application deadline violation rate: " << this->combinedViolationRate << endl;
+    recordScalar("appViolationRate", this->combinedViolationRate);
 }
 
 
@@ -316,7 +317,6 @@ bool WriterWiMEP::sendMessage()
             // check for timeout situation: reader has no fragments in state 'UNSENT' left
             if(rp->checkForTimeout(sf->baseChange->sequenceNumber) && !(rp->timeoutActive))
             {
-//                continue; // TODO remove
                 rp->timeoutActive = true;
                 // trigger timeout
                 auto nextTimeout = new Timeout("timeoutEvent");
