@@ -35,8 +35,6 @@ Open *setup/profileTemplate* and enter the path to the INET package. Execute the
 ./patchINET.sh
 ```
 
-
-
 Then, the IDA Wireless Simulator can be added to your workspace within the OMNeT++ GUI, compiling and executing all relevant parts using the Eclipse IDE. Alternatively, everything can be build and executed from the command line. For further information on how to execute OMNeT++ code check the latest [OMNeT++ user guide](https://doc.omnetpp.org/omnetpp/UserGuide.pdf). All provided simulations can be executed using the *run.sh* scripts.
 
 ## Features
@@ -44,19 +42,22 @@ Then, the IDA Wireless Simulator can be added to your workspace within the OMNeT
 The IDA Wireless Simulator supports:
 
 - Simulation of 802.11 wireless communication (cf. INET framework)
+
   - including MAC layer retransmissions for unicast communication
   - simulation of other applications
   - abstraction of channel interference using an average arbitration time
   - configurable bit error rates
   - Gilbert-Elliot model to simulate burst errors
-- A simplified but standard-compliant RTPS middleware 
+- A simplified but standard-compliant RTPS middleware
+
   - BEC functionality (reliability QoS - stateful writer implementation)
   - configurable heartbeat period
-
 - The W2RP protocol [1, 2] to ensure reliable communication in unicast scenarios
-  - writer configuration: periodic shaping 
+
+  - writer configuration: periodic shaping
 - The WiMEP [4] protocol enabling dedicated error protection for multicast applications
-  - prioritization of readers 
+
+  - prioritization of readers
   - multicast timeouts
 - An extension of the W2RP protocol called E-W2RP [3] that allows for relaxing of samples' timing constraints for additional resilience in case of burst errors - integrated as part of WiMEP to also support multicast communication
 - Exemplary networks and simulation configurations
@@ -67,14 +68,16 @@ Exemplary networks and simulation configurations can be found in `IDAWirelessSim
 
 Execute either from the OMNeT++ GUI or command line. For the former option, just select the desired *.ini*-file and hit *run*:
 
- <img src="/misc/run.png" width="200">
+<img src="misc/run.png" width="200">
 
-A GUI will open, prompting the user to select a configuration. 
 
-To run existing parameter studies (*ini*-files) from the command line execute in the corresponding directory: 
+
+A GUI will open, prompting the user to select a configuration.
+
+To run existing parameter studies (*ini*-files) from the command line execute in the corresponding directory:
 
 ```bash
-./run.sh		
+./run.sh	
 ```
 
 This will also automatically process and visualize the results.
