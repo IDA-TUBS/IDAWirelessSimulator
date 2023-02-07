@@ -65,13 +65,19 @@ The IDA Wireless Simulator supports:
 
 Exemplary networks and simulation configurations can be found in `IDAWirelessSimulator/simulation`. These examples include simple unicast and multicast applications using either default RTPS, W2RP or WiMEP. In  `IDAWirelessSimulator/simulation/publications`, configurations used for the reference papers mentioned beneath can be found.
 
-Execute either from the OMNeT++ GUI or by 
+Execute either from the OMNeT++ GUI or command line. For the former option, just select the desired *.ini*-file and hit *run*:
+
+ <img src="\misc\run.png" width="200">
+
+A GUI will open, prompting the user to select a configuration. 
+
+To run existing parameter studies (*ini*-files) from the command line execute in the corresponding directory: 
 
 ```bash
 ./run.sh		
 ```
 
-in order to perform parameter studies and automatically process and visualize the results.
+This will also automatically process and visualize the results.
 
 To create new simulation configurations just follow the examples or consult the OMNeT++ documentation.
 
