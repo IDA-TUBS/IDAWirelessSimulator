@@ -37,7 +37,7 @@ Open *setup/profileTemplate* and enter the path to the INET package. Execute the
 
 
 
-Then, the IDA Wireless Simulator can be added to your workspace within the OMNeT++ GUI, compiling and executing all relevant parts using the Eclipse IDE. Alternatively, everything can be build and executed from the command line. For further information on how to execute OMNeT++ code consult the latest [OMNeT++ user guide](https://doc.omnetpp.org/omnetpp/UserGuide.pdf). All provided simulations can be executed using the *run.sh* scripts.
+Then, the IDA Wireless Simulator can be added to your workspace within the OMNeT++ GUI, compiling and executing all relevant parts using the Eclipse IDE. Alternatively, everything can be build and executed from the command line. For further information on how to execute OMNeT++ code check the latest [OMNeT++ user guide](https://doc.omnetpp.org/omnetpp/UserGuide.pdf). All provided simulations can be executed using the *run.sh* scripts.
 
 ## Features
 
@@ -49,20 +49,33 @@ The IDA Wireless Simulator supports:
   - abstraction of channel interference using an average arbitration time
   - configurable bit error rates
   - Gilbert-Elliot model to simulate burst errors
-- A standard-compliant RTPS middleware with BEC functionality
+- A simplified but standard-compliant RTPS middleware 
+  - BEC functionality (reliability QoS - stateful writer implementation)
   - configurable heartbeat period
+
 - The W2RP protocol [1, 2] to ensure reliable communication in unicast scenarios
-  - writer configuration: periodic shaping
-  - 
+  - writer configuration: periodic shaping 
 - The WiMEP [4] protocol enabling dedicated error protection for multicast applications
   - prioritization of readers 
   - multicast timeouts
 - An extension of the W2RP protocol called E-W2RP [3] that allows for relaxing of samples' timing constraints for additional resilience in case of burst errors - integrated as part of WiMEP to also support multicast communication
-- Exemplary 
+- Exemplary networks and simulation configurations
 
 ## Usage
 
+Exemplary networks and simulation configurations can be found in `IDAWirelessSimulator/simulation`. These examples include simple unicast and multicast applications using either default RTPS, W2RP or WiMEP. In  `IDAWirelessSimulator/simulation/publications`, configurations used for the reference papers mentioned beneath can be found.
 
+Execute either from the OMNeT++ GUI or by 
+
+```bash
+./run.sh		
+```
+
+in order to perform parameter studies and automatically process and visualize the results.
+
+To create new simulation configurations just follow the examples or consult the OMNeT++ documentation.
+
+ Any protocol (RTPS, W2RP and WiMEP) can be modified or used as a basis for extended protocols to address new/different issues.
 
 ## References
 
