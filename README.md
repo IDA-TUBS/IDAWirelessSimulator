@@ -31,7 +31,7 @@ Open *setup/profileTemplate* and enter the path to the INET package. Execute the
 
  A small patch to the INET package is necessary. It can be applied by
 
-```
+```bash
 ./patchINET.sh
 ```
 
@@ -70,14 +70,12 @@ Execute either from the OMNeT++ GUI or command line. For the former option, just
 
 <img src="misc/run.png" width="200">
 
-
-
 A GUI will open, prompting the user to select a configuration.
 
 To run existing parameter studies (*ini*-files) from the command line execute in the corresponding directory:
 
 ```bash
-./run.sh	
+./run.sh
 ```
 
 This will also automatically process and visualize the results.
