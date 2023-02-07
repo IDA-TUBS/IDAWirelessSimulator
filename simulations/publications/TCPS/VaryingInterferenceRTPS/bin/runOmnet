@@ -6,8 +6,8 @@ rm -r ./results
 # ---> Variables to be adapted
 # Relative paths related to the simulation.
 PATH_PROFILE="./../../../../"
-SIM_PATH="publications/RTAS2023/Prioritization"
-SIM_NAME="WiMEPMultiLinkLatenciesNoPrio.ini"
+SIM_PATH="publications/TCPS/VaryingInterferenceRTPS"
+SIM_NAME="VaryingInterferenceRTPS.ini"
 # <---
 
 # Load global variables

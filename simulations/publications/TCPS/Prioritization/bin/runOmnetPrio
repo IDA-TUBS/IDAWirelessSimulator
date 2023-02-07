@@ -6,7 +6,7 @@ rm -r ./results
 # ---> Variables to be adapted
 # Relative paths related to the simulation.
 PATH_PROFILE="./../../../../"
-SIM_PATH="publications/RTAS2023/PrioritizationDependentSignalPaths"
+SIM_PATH="publications/TCPS/Prioritization"
 SIM_NAME="WiMEPMultiLinkLatenciesPrio.ini"
 # <---
 
