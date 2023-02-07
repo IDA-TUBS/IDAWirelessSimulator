@@ -67,7 +67,7 @@ Exemplary networks and simulation configurations can be found in `IDAWirelessSim
 
 Execute either from the OMNeT++ GUI or command line. For the former option, just select the desired *.ini*-file and hit *run*:
 
- <img src="\misc\run.png" width="200">
+ <img src="/misc/run.png" width="200">
 
 A GUI will open, prompting the user to select a configuration. 
 
