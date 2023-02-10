@@ -154,7 +154,7 @@ class RTPSAnalysis
     {
 //        EV << "sent by writer: " << transmittedSamplesByAppId[appId].size() << "\n";
 //        EV << "num received: " << completeSamples.size() << "\n";
-        EV << "[Reader] Complete Samples: " << (completeSamples.size()) << ",\Send Samples: " << (transmittedSamplesByAppId[appId].size()) << endl;
+        EV << "[Reader] Complete Samples: " << (completeSamples.size()) << ",\tSend Samples: " << (transmittedSamplesByAppId[appId].size()) << endl;
 
         violationRate = 1 - (double(completeSamples.size()) / double(transmittedSamplesByAppId[appId].size()));
     };
