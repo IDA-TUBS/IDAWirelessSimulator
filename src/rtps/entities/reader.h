@@ -63,26 +63,10 @@ class Reader : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
     Rtps* rtpsParent;
 
   protected:
-    /*
-     * Method that is triggered from transmitting NackFrags. At the end, sends a packaged sample fragment down towards the UDP/IP stack
-     *
-     * @return true on success, else false
-     */
-    void sendMessage(RtpsInetPacket* msg);
 
-    /*
-     * generate a NackFrag message with bitmap based on a heartbeat message
-     *
-     * @param hb heartbearmessage
-     * @return NackFrag message
-     */
-    RtpsInetPacket* generateNackFrag(RtpsInetPacket* hb);
 
-    /*
-     * Method for evaluating whether a sample is still valid or whether its deadline elapsed.
-     * Handles removing of sample in case of elapsed deadline
-     */
-    void checkSampleLiveliness();
+
+
 
     /*
      * Overwritten method, initializes modules after its instantiation
@@ -94,13 +78,59 @@ class Reader : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
      *
      * @param msg each incoming (external or self) message is interpreted as a stimulus
      */
-    virtual void handleMessage(cMessage *msg) override;
-    /*
-     * Overwritten method, called at the end of the simulation
-     */
+    virtual void handleMessage(cMessage *message) override;
 
+    /**
+     *
+     */
+    void dealWithInternalMessage(cMessage* message);
+
+    /**
+     *
+     */
+    void dealWithExternalMessage(cMessage* message);
+
+    /**
+     *
+     */
+    void dealWithDataFragment(RtpsInetPacket* rtpsMessage);
+
+    /**
+     *
+     */
+    void dealWithHeartBeatFragment(RtpsInetPacket* rtpsMessage);
+
+    /*
+     * Method for evaluating whether a sample is still valid or whether its deadline elapsed.
+     * Handles removing of sample in case of elapsed deadline
+     */
+    void checkSampleLiveliness();
+
+    /*
+     * Method that is triggered from transmitting NackFrags. At the end, sends a packaged sample fragment down towards the UDP/IP stack
+     *
+     * @return true on success, else false
+     */
+    void sendMessage(RtpsInetPacket* rtpsMessage);
+
+    /*
+    * generate a NackFrag message with bitmap based on a heartbeat message
+    *
+    * @param hb heartbeatmessage
+    * @return NackFrag message
+    */
+    RtpsInetPacket* generateNackFrag(RtpsInetPacket* heartBeatMessage);
+
+    /**
+     *
+     */
+    RtpsInetPacket* calculateRtpsMessageSize(RtpsInetPacket* rtpsMessage);
+
+    /**
+     *
+     */
     virtual void finish() override;
 };
 
-
+Define_Module(Reader);
 #endif /* RTPS_ENTITIES_READER_H_ */

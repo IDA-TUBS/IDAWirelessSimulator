@@ -32,26 +32,29 @@ network multiLink
         int numberReceivingNodes;
 
     submodules:
-        visualizer: <default(firstAvailableOrEmpty("IntegratedCanvasVisualizer"))> like IIntegratedVisualizer if typename != "" {
+        visualizer: <default(firstAvailableOrEmpty("IntegratedCanvasVisualizer"))> like IIntegratedVisualizer if typename != "" 
+        {
             parameters:
                 @display("p=100,300;is=s");
         }
-        configurator: Ipv4NetworkConfigurator {
+        configurator: Ipv4NetworkConfigurator 
+        {
             @display("p=580,200");
         }
-        radioMedium: <default("UnitDiskRadioMedium")> like IRadioMedium {
+        radioMedium: <default("UnitDiskRadioMedium")> like IRadioMedium 
+        {
             @display("p=580,275");
-        }      
-			
-                
-        sender: <default("RtpsHost")> like INetworkNode {
+        }
+        sender: <default("RtpsHost")> like INetworkNode 
+        {
             parameters:
                 @display("p=50,325;i=misc/truck");
                 numWlanInterfaces = default(1);
         }
-        receivers[numberReceivingNodes]: <default("RtpsHost")> like INetworkNode {
+        receivers[numberReceivingNodes]: <default("RtpsHost")> like INetworkNode
+        {
             parameters:
-                @display("p=125,325,r,,50,50;i=misc/truck");
+                @display("p=150,325,r,50;i=misc/truck");
                 numWlanInterfaces = 1;
         }
 }

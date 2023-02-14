@@ -35,6 +35,7 @@ module Rtps
 
         @class(Rtps);
         @display("i=block/layer;bgb=449,299");
+        
     gates:
         input socketIn;
         output socketOut;
@@ -43,19 +44,23 @@ module Rtps
         output appApiOut[]; //To Reader
 
     submodules:
-        inetAdapter: InetAdapter {
+        inetAdapter: InetAdapter 
+        {
             @display("p=222,243");
         }
 
-        reader[sizeof(appApiOut)]: <default("Reader")> like iReader {
+        reader[sizeof(appApiOut)]: <default("Reader")> like iReader 
+        {
             @display("p=343,72");
         }
 
-        writer[sizeof(appApiIn)]: <default("Writer")> like iWriter {
+        writer[sizeof(appApiIn)]: <default("Writer")> like iWriter 
+        {
             @display("p=128,72");
         }
 
-        dispatcher: RtpsMessageDispatcher {
+        dispatcher: RtpsMessageDispatcher 
+        {
             @display("p=222,150");
         }
     connections:
@@ -68,16 +73,17 @@ module Rtps
         dispatcher.adapterOut --> inetAdapter.dispatcherIn;
 
         // Reader ports
-        for i=0..sizeof(appApiOut)-1 {
+        for i=0..sizeof(appApiOut)-1 
+        {
             dispatcher.readerOut++ --> reader[i].dispatcherIn;
             dispatcher.readerIn++ <-- reader[i].dispatcherOut;
 
-            reader[i].appOut --> appApiOut++;
-            
+            reader[i].appOut --> appApiOut++;            
         }
 
         // Writer ports
-        for i=0..sizeof(appApiIn)-1 {
+        for i=0..sizeof(appApiIn)-1 
+        {
             dispatcher.writerIn++ <-- writer[i].dispatcherOut;
             dispatcher.writerOut++ --> writer[i].dispatcherIn;
 
