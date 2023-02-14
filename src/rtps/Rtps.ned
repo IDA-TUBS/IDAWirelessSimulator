@@ -63,13 +63,11 @@ module Rtps
         {
             @display("p=222,150");
         }
+        
     connections:
-
         inetAdapter.udpSocketIn <-- socketIn;
         inetAdapter.udpSocketOut --> socketOut;
-
-        inetAdapter.dispatcherOut --> dispatcher.adapterIn;
-        
+        inetAdapter.dispatcherOut --> dispatcher.adapterIn;        
         dispatcher.adapterOut --> inetAdapter.dispatcherIn;
 
         // Reader ports
