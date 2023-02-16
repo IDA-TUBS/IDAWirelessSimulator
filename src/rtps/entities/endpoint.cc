@@ -82,32 +82,38 @@ void Endpoint::calculateRtpsMsgSize(RtpsInetPacket* rtpsMsg){
     currentSize+=20;
 
     /* DataFrag */
-    if(rtpsMsg->getDataFragSet()){
+    if(rtpsMsg->getDataFragSet())
+    {
         currentSize += 36;
         currentSize += rtpsMsg->getFragmentSize();
     }
 
     /* HeartBeatFrag */
-    if(rtpsMsg->getHeartBeatFragSet()){
+    if(rtpsMsg->getHeartBeatFragSet())
+    {
         currentSize += 28;
     }
 
-//    if(rtpsMsg->getMapEnabledReaders()) {
+//    if(rtpsMsg->getMapEnabledReaders())
+//    {
 //        currentSize += 4;
 //    }
 
     /* InfoDestination */
-    if(rtpsMsg->getInfoDestinationSet()){
+    if(rtpsMsg->getInfoDestinationSet())
+    {
         currentSize += 16;
     }
 
     /* InfoTimestamp */
-    if(rtpsMsg->getInfoTimestampSet()){
+    if(rtpsMsg->getInfoTimestampSet())
+    {
         currentSize += 12;
     }
 
     /* NackFrag */
-    if(rtpsMsg->getNackFragSet()){
+    if(rtpsMsg->getNackFragSet())
+    {
         int bitmapSizeBytes = (rtpsMsg->getFragmentNumberStateNbrBits()+7)/8;
         int int32AllignedBytes = ((bitmapSizeBytes + 3)/4)*4;
         currentSize += 32 + int32AllignedBytes;

@@ -76,29 +76,37 @@ class Reader : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
     /*
      * Overwritten method, trigger either on arrival of a new sample (from app) or by self-messages
      *
-     * @param msg each incoming (external or self) message is interpreted as a stimulus
+     * @param message each incoming (external or self) message is interpreted as a stimulus
      */
     virtual void handleMessage(cMessage *message) override;
 
-    /**
+    /*
+     * Callback for handling self messages
      *
+     * @param message each incoming self message is interpreted as a stimulus
      */
-    void dealWithInternalMessage(cMessage* message);
+    void handleInternalMessage(cMessage* message);
 
-    /**
+    /*
+     * Callback for handling incoming external (RTPS) messages
      *
+     * @param message each incoming external message is interpreted as a stimulus
      */
-    void dealWithExternalMessage(cMessage* message);
+    void handleExternalMessage(cMessage* message);
 
-    /**
+    /*
+     * process incoming data (DataFrag)
      *
+     * @param rtpsMessage message containing the new fragment
      */
-    void dealWithDataFragment(RtpsInetPacket* rtpsMessage);
+    void processDataFragment(RtpsInetPacket* rtpsMessage);
 
-    /**
+    /*
+     * handle HeartbeatFrags accordingly by responding with NackFrag
      *
+     * @param rtpsMessage message containing the HeartbeatFrag
      */
-    void dealWithHeartBeatFragment(RtpsInetPacket* rtpsMessage);
+    void processHeartBeatFragment(RtpsInetPacket* rtpsMessage);
 
     /*
      * Method for evaluating whether a sample is still valid or whether its deadline elapsed.
@@ -121,10 +129,6 @@ class Reader : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
     */
     RtpsInetPacket* generateNackFrag(RtpsInetPacket* heartBeatMessage);
 
-    /**
-     *
-     */
-    RtpsInetPacket* calculateRtpsMessageSize(RtpsInetPacket* rtpsMessage);
 
     /**
      *
@@ -132,5 +136,4 @@ class Reader : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
     virtual void finish() override;
 };
 
-Define_Module(Reader);
 #endif /* RTPS_ENTITIES_READER_H_ */

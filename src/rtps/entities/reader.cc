@@ -4,10 +4,8 @@
 
 #include "reader.h"
 
+Define_Module(Reader);
 
-/*
-*
-*/
 void Reader::initialize()
 {
     /// Initialize RTPS context
@@ -30,9 +28,7 @@ void Reader::initialize()
     responseDelay = par("readerResponseDelay");
 }
 
-/*
-*
-*/
+
 void Reader::finish()
 {
     // analysis related code
@@ -50,28 +46,24 @@ void Reader::handleMessage(cMessage *message)
 {
     if(message->isSelfMessage())
     {
-        dealWithInternalMessage(message);
+        handleInternalMessage(message);
     }
-    else
+    else if((dynamic_cast<RtpsInetPacket*>(message) != NULL) && !(message->isSelfMessage()))
     {
-        dealWithExternalMessage(message);
+        handleExternalMessage(message);
     }
 }
 
-/*
-*
-*/
-void Reader::dealWithInternalMessage(cMessage* message)
+
+void Reader::handleInternalMessage(cMessage* message)
 {
     // self message for delaying answering (reader response delay)
     RtpsInetPacket *rtpsMessage = check_and_cast<RtpsInetPacket*>(message);
     send(rtpsMessage, "dispatcherOut");
 }
 
-/*
-*
-*/
-void Reader::dealWithExternalMessage(cMessage* message)
+
+void Reader::handleExternalMessage(cMessage* message)
 {
     // Check message type
     if(dynamic_cast<RtpsInetPacket*>(message) != NULL)
@@ -83,21 +75,23 @@ void Reader::dealWithExternalMessage(cMessage* message)
         {
             return;
         }
-        else if(rtpsMessage->getDataFragSet())
+
+        if(rtpsMessage->getDataFragSet())
         {
-            dealWithDataFragment(rtpsMessage);
+            processDataFragment(rtpsMessage);
         }
-        else if(rtpsMessage->getHeartBeatFragSet())
+
+        if(rtpsMessage->getHeartBeatFragSet())
         {
-            dealWithHeartBeatFragment(rtpsMessage);
+            processHeartBeatFragment(rtpsMessage);
         }
+
+        delete rtpsMessage;
     }
 }
 
-/*
-*
-*/
-void Reader::dealWithDataFragment(RtpsInetPacket* rtpsMessage)
+
+void Reader::processDataFragment(RtpsInetPacket* rtpsMessage)
 {
     EV << "[RTPSReader] Data Fragment arrived at: " << simTime() << "\n";
     // first check whether existing samples in history expired or are still valid
@@ -120,13 +114,10 @@ void Reader::dealWithDataFragment(RtpsInetPacket* rtpsMessage)
     {
         RTPSAnalysis::recordSampleLatency(writerProxy->getChange(change->sequenceNumber));
     }
-    delete rtpsMessage;
 }
 
-/*
-*
-*/
-void Reader::dealWithHeartBeatFragment(RtpsInetPacket* rtpsMessage)
+
+void Reader::processHeartBeatFragment(RtpsInetPacket* rtpsMessage)
 {
     // if HB or HBFrag
     // respond with NackFrag
@@ -138,16 +129,11 @@ void Reader::dealWithHeartBeatFragment(RtpsInetPacket* rtpsMessage)
     }
     else
     {
-        EV << "[RTPSReader] ERROR Message is nullpointer" << "\n";
+        EV << "[RTPSReader] ERROR Message is null pointer" << "\n";
     }
-    //delete nackFrag;
-
-    delete rtpsMessage;
 }
 
-/*
-*
-*/
+
 void Reader::checkSampleLiveliness()
 {
     if(writerProxy->getCurrentChange() == nullptr)
@@ -183,9 +169,7 @@ void Reader::checkSampleLiveliness()
     }
 }
 
-/*
-*
-*/
+
 void Reader::sendMessage(RtpsInetPacket* rtpsMessage)
 {
     // wait for specified time (corresponding to reader response delay) before actually sending the NackFrag back to the writer
@@ -317,59 +301,7 @@ RtpsInetPacket* Reader::generateNackFrag(RtpsInetPacket* heartBeatMessage)
     // Finally, calculate the overall rtps message size
     nackFrag->setInfoDestinationSet(false);
 
-    nackFrag = calculateRtpsMessageSize(nackFrag);
+    calculateRtpsMsgSize(nackFrag);
 
     return nackFrag;
-}
-
-/*
- * Function from Endpoint because here a return is required
- */
-RtpsInetPacket* Reader::calculateRtpsMessageSize(RtpsInetPacket* rtpsMessage)
-{
-    int currentSize = 0;
-    /* Add the header size */
-    currentSize+=20;
-
-    /* DataFrag */
-    if(rtpsMessage->getDataFragSet())
-    {
-        currentSize += 36;
-        currentSize += rtpsMessage->getFragmentSize();
-    }
-
-    /* HeartBeatFrag */
-    if(rtpsMessage->getHeartBeatFragSet())
-    {
-        currentSize += 28;
-    }
-
-//    if(rtpsMsg->getMapEnabledReaders())
-//    {
-//        currentSize += 4;
-//    }
-
-    /* InfoDestination */
-    if(rtpsMessage->getInfoDestinationSet())
-    {
-        currentSize += 16;
-    }
-
-    /* InfoTimestamp */
-    if(rtpsMessage->getInfoTimestampSet())
-    {
-        currentSize += 12;
-    }
-
-    /* NackFrag */
-    if(rtpsMessage->getNackFragSet())
-    {
-        int bitmapSizeBytes = (rtpsMessage->getFragmentNumberStateNbrBits()+7)/8;
-        int int32AllignedBytes = ((bitmapSizeBytes + 3)/4)*4;
-        currentSize += 32 + int32AllignedBytes;
-    }
-
-    rtpsMessage->setRtpsMessageSize(currentSize);
-
-    return rtpsMessage;
 }
