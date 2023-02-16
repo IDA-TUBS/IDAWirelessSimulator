@@ -23,13 +23,15 @@ Clone this repository.
 git clone https://github.com/IDA-TUBS/IDAWirelessSimulator
 ```
 
-Open *setup/profileTemplate* and enter the path to the INET package. Execute the setup script:
+Execute the setup script
 
 ```bash
-./setup.sh
+./setup/setup.sh
 ```
 
- A small patch to the INET package is necessary. It can be applied by
+and enter the path to your inet package installation. 
+
+A small patch to the INET package is necessary. It can be applied by
 
 ```bash
 ./patchINET.sh
