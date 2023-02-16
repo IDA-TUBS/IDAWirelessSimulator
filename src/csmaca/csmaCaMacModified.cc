@@ -747,19 +747,26 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
         double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength());
         double rd = ((double)rand()/(double)RAND_MAX);
         if (rd < packet_loss_prob) {
+            receptionFailure++;
             return false;
         }
         // ----------------------------------------------------------------------------------------------
 
 
         if (frame->hasBitError() || !frame->peekData()->isCorrect())
+        {
+            receptionFailure++;
             return false;
-        else {
+        }
+        else
+        {
             const auto& trailer = frame->peekAtBack<CsmaCaMacTrailer>(B(4));
             switch (trailer->getFcsMode()) {
                 case FCS_DECLARED_INCORRECT:
+                    receptionFailure++;
                     return false;
                 case FCS_DECLARED_CORRECT:
+                    receptionSuccess++;
                     return true;
                 case FCS_COMPUTED: {
                     const auto& fcsBytes = frame->peekDataAt<BytesChunk>(B(0), frame->getDataLength() - trailer->getChunkLength());
@@ -768,6 +775,14 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
                     fcsBytes->copyToBuffer(buffer, bufferLength);
                     auto computedFcs = ethernetCRC(buffer, bufferLength);
                     delete[] buffer;
+                    if (computedFcs == trailer->getFcs())
+                    {
+                        receptionSuccess++;
+                    }
+                    else
+                    {
+                        receptionFailure++;
+                    }
                     return computedFcs == trailer->getFcs();
                 }
                 default:
