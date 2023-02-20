@@ -1,6 +1,8 @@
 # IDAWirelessSimulator
 
-IDA Wireless Simulator is an open source library for the simulation of wireless networks, such as used for V2X communication. The library is designed to run within the OMNeT++ simulation engine. The IDA Wireless Simulator is developed by the Institute for Computer and Network Engineering (IDA) at TU Braunschweig.
+IDA Wireless Simulator is an open source library for the simulation of wireless networks, such as used for V2X communication. Specifically, the IDA Wireless Simulator focuses on the evaluation of sample-based protocols (so far based on DDS) used for the exchange of large data objects in lossy wireless channels.
+
+The library is designed to run within the OMNeT++ simulation engine. The IDA Wireless Simulator is developed by the Institute for Computer and Network Engineering (IDA) at TU Braunschweig.
 
 ## Requirements
 
@@ -57,11 +59,12 @@ The IDA Wireless Simulator supports:
 - The W2RP protocol [1, 2] to ensure reliable communication in unicast scenarios
 
   - writer configuration: periodic shaping
-- The WiMEP [4] protocol enabling dedicated error protection for multicast applications
+- The WiMEP [3] protocol enabling dedicated error protection for multicast applications
 
-  - prioritization of readers
+  - multicast fragment transmissions and retransmissions
+  - retransmission prioritization of readers
   - multicast timeouts
-- An extension of the W2RP protocol called E-W2RP [3] that allows for relaxing of samples' timing constraints for additional resilience in case of burst errors - integrated as part of WiMEP to also support multicast communication
+- An extension of the W2RP protocol called E-W2RP [4] that allows for relaxing of samples' timing constraints for additional resilience in case of burst errors - integrated as part of WiMEP to also support multicast communication
 - Exemplary networks and simulation configurations
 
 ## Usage
@@ -90,11 +93,11 @@ To create new simulation configurations just follow the examples or consult the 
 
 [1] J. Peeck, M. Möstl, T. Ishigooka and R. Ernst, "A Middleware Protocol for Time-Critical Wireless Communication of Large Data Samples," *2021 IEEE Real-Time Systems Symposium (RTSS)*, Dortmund, DE, 2021, pp. 1-13, doi: 10.1109/RTSS52674.2021.00013.
 
-[2] A.Bendrick, J.Peeck and R. Ernst, "On the effectiveness of W2RP in physical environments", 2023, *technical memorandum*, doi: 10.24355/dbbs.084-202301231301-0
+[2] A. Bendrick, J. Peeck and R. Ernst, "On the effectiveness of W2RP in physical environments", 2023, *technical memorandum*, doi: 10.24355/dbbs.084-202301231301-0
 
-[3] E-W2RP Paper
+[3] A. Bendrick, J. Peeck and R. Ernst, "An Error Protection Protocol for the Multicast Transmission of Data Samples in V2X environments", 2023, *currently under review*
 
-[4] WiMEP Paper
+[4] E-W2RP Paper
 
 ## Contact
 
