@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Path to this repository
+PATH_BASE=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+# Path to the inet framework project
+PATH_INET="<PATH_INET>"
+# Path to the idaWireless simulator executable
+PATH_EXEC=$PATH_BASE
