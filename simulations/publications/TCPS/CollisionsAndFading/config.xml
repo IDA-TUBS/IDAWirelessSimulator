@@ -1,0 +1,15 @@
+<config>
+   <interface hosts='**' address='10.0.0.x' netmask='255.255.255.0'/>
+   <autoroute metric='errorRate'/>
+   <multicast-group hosts='sender[0] receiversApp0[*]' address='224.0.0.1'/>
+   <multicast-group hosts='sender[1] receiversApp1[*]' address='224.0.0.2'/>
+   <multicast-group hosts='sender[2] receiversApp2[*]' address='224.0.0.3'/>
+   <multicast-group hosts='sender[3] receiversApp3[*]' address='224.0.0.4'/>
+   <multicast-group hosts='sender[4] receiversApp4[*]' address='224.0.0.5'/>
+   <multicast-group hosts='sender[5] receiversApp5[*]' address='224.0.0.6'/>
+   <multicast-group hosts='sender[6] receiversApp6[*]' address='224.0.0.7'/>
+   <multicast-group hosts='sender[7] receiversApp7[*]' address='224.0.0.8'/>
+   <multicast-group hosts='sender[8] receiversApp8[*]' address='224.0.0.9'/>
+   <multicast-group hosts='sender[9] receiversApp9[*]' address='224.0.0.10'/>
+   <multicast-group hosts='sender[10] receiversApp10[*]' address='224.0.0.11'/>
+</config>

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# First remove existing data to prevent conflicts when evaluating data.
+rm -r ./results
+
+# ---> Variables to be adapted
+# Relative paths related to the simulation.
+PATH_PROFILE="./../../../../"
+SIM_PATH="publications/TCPS/PrioritizationDependentSignalPaths"
+SIM_NAME="WiMEPMultiLinkLatenciesNoPrio.ini"
+# <---
+
+# Load global variables
+source ${PATH_PROFILE}/profile
+ 
+${PATH_EXEC}/idaWirelessSimulator -u Cmdenv \
+-f ${PATH_BASE}/simulations/${SIM_PATH}/${SIM_NAME} \
+-n \
+:${PATH_INET}src\
+:${PATH_BASE}/simulations\
+:${PATH_BASE}\

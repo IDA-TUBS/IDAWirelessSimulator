@@ -1,0 +1,5 @@
+<config>
+   <interface hosts='**' address='10.0.0.x' netmask='255.255.255.0'/>
+   <autoroute metric='errorRate'/>
+   <multicast-group hosts='sender receivers[*]' address='224.0.0.1'/>
+</config>
