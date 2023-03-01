@@ -64,7 +64,6 @@ The IDA Wireless Simulator supports:
   - multicast fragment transmissions and retransmissions
   - retransmission prioritization of readers
   - multicast timeouts
-- An extension of the W2RP protocol called E-W2RP [4] that allows for relaxing of samples' timing constraints for additional resilience in case of burst errors - integrated as part of WiMEP to also support multicast communication
 - Exemplary networks and simulation configurations
 
 ## Usage
@@ -96,8 +95,6 @@ To create new simulation configurations just follow the examples or consult the 
 [2] A. Bendrick, J. Peeck and R. Ernst, "On the effectiveness of W2RP in physical environments", 2023, *technical memorandum*, doi: 10.24355/dbbs.084-202301231301-0
 
 [3] A. Bendrick, J. Peeck and R. Ernst, "An Error Protection Protocol for the Multicast Transmission of Data Samples in V2X environments", 2023, *currently under review*
-
-[4] E-W2RP Paper
 
 ## Contact
 
