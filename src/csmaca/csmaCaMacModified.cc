@@ -91,7 +91,8 @@ void CsmaCaMacModified::initialize(int stage)
         cwMulticast = par("cwMulticast");
 
         // -------------------------------------------------------------------
-        // ---- New values to overwrite cwMin and cwMax to the same value ----
+        // ---- New values ----
+        // overwrite cwMin and cwMax to the same value ----
         ta = par("ta");
         ta_enable = par("ta_enable");
         if(ta_enable){
@@ -99,6 +100,26 @@ void CsmaCaMacModified::initialize(int stage)
             cwMax = ta;
             cwMulticast = ta;
         }
+
+        // Statistics
+        // Packets
+        enablePacketQueuingStats  =  par("enablePacketQueuingStats");
+        numberOfPacketsInQueueHistogram.setName("numberOfPacketsInQueueHist");
+        numberOfPacketsInQueueVector.setName("numberOfPacketsinQueueVec");
+
+        // Arbitration time
+        enableArbitrationTimeStats = par("enableArbitrationTimeStats");
+        packetArbitrationTimesHistogram.setName("packetArbitrationTimesHist");
+        packetArbitrationTimeVector.setName("packetArbitrationTimesVec");
+        averageArbitrationTimeVector.setName("averageArbitrationTimeVector");
+        sampleAverageArbitrationTimeHistogram.setName("sampleAverageArbitrationTimeHistogram");
+        sampleAverageArbitrationTimeVector.setName("sampleAverageArbitrationTimeVector");
+        sampleArbitrationTimeSum = 0.0;
+        sampleNumberOfArbitrations = 0;
+        currentSampleSN = 0;
+        overallArbitrationTimeSum = 0.0;
+        overallNumberOfArbitrations = 0;
+
         // -------------------------------------------------------------------
 
         retryLimit = par("retryLimit");
@@ -175,6 +196,11 @@ void CsmaCaMacModified::finish()
 
     EV << "[CSMA CA] numSent: " << numSent << ", numCollision: " << numCollision << endl;
 
+    if(this->enableArbitrationTimeStats){
+        this->averageArbitrationTimeVector.record(this->overallArbitrationTimeSum/this->overallNumberOfArbitrations);
+        EV << "Average arbitration time at interface: " << this->overallArbitrationTimeSum/this->overallNumberOfArbitrations << "\n";
+    }
+
 
     recordScalar("numRetry", numRetry);
     recordScalar("numSentWithoutRetry", numSentWithoutRetry);
@@ -220,6 +246,11 @@ void CsmaCaMacModified::handleUpperPacket(Packet *packet)
     ASSERT(!destAddress.isUnspecified());
     EV << "frame " << packet << " received from higher layer, receiver = " << destAddress << endl;
     encapsulate(packet);
+
+    if(this->enablePacketQueuingStats){
+        numberOfPacketsInQueueHistogram.collect(txQueue->getNumPackets());
+        numberOfPacketsInQueueVector.record(txQueue->getNumPackets());
+    }
 
     if (currentTxFrame != nullptr)
         throw cRuntimeError("Model error: incomplete transmission exists");
@@ -528,11 +559,17 @@ void CsmaCaMacModified::generateBackoffPeriod()
         cw = std::min(cwMax, (cwMin + 1) * (1 << retryCounter) - 1);
     int slots = intrand(cw + 1);
 
+    // ---- Old code ----
 //    backoffPeriod = slots * slotTime;
 
     // ---- New code ----
     backoffPeriod = double(intrand((cw-2)*90+1))*(slotTime/90.0);
     // ------------------
+
+    if(this->enableArbitrationTimeStats){
+        this->start_arbitration_time = simTime();
+    }
+
 
     ASSERT(backoffPeriod >= 0);
     EV << "backoff period set to " << backoffPeriod << endl;
@@ -568,9 +605,37 @@ void CsmaCaMacModified::sendDataFrame(Packet *frameToSend)
     EV << "sending Data frame " << frameToSend->getName() << endl;
     radio->setRadioMode(IRadio::RADIO_MODE_TRANSMITTER);
 
+    if(this->enablePacketQueuingStats){
+        numberOfPacketsInQueueHistogram.collect(txQueue->getNumPackets());
+        numberOfPacketsInQueueVector.record(txQueue->getNumPackets());
+    }
+
     auto *rtpsPacket = check_and_cast<RtpsInetPacket*>(frameToSend);
     simtime_t arbitrationTime = simTime() - rtpsPacket->getSendTime();
     arbitrationTimes.push_back(arbitrationTime);
+
+
+    if(this->enableArbitrationTimeStats){
+        simtime_t arbitrationTime = simTime() - this->start_arbitration_time;
+        this->packetArbitrationTimeVector.record(arbitrationTime);
+        this->packetArbitrationTimesHistogram.collect(arbitrationTime);
+
+        this->overallArbitrationTimeSum = this->overallArbitrationTimeSum + arbitrationTime;
+        this->overallNumberOfArbitrations += 1;
+
+        if(rtpsPacket->getWriterSN() == this->currentSampleSN){
+            this->sampleArbitrationTimeSum += arbitrationTime;
+            this->sampleNumberOfArbitrations += 1;
+
+        } else if(rtpsPacket->getWriterSN() > this->currentSampleSN){
+            this->sampleAverageArbitrationTimeHistogram.collect(this->sampleArbitrationTimeSum/this->sampleNumberOfArbitrations);
+            this->sampleAverageArbitrationTimeVector.record(this->sampleArbitrationTimeSum/this->sampleNumberOfArbitrations);
+            this->sampleArbitrationTimeSum = arbitrationTime;
+            this->sampleNumberOfArbitrations = 1;
+            currentSampleSN = rtpsPacket->getWriterSN();
+        }
+
+    }
 
     sendDown(frameToSend->dup());
 }
