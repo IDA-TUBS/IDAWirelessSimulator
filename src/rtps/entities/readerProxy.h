@@ -52,7 +52,7 @@ class ReaderProxy
     {};
 
     /*
-     * overtloaded constructor, enable NACK suppression
+     * overloaded constructor, enable NACK suppression
      */
     ReaderProxy(unsigned int id, unsigned int historySize, simtime_t nackSuppressionDuration):
         readerID(id),
