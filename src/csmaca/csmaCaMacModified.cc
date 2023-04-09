@@ -109,6 +109,7 @@ void CsmaCaMacModified::initialize(int stage)
 
         // Arbitration time
         enableArbitrationTimeStats = par("enableArbitrationTimeStats");
+        enableSingleArbitrationTimeStats = par("enableSingleArbitrationTimeStats");
         packetArbitrationTimesHistogram.setName("packetArbitrationTimesHist");
         packetArbitrationTimeVector.setName("packetArbitrationTimesVec");
         averageArbitrationTimeVector.setName("averageArbitrationTimeVector");
@@ -617,9 +618,10 @@ void CsmaCaMacModified::sendDataFrame(Packet *frameToSend)
 
     if(this->enableArbitrationTimeStats){
         simtime_t arbitrationTime = simTime() - this->start_arbitration_time;
-        this->packetArbitrationTimeVector.record(arbitrationTime);
-        this->packetArbitrationTimesHistogram.collect(arbitrationTime);
-
+        if(this->enableSingleArbitrationTimeStats){
+            this->packetArbitrationTimeVector.record(arbitrationTime);
+            this->packetArbitrationTimesHistogram.collect(arbitrationTime);
+        }
         this->overallArbitrationTimeSum = this->overallArbitrationTimeSum + arbitrationTime;
         this->overallNumberOfArbitrations += 1;
 
