@@ -43,6 +43,9 @@ simple WriterW2RP like iWriter
         bool prioritized = default(true);
         string prioMode = default("FIXED"); // options: "FIXED"/"ADAPTIVE_LOW_PDR"/"ADAPTIVE_HIGH_PDR" 
         
+        // Analysis configuration
+        bool pushBackFragmentData = default(true);
+        
         // Display Parameters
         @display("i=block/tx");
         

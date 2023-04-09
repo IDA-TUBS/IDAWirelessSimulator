@@ -1,4 +1,4 @@
-/*
+ /*
  *
  */
 
@@ -22,6 +22,8 @@ void Reader::initialize()
     deadline = par("deadline");
 
     sizeCache = par("historySize");
+
+    pushBackFragmentData = par("pushBackFragmentData");
 
     writerProxy = new WriterProxy(this->sizeCache);
 
@@ -114,6 +116,7 @@ void Reader::processDataFragment(RtpsInetPacket* rtpsMessage)
     {
         RTPSAnalysis::recordSampleLatency(writerProxy->getChange(change->sequenceNumber));
     }
+    delete change;
 }
 
 

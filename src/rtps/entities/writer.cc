@@ -30,6 +30,8 @@ void Writer::initialize()
     numReaders = par("numberReaders");
     sizeCache = par("historySize");
 
+    pushBackFragmentData = par("pushBackFragmentData");
+
     shaping = par("shaping");
     enableSeparateHBs = par("enableSeparateHBs");
     hbPeriod = par("hbPeriod");
@@ -163,7 +165,12 @@ void Writer::checkSampleLiveliness()
 {
     if(historyCache.size() == 0)
     {
-        sendQueue.clear();
+        while(sendQueue.size() > 0){
+            SampleFragment* to_delete_element = sendQueue.front();
+            sendQueue.erase(sendQueue.begin());
+            delete to_delete_element;
+        }
+//        sendQueue.clear();
         return;
     }
 
@@ -229,7 +236,13 @@ void Writer::checkSampleLiveliness()
     }
 
     // finally delete expired changes
-    toDelete.clear();
+    //toDelete.clear();
+    while(toDelete.size() > 0){
+        CacheChange* to_delete_element = toDelete.front();
+        toDelete.erase(toDelete.begin());
+        delete to_delete_element;
+    }
+
 }
 
 
@@ -284,6 +297,7 @@ void Writer::removeCompleteSamples()
                 }
 
             }
+
             delete change;
         }
         else

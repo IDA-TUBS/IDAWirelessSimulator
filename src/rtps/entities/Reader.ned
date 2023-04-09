@@ -28,6 +28,9 @@ simple Reader like iReader
         
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
         
+        // Analysis configuration
+        bool pushBackFragmentData = default(true);
+        
         @display("i=block/rx");
     gates:        
         output appOut;

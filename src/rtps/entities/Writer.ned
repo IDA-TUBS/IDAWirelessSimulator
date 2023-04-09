@@ -40,6 +40,9 @@ simple Writer like iWriter
         int appID = default(-1);
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
         
+        // Analysis configuration
+        bool pushBackFragmentData = default(true);
+        
         // Display Parameters
         @display("i=block/tx");
         

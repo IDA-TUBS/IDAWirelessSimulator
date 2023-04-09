@@ -43,6 +43,7 @@ void WriterW2RP::initialize()
     // always disable sending of separate HB messages
     enableSeparateHBs = false;
 
+    pushBackFragmentData = par("pushBackFragmentData");
     // W2RP extension
     prioMode = NONE;
     timeout = par("timeout");

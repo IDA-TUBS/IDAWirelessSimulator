@@ -20,11 +20,14 @@ bool ReaderProxy::addChange(CacheChange &change)
 
 void ReaderProxy::removeChange(unsigned int sequenceNumber)
 {
+
     for (auto it = history.begin(); it != history.end();)
     {
         if ((*it)->sequenceNumber <= sequenceNumber)
         {
+            ChangeForReader* change = (*it);
             history.erase(it);
+            delete change;
             return;
         }
         else

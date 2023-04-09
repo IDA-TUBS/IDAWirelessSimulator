@@ -111,7 +111,7 @@ class ChangeForWriter: public CacheChange
      */
     ~ChangeForWriter()
     {
-        delete[] sampleFragmentArray;
+//        delete[] sampleFragmentArray; // Leads to conflicts at object destruction
     };
 
     /*
