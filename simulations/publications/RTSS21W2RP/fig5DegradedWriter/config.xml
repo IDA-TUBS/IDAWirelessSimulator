@@ -1,0 +1,4 @@
+<config>
+	<interface hosts='**' address='10.0.0.x' netmask='255.255.255.0'/>
+	<autoroute metric='errorRate'/>
+</config>
