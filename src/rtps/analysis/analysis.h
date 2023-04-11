@@ -64,6 +64,9 @@ class RTPSAnalysis
     static appToSampleMap countMap;
     // Stores the efficiency value per sample that is related to unnecessary retransmission
     static sampleEfficiencyVectorMap sampleEfficienciesByAppId;
+    // Maximum number of unnecessary retransmissions per sample
+    int maximumNumberOfUnnecessaryRetransmissionsPerSample;
+    cOutVector maximumNumberOfUnnecessaryRetransmissionsPerSampleVector;
 
     void handleEfficiencyOnWriter(unsigned int appId, unsigned int sampleSn, unsigned int fragmentSn, unsigned int writeCount)
     {
@@ -77,6 +80,7 @@ class RTPSAnalysis
 
     void handleEfficiencyOnReader(unsigned int appId, unsigned int sampleSn, unsigned int fragmentSn, unsigned int count)
     {
+        // TODO pruefe ob das sample schon komplett ist... erhöhe nur dann den wert
         fragmentWriteReadCounts countTuple = countMap[appId][sampleSn][fragmentSn];
         if(std::get<1>(countTuple) >= 1){
             return;
@@ -115,7 +119,12 @@ class RTPSAnalysis
             float sampleEfficiency = 1.0 - float(sumDiff)/float(sumWriterCount);
             // Record efficiency vector
             sampleEfficiencyVector.record(sampleEfficiency);
+            if(sumDiff > maximumNumberOfUnnecessaryRetransmissionsPerSample){
+                maximumNumberOfUnnecessaryRetransmissionsPerSample = sumDiff;
+            }
+
         }
+        RTPSAnalysis::maximumNumberOfUnnecessaryRetransmissionsPerSampleVector.record(maximumNumberOfUnnecessaryRetransmissionsPerSample);
 
     }
 
@@ -129,9 +138,11 @@ class RTPSAnalysis
         missingSamplesVector.setName("missingSamples");
         sampleViolationRateVector.setName("sampleViolationRateVector");
         sampleEfficiencyVector.setName("sampleEfficiencyVector");
+        maximumNumberOfUnnecessaryRetransmissionsPerSampleVector.setName("maxNbrUnnecessaryRetr");
 
         counterCompleteSamples = 0;
         counterIncompleteSamples = 0;
+        maximumNumberOfUnnecessaryRetransmissionsPerSample = 0;
 
         pushBackFragmentData = true;
     };
@@ -224,8 +235,6 @@ class RTPSAnalysis
      */
     void calculateViolationRate(unsigned int appId)
     {
-//        EV << "sent by writer: " << transmittedSamplesByAppId[appId].size() << "\n";
-//        EV << "num received: " << completeSamples.size() << "\n";
         EV << "[Reader] Complete Samples: " << (completeSamples.size()) << ",\tSend Samples: " << (transmittedSamplesByAppId[appId].size()) << endl;
 
         violationRate = 1 - (double(completeSamples.size()) / double(transmittedSamplesByAppId[appId].size()));
@@ -323,7 +332,6 @@ class RTPSAnalysis
     {
         if(pushBackFragmentData){
             transmittedFragmentsByAppId[appId].push_back(sf->fragmentStartingNum);
-            EV << "push back\n";
         }
     };
 
