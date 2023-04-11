@@ -53,6 +53,9 @@ class Reader : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
     /// max number of cache changes to be stored simultaneously
     unsigned int sizeCache;
 
+    /// if true, the efficiency is evaluated and stored
+    bool measureEfficiency;
+
     /// vector storing destination address(es)
     std::vector<std::string> destinationAddresses;
 

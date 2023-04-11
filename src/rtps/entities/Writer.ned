@@ -36,7 +36,7 @@ simple Writer like iWriter
         bool enableNackSuppression = default(false);
         // enabling or disabling separate HBs
         bool enableSeparateHBs = default(true);
-        
+        bool measureEfficiency = default(false);
         int appID = default(-1);
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
         
