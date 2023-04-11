@@ -811,7 +811,9 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
             std::srand(rtpsMsg->getSentFragments());
         }
         // ----------------- PER calculation from bit error rate and packet length ----------------------
-        double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength());
+//        double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength().get());
+        double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getTotalLength().get());
+
         double rd = ((double)rand()/(double)RAND_MAX);
         if (rd < packet_loss_prob) {
             receptionFailure++;
