@@ -54,7 +54,8 @@ class WriterW2RP : public Writer
     PrioritizationMode prioMode;
     /// timeout duration
     simtime_t timeout;
-
+    /// if true, the efficiency is evaluated and stored
+    bool measureEfficiency;
     // ===========================
     // ==== protocol entities ====
     // ===========================
@@ -67,7 +68,6 @@ class WriterW2RP : public Writer
     // same as Writer
     /// event used for timeouts
     cMessage *timeoutEvent;
-
     // ==============
     // ==== misc ====
     // ==============

@@ -109,6 +109,7 @@ void CsmaCaMacModified::initialize(int stage)
 
         // Arbitration time
         enableArbitrationTimeStats = par("enableArbitrationTimeStats");
+        enableSingleArbitrationTimeStats = par("enableSingleArbitrationTimeStats");
         packetArbitrationTimesHistogram.setName("packetArbitrationTimesHist");
         packetArbitrationTimeVector.setName("packetArbitrationTimesVec");
         averageArbitrationTimeVector.setName("averageArbitrationTimeVector");
@@ -617,9 +618,10 @@ void CsmaCaMacModified::sendDataFrame(Packet *frameToSend)
 
     if(this->enableArbitrationTimeStats){
         simtime_t arbitrationTime = simTime() - this->start_arbitration_time;
-        this->packetArbitrationTimeVector.record(arbitrationTime);
-        this->packetArbitrationTimesHistogram.collect(arbitrationTime);
-
+        if(this->enableSingleArbitrationTimeStats){
+            this->packetArbitrationTimeVector.record(arbitrationTime);
+            this->packetArbitrationTimesHistogram.collect(arbitrationTime);
+        }
         this->overallArbitrationTimeSum = this->overallArbitrationTimeSum + arbitrationTime;
         this->overallNumberOfArbitrations += 1;
 
@@ -809,7 +811,9 @@ bool CsmaCaMacModified::isFcsOk(Packet *frame)
             std::srand(rtpsMsg->getSentFragments());
         }
         // ----------------- PER calculation from bit error rate and packet length ----------------------
-        double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength());
+//        double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getBitLength().get());
+        double packet_loss_prob = 1.0-pow(1.0-bitErrorRate,frame->getTotalLength().get());
+
         double rd = ((double)rand()/(double)RAND_MAX);
         if (rd < packet_loss_prob) {
             receptionFailure++;

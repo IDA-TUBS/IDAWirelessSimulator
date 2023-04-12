@@ -25,8 +25,12 @@ simple Reader like iReader
         
         double deadline @unit(s) = default(100ms);
         double readerResponseDelay @unit(s) = default(0ms);
-        
+        // If true the efficiency is measure
+        bool measureEfficiency = default(false);
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
+        
+        // Analysis configuration
+        bool pushBackFragmentData = default(true);
         
         @display("i=block/rx");
     gates:        
