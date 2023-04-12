@@ -24,7 +24,9 @@ void ReaderProxy::removeChange(unsigned int sequenceNumber)
     {
         if ((*it)->sequenceNumber <= sequenceNumber)
         {
+            ChangeForReader* change = (*it);
             history.erase(it);
+            delete change;
             return;
         }
         else

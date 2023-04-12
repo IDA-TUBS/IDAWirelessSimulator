@@ -61,6 +61,10 @@ module CsmaCaMacModified extends CsmaCaMac like IMacProtocol
         
         bool dependentSignalPaths = default(false);
 
+        bool enableArbitrationTimeStats = default(false);
+        bool enableSingleArbitrationTimeStats = default(false);
+        bool enablePacketQueuingStats = default(false);
+
         @class(CsmaCaMacModified);
         @signal[linkBroken](type=inet::Packet);
         @statistic[linkBroken](title="link break"; source=linkBroken; record=count; interpolationmode=none);

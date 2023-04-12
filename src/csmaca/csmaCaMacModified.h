@@ -126,6 +126,28 @@ class CsmaCaMacModified : public CsmaCaMac
     bool ta_enable;
     double ta;
 
+    // Arbitration time statistics
+    bool enableArbitrationTimeStats;
+    bool enableSingleArbitrationTimeStats;
+    simtime_t start_arbitration_time;
+    cHistogram packetArbitrationTimesHistogram;
+    cOutVector packetArbitrationTimeVector;
+    cOutVector averageArbitrationTimeVector;
+    cHistogram sampleAverageArbitrationTimeHistogram;
+    cOutVector sampleAverageArbitrationTimeVector;
+    simtime_t sampleArbitrationTimeSum;
+    int sampleNumberOfArbitrations;
+    int currentSampleSN;
+    simtime_t overallArbitrationTimeSum;
+    int overallNumberOfArbitrations;
+
+    // Packet number in buffer statistics
+    bool enablePacketQueuingStats;
+    cHistogram numberOfPacketsInQueueHistogram;
+    cOutVector numberOfPacketsInQueueVector;
+
+    // --------------------------------
+
     bool dependentSignalPaths;
     bool burstErrors;
     double geBurstParamP;

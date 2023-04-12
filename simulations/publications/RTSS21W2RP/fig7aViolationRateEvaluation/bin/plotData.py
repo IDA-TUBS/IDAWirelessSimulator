@@ -13,4 +13,9 @@ if __name__ == '__main__':
 
     data = GraphPlotter.csvToPanda("output/violationRates.csv")
     
+    
+    if not os.path.exists("./figures"):
+        os.makedirs("./figures/")
+        
+        
     GraphPlotter.plotViolationRateTriPointPerLineData(data, 800+148, combined=True)

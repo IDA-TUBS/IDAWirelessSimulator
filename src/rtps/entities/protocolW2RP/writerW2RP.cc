@@ -32,16 +32,18 @@ void WriterW2RP::initialize()
     deadline = par("deadline");
     fragmentSize = par("fragmentSize");
     numReaders = 1;
+    numReaders = par("numberReaders");
     sizeCache = par("historySize");
 
     shaping = par("shaping");
     timeout = par("timeout");
     enableNackSuppression = par("enableNackSuppression");
     nackSuppressionDuration = par("nackSuppressionDuration");
-
+    measureEfficiency = par("measureEfficiency");
     // always disable sending of separate HB messages
     enableSeparateHBs = false;
 
+    pushBackFragmentData = par("pushBackFragmentData");
     // W2RP extension
     prioMode = NONE;
     timeout = par("timeout");
@@ -75,8 +77,14 @@ void WriterW2RP::initialize()
 
 void WriterW2RP::finish()
 {
+    if(this->measureEfficiency){
+        RTPSAnalysis::evaluateSampleEfficiencyOnUnncecessaryRetransmission(this->appID);
+        this->countMap.clear();
+    }
+
     RTPSAnalysis::calculateCombinedViolationRate();
     EV << "Total application deadline violation rate: " << this->combinedViolationRate << endl;
+
 }
 
 
@@ -101,9 +109,9 @@ void WriterW2RP::handleDiscovery()
 void WriterW2RP::handleNackFrag(RtpsInetPacket* nackFrag) {
     // First find the history cache corresponding to the reader, sending the NackFrag msg
     unsigned int readerID = nackFrag->getReaderId();
-    // the app's reader IDs are in the range of [appID * maxNumberReader + 1, (appID + 1) * maxNumberReader - 1]
-    // reader entity ID mapped to entityId - thisappID * (maxNumberReader + 1) - 1
-    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders() + 1) - 1];
+
+//    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders() + 1) - 1];
+    auto rp = matchedReaders[readerID - this->appID * (rtpsParent->getMaxNumberOfReaders() ) - 1]; // FIXME: Simplification that is working for unicast
 
     // only handle NackFrag if sample still in history, if already complete or expired just ignore NackFrag
     if(rp->processNack(nackFrag))
@@ -279,7 +287,11 @@ bool WriterW2RP::sendMessage() // TODO ist diese methode identisch mit der aus d
 
         auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID, fragmentCounter);
         addHBFrag(msg, matchedReaders[0]->getCurrentChange()->highestFNSend);
+        calculateRtpsMsgSize(msg);
         send(msg , gate("dispatcherOut"));
+        if(measureEfficiency){
+            RTPSAnalysis:handleEfficiencyOnWriter(this->appID, sf->baseChange->sequenceNumber, sf->fragmentStartingNum, sf->sendCounter);
+        }
         sf->sendTime = simTime(); // TODO Wurde nirgends anders aufgerufen. Vllt. besser im Adapter?
         fragmentCounter++;
 

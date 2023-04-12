@@ -4,7 +4,7 @@
 import sys
 import os.path
 
-sys.path.append(os.path.abspath('./../../'))
+sys.path.append(os.path.abspath('./../../../'))
 from pythonLib import GraphPlotter
 
 p_file = os.path.dirname(os.path.abspath(__file__))

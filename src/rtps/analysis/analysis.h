@@ -18,6 +18,14 @@ typedef std::map<unsigned int, sampleVector> sampleVectorMap;
 typedef std::vector<unsigned int> fragmentVector;
 typedef std::map<unsigned int, fragmentVector> fragmentVectorMap;
 
+typedef std::tuple<unsigned int, unsigned int> fragmentWriteReadCounts;
+typedef std::map<unsigned int, fragmentWriteReadCounts> fragmentReadWriteCountMap;
+typedef std::map<unsigned int, fragmentReadWriteCountMap> sampleToFragmentMap;
+typedef std::map<unsigned int, sampleToFragmentMap> appToSampleMap;
+
+typedef std::vector<unsigned int> sampleEfficiencyVector;
+typedef std::map<unsigned int, sampleEfficiencyVector> sampleEfficiencyVectorMap;
+
 class RTPSAnalysis
 {
   public:
@@ -29,6 +37,8 @@ class RTPSAnalysis
     cOutVector missingSamplesVector;
     // Vector for storing the first time a sample begins being transmitted
     cOutVector sampleTxStartVector;
+    // Vector for storing the sample efficiencies
+    cOutVector sampleEfficiencyVector;
     /// Vector for storing the sequence numbers successfully received in time at the reader
     std::vector<unsigned int> completeSamples;
     /// Vector for storing a fragment trace at the reader
@@ -37,7 +47,8 @@ class RTPSAnalysis
     double violationRate;
     /// variable for storing the frame error rate at a reader
     double frameErrorRate;
-
+    /// if false: switches off fragment tracking to reduce memory usage at long simulation times
+    bool pushBackFragmentData;
 
     /// count samples (at all readers) marked as complete prior to the deadline elapsing
     unsigned int counterCompleteSamples;
@@ -49,8 +60,73 @@ class RTPSAnalysis
     static sampleVectorMap transmittedSamplesByAppId;
     /// Vector storing a list of all fragment numbers transmitted by a writer based on the appID
     static fragmentVectorMap transmittedFragmentsByAppId;
+    // Stores fragment (last) sent and (first) received count values separately for all samples based on the appID
+    static appToSampleMap countMap;
+    // Stores the efficiency value per sample that is related to unnecessary retransmission
+    static sampleEfficiencyVectorMap sampleEfficienciesByAppId;
+    // Maximum number of unnecessary retransmissions per sample
+    int maximumNumberOfUnnecessaryRetransmissionsPerSample;
+    cOutVector maximumNumberOfUnnecessaryRetransmissionsPerSampleVector;
 
+    void handleEfficiencyOnWriter(unsigned int appId, unsigned int sampleSn, unsigned int fragmentSn, unsigned int writeCount)
+    {
+        fragmentWriteReadCounts countTuple = countMap[appId][sampleSn][fragmentSn];
+        std::get<0>(countTuple) = writeCount;
+        if(writeCount == 1){
+            std::get<1>(countTuple) = 0;
+        }
+        countMap[appId][sampleSn][fragmentSn] = countTuple;
+    }
 
+    void handleEfficiencyOnReader(unsigned int appId, unsigned int sampleSn, unsigned int fragmentSn, unsigned int count)
+    {
+        // TODO pruefe ob das sample schon komplett ist... erhöhe nur dann den wert
+        fragmentWriteReadCounts countTuple = countMap[appId][sampleSn][fragmentSn];
+        if(std::get<1>(countTuple) >= 1){
+            return;
+        }
+        std::get<1>(countMap[appId][sampleSn][fragmentSn]) = count;
+    }
+
+    void evaluateSampleEfficiencyOnUnncecessaryRetransmission(unsigned int appId){
+
+        sampleToFragmentMap sampleMap = countMap[appId];
+
+        for ( const auto &fragmentMap : sampleMap ) {
+
+            fragmentReadWriteCountMap fragMap = std::get<1>(fragmentMap);
+
+            unsigned int sumWriterCount = 0;
+            unsigned int sumDiff = 0;
+
+            for (const auto &tupleValue : fragMap){
+
+                fragmentWriteReadCounts countTuple = std::get<1>(tupleValue);
+
+                unsigned int writerCount = std::get<0>(countTuple);
+                unsigned int readerCount = std::get<1>(countTuple);
+                // In case that all fragments got lost before the deadline no sent fragment has been unnecessary
+                if(readerCount == 0){
+                    readerCount = writerCount;
+                }
+
+                sumWriterCount += std::get<0>(countTuple);
+                sumDiff += writerCount - readerCount;
+
+            }
+
+            // Calculate Sample Efficiency Value
+            float sampleEfficiency = 1.0 - float(sumDiff)/float(sumWriterCount);
+            // Record efficiency vector
+            sampleEfficiencyVector.record(sampleEfficiency);
+            if(sumDiff > maximumNumberOfUnnecessaryRetransmissionsPerSample){
+                maximumNumberOfUnnecessaryRetransmissionsPerSample = sumDiff;
+            }
+
+        }
+        RTPSAnalysis::maximumNumberOfUnnecessaryRetransmissionsPerSampleVector.record(maximumNumberOfUnnecessaryRetransmissionsPerSample);
+
+    }
 
     /*
      * empty default constructor
@@ -61,9 +137,14 @@ class RTPSAnalysis
         sampleTxStartVector.setName("sampleTxStartpoints");
         missingSamplesVector.setName("missingSamples");
         sampleViolationRateVector.setName("sampleViolationRateVector");
+        sampleEfficiencyVector.setName("sampleEfficiencyVector");
+        maximumNumberOfUnnecessaryRetransmissionsPerSampleVector.setName("maxNbrUnnecessaryRetr");
 
         counterCompleteSamples = 0;
         counterIncompleteSamples = 0;
+        maximumNumberOfUnnecessaryRetransmissionsPerSample = 0;
+
+        pushBackFragmentData = true;
     };
 
     /*
@@ -127,7 +208,9 @@ class RTPSAnalysis
      */
     void recordFragmentReception(unsigned int fragmentNumber)
     {
-        fragmentTrace.push_back(fragmentNumber);
+        if(pushBackFragmentData){
+            fragmentTrace.push_back(fragmentNumber);
+        }
     };
 
     /*
@@ -152,8 +235,6 @@ class RTPSAnalysis
      */
     void calculateViolationRate(unsigned int appId)
     {
-//        EV << "sent by writer: " << transmittedSamplesByAppId[appId].size() << "\n";
-//        EV << "num received: " << completeSamples.size() << "\n";
         EV << "[Reader] Complete Samples: " << (completeSamples.size()) << ",\tSend Samples: " << (transmittedSamplesByAppId[appId].size()) << endl;
 
         violationRate = 1 - (double(completeSamples.size()) / double(transmittedSamplesByAppId[appId].size()));
@@ -168,7 +249,9 @@ class RTPSAnalysis
      */
     void calculateFER(unsigned int appId)
     {
-        frameErrorRate = 1 - (double(fragmentTrace.size()) / double(transmittedFragmentsByAppId[appId].size()));
+        if(pushBackFragmentData){
+            frameErrorRate = 1 - (double(fragmentTrace.size()) / double(transmittedFragmentsByAppId[appId].size()));
+        }
     };
 
     /*
@@ -191,7 +274,7 @@ class RTPSAnalysis
     void handleIncompleteButValidSamples(unsigned int appId)
     {
         // remove the last samples from the analysis vector to account for still valid samples
-        transmittedSamplesByAppId[appId].resize(transmittedSamplesByAppId[appId].size() - 1);
+//        transmittedSamplesByAppId[appId].resize(transmittedSamplesByAppId[appId].size() - 1); // Check
     }
 
     /*
@@ -247,8 +330,13 @@ class RTPSAnalysis
      */
     void addFragment(unsigned int appId, SampleFragment* sf)
     {
-        transmittedFragmentsByAppId[appId].push_back(sf->fragmentStartingNum);
+        if(pushBackFragmentData){
+            transmittedFragmentsByAppId[appId].push_back(sf->fragmentStartingNum);
+        }
     };
+
+
+
 
 };
 
