@@ -618,10 +618,12 @@ void CsmaCaMacModified::sendDataFrame(Packet *frameToSend)
 
     if(this->enableArbitrationTimeStats){
         simtime_t arbitrationTime = simTime() - this->start_arbitration_time;
+
         if(this->enableSingleArbitrationTimeStats){
             this->packetArbitrationTimeVector.record(arbitrationTime);
             this->packetArbitrationTimesHistogram.collect(arbitrationTime);
         }
+
         this->overallArbitrationTimeSum = this->overallArbitrationTimeSum + arbitrationTime;
         this->overallNumberOfArbitrations += 1;
 

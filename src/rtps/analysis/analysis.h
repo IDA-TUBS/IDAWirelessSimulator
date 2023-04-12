@@ -64,9 +64,11 @@ class RTPSAnalysis
     static appToSampleMap countMap;
     // Stores the efficiency value per sample that is related to unnecessary retransmission
     static sampleEfficiencyVectorMap sampleEfficienciesByAppId;
+
     // Maximum number of unnecessary retransmissions per sample
     int maximumNumberOfUnnecessaryRetransmissionsPerSample;
     cOutVector maximumNumberOfUnnecessaryRetransmissionsPerSampleVector;
+
 
     void handleEfficiencyOnWriter(unsigned int appId, unsigned int sampleSn, unsigned int fragmentSn, unsigned int writeCount)
     {
@@ -81,6 +83,7 @@ class RTPSAnalysis
     void handleEfficiencyOnReader(unsigned int appId, unsigned int sampleSn, unsigned int fragmentSn, unsigned int count)
     {
         // TODO pruefe ob das sample schon komplett ist... erhöhe nur dann den wert
+
         fragmentWriteReadCounts countTuple = countMap[appId][sampleSn][fragmentSn];
         if(std::get<1>(countTuple) >= 1){
             return;
@@ -100,7 +103,6 @@ class RTPSAnalysis
             unsigned int sumDiff = 0;
 
             for (const auto &tupleValue : fragMap){
-
                 fragmentWriteReadCounts countTuple = std::get<1>(tupleValue);
 
                 unsigned int writerCount = std::get<0>(countTuple);
