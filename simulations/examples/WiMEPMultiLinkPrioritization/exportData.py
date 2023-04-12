@@ -6,7 +6,7 @@ import os.path
 
 import argparse
 
-sys.path.append(os.path.abspath('./../../'))
+sys.path.append(os.path.abspath('./../../../'))
 from pythonLib import VectorParser
 from pythonLib import ScalarParser
 
@@ -73,5 +73,5 @@ scalarSynonyms = ["deadlineViolationRate"]
 scaFile = './output/histogram_file.csv'
 
 moduleNames = ["receivers"]
-df = scalarParser.processVectors(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
+df = scalarParser.processScalars(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
 df.to_csv("./output/violationRates" + args.suffix + ".csv")

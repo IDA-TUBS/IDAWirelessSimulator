@@ -126,7 +126,7 @@ class ReaderProxy
     /*
      * method for removing a Cache Change from the proxie's history cache
      *
-     * @param sequenceNumber sequence number of the change that has be be removed
+     * @param sequenceNumber sequence number of the change that has to be removed
      */
     void removeChange(unsigned int sequenceNumber);
 

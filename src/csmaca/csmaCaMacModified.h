@@ -128,6 +128,8 @@ class CsmaCaMacModified : public CsmaCaMac
 
     // Arbitration time statistics
     bool enableArbitrationTimeStats;
+    bool enableSingleArbitrationTimeStats;
+
     simtime_t start_arbitration_time;
     cHistogram packetArbitrationTimesHistogram;
     cOutVector packetArbitrationTimeVector;

@@ -17,7 +17,6 @@ bool WriterProxy::addChange(CacheChange &change)
 
     history.push_back(cfr);
     highestSequenceNumber = change.sequenceNumber;
-
     return true;
 }
 
@@ -27,7 +26,11 @@ void WriterProxy::removeChange(unsigned int sequenceNumber)
     {
         if ((*it)->sequenceNumber <= sequenceNumber)
         {
+
+            auto change = (*it);
             history.erase(it);
+            delete change;
+
             return;
         }
         else

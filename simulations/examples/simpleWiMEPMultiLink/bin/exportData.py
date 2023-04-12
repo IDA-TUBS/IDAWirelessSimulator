@@ -58,4 +58,5 @@ scaFile = './output/histogram_file.csv'
 
 moduleNames = ["receivers"]
 df = scalarParser.processScalars(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
+print(df)
 df.to_csv("./output/violationRates.csv")

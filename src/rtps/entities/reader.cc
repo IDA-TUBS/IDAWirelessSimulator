@@ -1,4 +1,4 @@
-/*
+ /*
  *
  */
 
@@ -23,9 +23,13 @@ void Reader::initialize()
 
     sizeCache = par("historySize");
 
+    pushBackFragmentData = par("pushBackFragmentData");
+
     writerProxy = new WriterProxy(this->sizeCache);
 
     responseDelay = par("readerResponseDelay");
+
+    measureEfficiency = par("measureEfficiency");
 }
 
 
@@ -37,9 +41,11 @@ void Reader::finish()
     recordScalar("deadlineViolationRate", this->violationRate);
     sampleViolationRateVector.record(this->violationRate);
     RTPSAnalysis::finishSampleLatencyRecording();
-
     EV << "violation rate: "  << this->violationRate << endl;
     EV << "FER:  "  << this->frameErrorRate << endl;
+
+
+
 }
 
 void Reader::handleMessage(cMessage *message)
@@ -70,6 +76,10 @@ void Reader::handleExternalMessage(cMessage* message)
     {
         RtpsInetPacket *rtpsMessage = check_and_cast<RtpsInetPacket*>(message);
 
+        if(measureEfficiency){
+            RTPSAnalysis::handleEfficiencyOnReader(this->appID, rtpsMessage->getWriterSN(),rtpsMessage->getFragmentStartingNum(),rtpsMessage->getFragCount());
+        }
+
         // first check whether appID is corresponding to the reader's appID
         if(rtpsMessage->getAppId() != this->appID)
         {
@@ -87,7 +97,12 @@ void Reader::handleExternalMessage(cMessage* message)
         }
 
         delete rtpsMessage;
+        return;
     }
+
+    delete message;
+    return;
+
 }
 
 
@@ -102,6 +117,9 @@ void Reader::processDataFragment(RtpsInetPacket* rtpsMessage)
     auto change = new CacheChange(rtpsMessage->getWriterSN(), rtpsMessage->getSampleSize(), rtpsMessage->getFragmentSize(), rtpsMessage->getPublisherSendTime());
     writerProxy->addChange(*change); // only adds change if new, else WriterProxy does nothing here
 
+
+    RTPSAnalysis::handleEfficiencyOnReader(this->appID, rtpsMessage->getWriterSN(),rtpsMessage->getFragmentStartingNum(), rtpsMessage->getFragCount());
+
     // mark fragment as received
     unsigned int fn = rtpsMessage->getFragmentStartingNum();
     writerProxy->updateFragmentStatus(RECEIVED, change->sequenceNumber, fn);
@@ -114,6 +132,7 @@ void Reader::processDataFragment(RtpsInetPacket* rtpsMessage)
     {
         RTPSAnalysis::recordSampleLatency(writerProxy->getChange(change->sequenceNumber));
     }
+    delete change;
 }
 
 

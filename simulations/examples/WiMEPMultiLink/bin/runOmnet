@@ -9,7 +9,7 @@ PATH_PROFILE="./../../../"
 SIM_PATH="examples/WiMEPMultiLink"
 SIM_NAME="WiMEPMultiLink.ini"
 # <---
-
+a
 # Load global variables
 source ${PATH_PROFILE}/profile
  

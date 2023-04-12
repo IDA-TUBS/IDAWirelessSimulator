@@ -38,10 +38,13 @@ simple WriterW2RP like iWriter
         
         int appID = default(-1);
         string destAddresses = default(""); 		// list of IP addresses, separated by spaces ("": don't send)
-        
+        bool measureEfficiency = default(false);
         // multicast extension
         bool prioritized = default(true);
         string prioMode = default("FIXED"); // options: "FIXED"/"ADAPTIVE_LOW_PDR"/"ADAPTIVE_HIGH_PDR" 
+        
+        // Analysis configuration
+        bool pushBackFragmentData = default(true);
         
         // Display Parameters
         @display("i=block/tx");

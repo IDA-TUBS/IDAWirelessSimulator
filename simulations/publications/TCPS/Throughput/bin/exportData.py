@@ -77,5 +77,5 @@ scalarSynonyms = ["deadlineViolationRate"]
 scaFile = './output/histogram_file.csv'
 
 moduleNames = ["receivers"]
-df = scalarParser.processVectors(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
+df = scalarParser.processScalars(parameterTypes, parameterSynonyms, scalarNames, scalarSynonyms, moduleNames, scaFile)
 df.to_csv("./output/violationRates" + args.suffix + ".csv")

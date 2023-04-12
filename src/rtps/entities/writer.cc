@@ -34,8 +34,8 @@ void Writer::initialize()
     enableSeparateHBs = par("enableSeparateHBs");
     hbPeriod = par("hbPeriod");
     enableNackSuppression = par("enableNackSuppression");
+    measureEfficiency = par("measureEfficiency");
     nackSuppressionDuration = par("nackSuppressionDuration");
-
     // reader proxy initialization
     for(int i = 0; i < numReaders; i++) {
         // the app's reader IDs are in the range of [appID * maxNumberReader + 1, (appID + 1) * maxNumberReader - 1]
@@ -62,9 +62,13 @@ void Writer::initialize()
 
 void Writer::finish()
 {
+    if(this->measureEfficiency){
+        RTPSAnalysis::maximumNumberOfUnnecessaryRetransmissionsPerSampleVector.record(maximumNumberOfUnnecessaryRetransmissionsPerSample);
+    }
     RTPSAnalysis::calculateCombinedViolationRate();
     EV << "Total application deadline violation rate: " << this->combinedViolationRate << endl;
     recordScalar("appViolationRate", this->combinedViolationRate);
+
 }
 
 
@@ -163,7 +167,12 @@ void Writer::checkSampleLiveliness()
 {
     if(historyCache.size() == 0)
     {
-        sendQueue.clear();
+        while(sendQueue.size() > 0){
+            SampleFragment* to_delete_element = sendQueue.front();
+            sendQueue.erase(sendQueue.begin());
+            delete to_delete_element;
+        }
+//        sendQueue.clear();
         return;
     }
 
@@ -229,7 +238,13 @@ void Writer::checkSampleLiveliness()
     }
 
     // finally delete expired changes
-    toDelete.clear();
+    //toDelete.clear();
+    while(toDelete.size() > 0){
+        CacheChange* to_delete_element = toDelete.front();
+        toDelete.erase(toDelete.begin());
+        delete to_delete_element;
+    }
+
 }
 
 
@@ -393,6 +408,9 @@ bool Writer::sendMessage()
         std::string addr = destinationAddresses[0];
 
         auto msg = createRtpsMsgFromFragment(sf, this->entityId, this->fragmentSize, addr, this->appID, fragmentCounter);
+        if(measureEfficiency){
+            RTPSAnalysis:handleEfficiencyOnWriter(this->appID, sf->baseChange->sequenceNumber, sf->fragmentStartingNum, sf->sendCounter);
+        }
         send(msg , gate("dispatcherOut"));
         sf->sendTime = simTime(); // TODO Wurde nirgends anders aufgerufen. Vllt. besser im Adapter?
         fragmentCounter++;

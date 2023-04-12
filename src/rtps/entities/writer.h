@@ -65,7 +65,8 @@ class Writer : public cSimpleModule, protected Endpoint, protected RTPSAnalysis
     bool enableNackSuppression;
     /// flag for enabling or disabling separate HB messages
     bool enableSeparateHBs;
-
+    /// if true, the efficiency is evaluated and stored
+    bool measureEfficiency;
     /// application ID
     unsigned int appID;
     /// vector storing destination address(es)
