@@ -13,7 +13,7 @@ SIM_NAME="VaryingInterferenceRTPS.ini"
 # Load global variables
 source ${PATH_PROFILE}/profile
  
-${PATH_EXEC}/idaWirelessSimulator -u Cmdenv \
+${PATH_EXEC}/IDAWirelessSimulator -u Cmdenv \
 -f ${PATH_BASE}/simulations/${SIM_PATH}/${SIM_NAME} \
 -n \
 :${PATH_INET}src\

@@ -6,7 +6,7 @@ The library is designed to run within the OMNeT++ simulation engine. The IDA Wir
 
 ## Requirements
 
-The IDA Wireless Simulator is build upon [OMNeT++](https://omnetpp.org/) version 6. Additionally, the [INET framework](https://inet.omnetpp.org/) in version 4.4 is needed.
+The IDA Wireless Simulator is build upon [OMNeT++](https://omnetpp.org/) version 6. Additionally, the [INET framework](https://inet.omnetpp.org/) in version 4.5 is needed.
 
 The library can be used on any operating system running OMNeT++ 6.x, including Linux and Windows. The instructions for installation and usage below are for Linux-based systems. For Windows, the procedure might differ.
 
